@@ -238,7 +238,7 @@ namespace Simulation.Traffic.Utilities
 
         public bool IsGreatArc()
         {
-            return Math.Abs(endAngle - angle) > Math.PI;
+            return Math.Abs(angle) > Math.PI;
         }
     }
 }

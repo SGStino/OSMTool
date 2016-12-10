@@ -122,6 +122,9 @@ namespace OSMTool.Wpf.Traffic
                     sb.Append(dsc.Name);
                     sb.AppendLine();
 
+                    sb.Append(dsc.OsmWay?.Id?.ToString() ?? "<custom>");
+                    sb.AppendLine();
+
                     var text = new FormattedText(sb.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), 10, Brushes.Black);
                     drawingContext.DrawText(text, centerPoint);
 
@@ -137,6 +140,8 @@ namespace OSMTool.Wpf.Traffic
                     centerPoint.Y += text.Height;
 
                     drawingContext.DrawText(new FormattedText(sb.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), 7.5, Brushes.Black), centerPoint);
+
+                    drawingContext.DrawText(new FormattedText(node.OSMNode?.Id?.ToString() ?? "<custom>", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), 7.5, Brushes.Black), nodePoint);
                 }
         }
     }

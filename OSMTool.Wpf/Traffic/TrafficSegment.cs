@@ -113,9 +113,6 @@ namespace OSMTool.Wpf.Traffic
             //var t1 = new Vector2((float)tangentStart.X, (float)tangentStart.Y);
             //var t2 = -new Vector2((float)tangentEnd.X, (float)tangentEnd.Y);
 
-            PathFigure figure;
-
-            var elements = new List<PathSegment>();
 
             Arc a1;
             Arc a2;
@@ -134,152 +131,58 @@ namespace OSMTool.Wpf.Traffic
             var sweep2 = a2.IsClockwise() ? SweepDirection.Counterclockwise : SweepDirection.Clockwise;
 
 
+            var geometry = new StreamGeometry();
 
-            if ((start - center).LengthSquared > 0.01)
-            {
-                if (a1.radius < 0.1)
+            //if (dsc.OsmWay.Id == 198204219 && (End.Node as TrafficNode).OSMNode.Id == 2083678228) {
+            { 
+                using (var context = geometry.Open())
                 {
-
-                }
-
-                if (Math.Abs(a1.angle) < 0.1)
-                    elements.Add(new LineSegment(center, true));
-                else
-                    elements.Add(new ArcSegment(center, size1, 0, false, sweep1, true));
-            }
+                    context.BeginFigure(start, false, false);
 
 
-            if ((center - end).LengthSquared > 0.01)
-            {
-                if (a2.radius < 0.1)
-                {
-                    elements.Add(new LineSegment(end, true));
-                }
-                else {
-
-                    if (Math.Abs(a2.angle) < 0.1)
-                        elements.Add(new LineSegment(end, true));
-                    else {
-                        elements.Add(new ArcSegment(end, size2, 0, false, sweep2, true));
+                    if ((start - center).LengthSquared > 0.01)
+                    {
+                        if (Math.Abs(a1.angle) < 0.1)
+                            context.LineTo(center, true, false);
+                        else
+                            context.ArcTo(center, size1, 0, a1.IsGreatArc(), sweep1, true, false);
                     }
+
+
+                    if ((center - end).LengthSquared > 0.01)
+                    {
+                        if (a2.radius < 0.1)
+                        {
+                            context.LineTo(end, true, false);
+                        }
+                        else {
+
+                            if (Math.Abs(a2.angle) < 0.1)
+                                context.LineTo(end, true, false);
+                            else {
+                                context.ArcTo(end, size2, 0, a1.IsGreatArc(), sweep2, true, false);
+                            }
+                        }
+                    }
+
+                    context.LineTo(end, true, true);
+                }
+
+                geometry.Freeze();
+                layer1.DrawGeometry(null, pen, geometry);
+
+                if (isDouble)
+                {
+
+                    var brush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(128, 0, 0, 0));
+                    var layer3 = mgr.Drawing.GetLayer(DrawingLayer.Markers);
+                    layer3.DrawGeometry(null, new Pen(brush, 1)
+                    {
+                        StartLineCap = PenLineCap.Round,
+                        EndLineCap = PenLineCap.Round
+                    }, geometry);
                 }
             }
-
-
-            //elements.Add(new LineSegment(center, true));
-            // elements.Add(new LineSegment(end, true));
-
-            /*
-            int count1 = (int)Math.Ceiling(a1.arcLength);
-            int count2 = (int)Math.Ceiling(a2.arcLength);
-
-            var range1 = Enumerable.Range(1, count1).Select(i => i / (float)count1);
-            var range2 = Enumerable.Range(1, count2).Select(i => i / (float)count2);
-
-            var points1 = range1.Select(p => a1.Interpolate(p)).Select(n => new Point(n.x * scale, height - n.y * scale));
-            var points2 = range2.Select(p => a2.Interpolate(p)).Select(n => new Point(n.x * scale, height - n.y * scale));
-
-            elements.AddRange(points1.Select(p => new LineSegment(p, true)));
-            elements.AddRange(points2.Select(p => new LineSegment(p, true)));
-
-            if(elements.Count == 0)
-            {
-                elements.Add(new LineSegment(end, true));
-            }
-            */
-
-
-            /*
-            // TODO: premature optimization, tangents can be equal, but that doesn't mean they are on the same line
-            if (false && Vector3.Dot(Start.Tangent, End.Tangent) < -0.9) // al
-            {
-                elements.Add(new LineSegment(end, true));
-            }
-            else {
-                Arc a1;
-                Arc a2;
-                //BiarcInterpolation.Biarc(p1, t1, p2, t2, out a1, out a2);
-
-                BiarcInterpolation.Biarc(Start, End, out a1, out a2);
-
-                var p3 = a1.Interpolate(1);
-                var center = new Point(p3.x, height - p3.y * scale);
-
-                var angle1Great = false;// a1.IsGreatArc();
-                var angle2Great = false;// a2.IsGreatArc();
-
-
-                var size1 = new Size(a1.radius * scale, a1.radius * scale) ;
-                var size2 = new Size(a2.radius * scale, a2.radius * scale);
-
-                var sweep1 = !a1.IsClockwise() ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
-                var sweep2 = !a2.IsClockwise() ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
-
-                 
-
-
-                if (a1.radius > 0.1)
-                {
-                    if (a1.radius < 100000)
-                        elements.Add(new ArcSegment(center, size1, 0, angle1Great, sweep1, true));
-                    else
-                        elements.Add(new LineSegment(center, true));
-                }
-                else
-                    elements.Add(new LineSegment(end, true));
-                if (a2.radius > 0.1)
-                {
-                    if (a2.radius < 100000)
-                        elements.Add(new ArcSegment(end, size2, 0, angle2Great, sweep2, true));
-                    else
-                        elements.Add(new LineSegment(end, true));
-                }
-                else
-                    elements.Add(new LineSegment(end, true));
-            }
-            */
-            figure = new PathFigure(start, elements, false);
-
-            //if (a1.radius > 1 && a2.radius > 1)
-            //{
-            //    figure = new PathFigure(start, new [] {
-            //    new ArcSegment(center, size1,0, false, sweep1, true),
-            //    new ArcSegment(end, size2,0, false, sweep2, true)
-            //    }, false);
-            //}
-            //else
-            //    figure = new PathFigure(start, new [] { new LineSegment(end, true) }, false);
-
-
-
-            // figure = new PathFigure(start, new [] {
-            //    new BezierSegment(controlStart, controlEnd, end, true) }, false);
-
-            // var interpolationPoints = Enumerable.Range(1, 10).Select(i => i / 10.0f);
-            // var arc1Points = interpolationPoints.Select(n => a1.Interpolate(n)).Select(n => new LineSegment(new Point(n.x, n.y), true));
-            // var arc2Points = interpolationPoints.Select(n => a2.Interpolate(n)).Select(n => new LineSegment(new Point(n.x, n.y), true));
-
-            // figure = new PathFigure(start,  arc1Points.Concat(arc2Points), false);
-             
-            var geometry = new PathGeometry(new[]
-            {
-                figure
-            });
-            geometry.Freeze();
-            layer1.DrawGeometry(null, pen, geometry);
-
-            if (isDouble)
-            {
-
-                var brush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(128, 0, 0, 0));
-                var layer3 = mgr.Drawing.GetLayer(DrawingLayer.Markers);
-                layer3.DrawGeometry(null, new Pen(brush, 1)
-                {
-                    StartLineCap = PenLineCap.Round,
-                    EndLineCap = PenLineCap.Round
-                }, geometry);
-            }
-
 
 
             //layer1.DrawLine(new Pen(laneColor, laneWidth * scale)

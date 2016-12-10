@@ -31,7 +31,7 @@ namespace OSMTool.Wpf
             for (int i = 0; i < count; i++)
                 children.Add(new DrawingVisual()
                 {
-                    CacheMode = new BitmapCache()
+                   // CacheMode = new BitmapCache()
                 });
 
             contexts = new DrawingContext[count];

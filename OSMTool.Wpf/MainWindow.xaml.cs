@@ -78,7 +78,7 @@ namespace OSMTool.Wpf
 
 
 
-                    var highWays = ways.Where(w => w.Tags.ContainsKey("highway") || w.Tags.ContainsKey("railway")).ToArray();
+                    var highWays = ways.Where(w => (w.Tags.ContainsKey("highway") || w.Tags.ContainsKey("railway")) && !w.Tags.ContainsKey("fixme")).ToArray();
 
                     //foreach (var way in highWays)
 
