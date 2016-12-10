@@ -9,8 +9,7 @@ namespace Simulation.Traffic
         public SegmentDescription Description { get; }
         public SegmentNodeConnection Start { get; internal set; }
         public SegmentNodeConnection End { get; internal set; }
-
-
+        public bool IsRemoved { get; internal set; }
 
         public Segment(SegmentDescription description, RoadManager manager)
         {

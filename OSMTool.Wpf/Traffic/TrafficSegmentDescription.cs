@@ -14,5 +14,16 @@ namespace OSMTool.Wpf.Traffic
         public string Name { get; set; }
         public bool IsOneWay { get; set; }
         public bool IsRoundabout { get; internal set; }
+
+        public OsmSharp.Way OsmWay { get; set; }
+
+        internal static bool CanMerge(TrafficSegmentDescription a, TrafficSegmentDescription b)
+        {
+            return 
+                a.Lanes == b.Lanes && 
+                a.IsOneWay == b.IsOneWay && 
+                a.IsRoundabout == b.IsRoundabout && 
+                a.Type == b.Type;
+        }
     }
 }

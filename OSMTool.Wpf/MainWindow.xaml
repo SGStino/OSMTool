@@ -29,8 +29,10 @@
         <local:ZoomBox>
             <Viewbox>
                 <Border Background="AntiqueWhite">
-                    <local:DrawingVisualHost x:Name="canvas"> 
-                    </local:DrawingVisualHost>
+                    <AdornerDecorator>
+                        <local:DrawingVisualHost x:Name="canvas">
+                        </local:DrawingVisualHost>
+                    </AdornerDecorator>
                 </Border>
             </Viewbox>
         </local:ZoomBox>

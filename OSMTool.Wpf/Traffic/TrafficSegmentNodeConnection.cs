@@ -28,7 +28,6 @@ namespace OSMTool.Wpf.Traffic
         protected override void OnTangentChanged()
         {
             base.OnTangentChanged();
-            Update();
         }
 
         protected override void OnDisconnected()
@@ -46,10 +45,10 @@ namespace OSMTool.Wpf.Traffic
 
 
             var start = new Point(Node.Position.x * scale, height - Node.Position.y * scale);
-            var end = start + new Vector(Tangent.x * scale, -Tangent.y * scale) * 10;
+            var end = start + new Vector(Tangent.x * scale, -Tangent.y * scale) * 2;
 
             if (end != start)
-                layer.DrawLine(new Pen(Brushes.HotPink, 1), start, end);
+                layer.DrawLine(new Pen(Brushes.HotPink, 1.5) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Triangle }, start, end);
 
         }
     }

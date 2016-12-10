@@ -10,7 +10,7 @@ namespace Simulation.Traffic
         public Node Node { get; }
         public Segment Segment { get; }
 
-        public Vector2 Tangent
+        public Vector3 Tangent
         {
             get { return tangent; }
             set { tangent = value; OnTangentChanged(); }
@@ -20,7 +20,7 @@ namespace Simulation.Traffic
         {
         }
 
-        private Vector2 tangent;
+        private Vector3 tangent;
 
         public SegmentNodeConnection(Segment segment, Node node, RoadManager manager)
         {

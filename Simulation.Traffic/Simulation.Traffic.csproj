@@ -49,6 +49,8 @@
     <Compile Include="Segment.cs" />
     <Compile Include="SegmentDescription.cs" />
     <Compile Include="SegmentNodeConnection.cs" />
+    <Compile Include="Utilities\Angles.cs" />
+    <Compile Include="Utilities\BiarcInterpolation.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

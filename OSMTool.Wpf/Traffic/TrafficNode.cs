@@ -7,8 +7,7 @@ using System.Windows.Shapes;
 namespace OSMTool.Wpf.Traffic
 {
     internal class TrafficNode : Node
-    {
-        private Ellipse ellipse;
+    { 
 
         public TrafficNode(UnityEngine.Vector3 position, CanvasRoadManager manager) : base(position, manager)
         {
@@ -35,5 +34,12 @@ namespace OSMTool.Wpf.Traffic
                 connection.Update();
 
         }
+
+        public OsmSharp.Node OSMNode { get; set; }
+        public bool IsDeletionPossible { get; internal set; } = false;
+        public bool VisitedAsLine { get; internal set; } = false;
+        public bool VisitedAsIntersection { get; internal set; } = false;
+        public bool IsAlmostStraight { get; internal set; } = false;
+        public bool IsMarkedForDeletion { get; internal set; } = false;
     }
 }

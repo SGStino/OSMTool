@@ -93,6 +93,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DrawingVisualHost.cs" />
+    <Compile Include="Traffic\PointerAdorner.cs" />
     <Compile Include="Traffic\TrafficNode.cs" />
     <Compile Include="Traffic\TrafficSegment.cs" />
     <Compile Include="Traffic\TrafficSegmentDescription.cs" />

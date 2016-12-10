@@ -17,8 +17,7 @@ namespace OSMTool.Wpf
     }
 
     public class DrawingVisualHost : FrameworkElement
-    {
-
+    { 
         public DrawingContext GetLayer(DrawingLayer layer) => contexts[(int)layer];
 
         private DrawingContext[] contexts;
@@ -30,7 +29,10 @@ namespace OSMTool.Wpf
 
             int count = Enum.GetValues(typeof(DrawingLayer)).Cast<int>().Max()+1;
             for (int i = 0; i < count; i++)
-                children.Add(new DrawingVisual());
+                children.Add(new DrawingVisual()
+                {
+                    CacheMode = new BitmapCache()
+                });
 
             contexts = new DrawingContext[count];
         }
@@ -47,8 +49,10 @@ namespace OSMTool.Wpf
             for (int i = 0; i < contexts.Length; i++)
             {
                 contexts[i]?.Close();
-                contexts[i] = null;
+                contexts[i] = null; 
             }
+
+
         }
 
         protected override int VisualChildrenCount
