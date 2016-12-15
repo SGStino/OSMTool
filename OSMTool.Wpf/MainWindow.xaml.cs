@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Device.Location;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -33,12 +34,34 @@ namespace OSMTool.Wpf
     {
         public MainWindow()
         {
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
             InitializeComponent();
             //LoadAsync(@"C:\Users\stijn\Downloads\luxembourg-latest.osm.pbf");
-            //LoadAsync(@"C:\Users\stijn\Downloads\knokke-heist_01_01.pbf");
-            LoadAsync(@"C:\Users\stijn\Downloads\bruges.osm.pbf");
+            LoadAsync(@"C:\Users\stijn\Downloads\knokke-heist_01_01.pbf");
+
+            //LoadAsync(@"C:\Users\stijn\Downloads\bruges.osm.pbf");
+
+            using (var stream = File.Create(@"C:\Users\stijn\Downloads\mapOutput.json"))
+            {
+                var writer = new Simulation.Traffic.IO.Writer();
+                writer.Save(manager, stream);
+            }
+
+            //var newSet = new RoadManager();
+            //using (var stream = File.OpenRead(@"C:\Users\stijn\Downloads\mapOutput.json"))
+            //{
+            //    var reader = new Simulation.Traffic.IO.Reader();
+            //    reader.Load(newSet, stream);
+            //}
+
+            //using (var stream = File.Create(@"C:\Users\stijn\Downloads\mapOutput_2.json"))
+            //{
+            //    var writer = new Simulation.Traffic.IO.Writer();
+            //    writer.Save(newSet, stream);
+            //}
         }
-        
+
         private CanvasRoadManager manager;
 
         private class coordinateSet
@@ -101,7 +124,7 @@ namespace OSMTool.Wpf
                     foreach (var way in highWays)
                     {
                         string tagValue;
-                        if(way.Tags.TryGetValue("area", out tagValue))
+                        if (way.Tags.TryGetValue("area", out tagValue))
                         {
                             if (tagValue == "yes")
                                 continue;
@@ -384,9 +407,17 @@ namespace OSMTool.Wpf
             if (way.Tags.TryGetValue("name", out value))
                 desc.Name = value;
 
-            if (!way.Tags.TryGetValue("lanes", out value))
-                value = "1";
-            desc.Lanes = int.Parse(value);
+            int lanes = 1;
+            int forwardLanes = 0;
+            int backwardLanes = 0;
+            if (way.Tags.TryGetValue("lanes", out value))
+                lanes = int.Parse(value);
+            if (way.Tags.TryGetValue("lanes:forward", out value))
+                forwardLanes = int.Parse(value);
+            if (way.Tags.TryGetValue("lanes:backward", out value))
+                backwardLanes = int.Parse(value);
+
+
 
             if (way.Tags.TryGetValue("oneway", out value))
             {
@@ -397,12 +428,159 @@ namespace OSMTool.Wpf
                 }
             }
 
+
+
+            if (backwardLanes > 0 || forwardLanes > 0 && lanes == 0)
+                desc.LaneCount = backwardLanes + forwardLanes;
+            else if (backwardLanes == 0 && forwardLanes == 0)
+            {
+                if (desc.IsOneWay)
+                {
+                    forwardLanes = lanes;
+                    backwardLanes = 0;
+                }
+                else {
+                    forwardLanes = backwardLanes = lanes;
+                    lanes *= 2;
+                }
+            }
+            else
+                desc.LaneCount = lanes;
+            if (forwardLanes > 0 && (lanes - forwardLanes) != backwardLanes)
+                backwardLanes = lanes - forwardLanes;
+            if (backwardLanes > 0 && (lanes - backwardLanes) != forwardLanes)
+                forwardLanes = lanes - backwardLanes;
+
+            if (lanes - backwardLanes != forwardLanes)
+            {
+                // issue
+            }
+            if(lanes == 0)
+            {
+                // issue
+            }
+
+            desc.LaneCount = lanes;
+
             desc.OsmWay = way;
 
+
+            int laneCount = desc.LaneCount;
+            if (!desc.IsOneWay)
+                laneCount *= 2;
+
+
+            desc.Lanes = new LaneDescription[laneCount];
+            for (int i = 0; i < desc.Lanes.Length; i++)
+                desc.Lanes[i] = new LaneDescription();
+
+
+
+            // todo: get default values from classification (primary, secundary, tertiary, motorway, ...)
+
+
+            processTag<float>("maxspeed", way.Tags, desc.Lanes, float.TryParse, (d, i, v) => d.MaxSpeed = v);
+            processTag<turnValues>("turn", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => d.Turn |= getTurn(v));
+            processTag<float>("width", way.Tags, desc.Lanes, float.TryParse, (d, i, v) => d.Width = v);
+
+            // todo: multiple designated values can be set: foot and bicycle for example, this should combine!
+
+
+            var dicts = new bool[laneCount, 8, 3];
+
+            processTag<accessValues>("hgv", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => setVehicleType(d, i, v, VehicleTypes.Truck, dicts));
+            processTag<accessValues>("hazmat", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => setVehicleType(d, i, v, VehicleTypes.Hazmat, dicts));
+            processTag<accessValues>("bus", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => setVehicleType(d, i, v, VehicleTypes.Bus, dicts));
+            processTag<accessValues>("psv", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => setVehicleType(d, i, v, VehicleTypes.Bus, dicts));
+            processTag<accessValues>("taxi", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => setVehicleType(d, i, v, VehicleTypes.Taxi, dicts));
+            processTag<accessValues>("emergency", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => setVehicleType(d, i, v, VehicleTypes.Emergency, dicts));
+            processTag<accessValues>("bicycle", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => setVehicleType(d, i, v, VehicleTypes.Bicycle, dicts));
+            processTag<accessValues>("foot", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => setVehicleType(d, i, v, VehicleTypes.Pedestrian, dicts));
+            processTag<accessValues>("vehicle", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => setVehicleType(d, i, v, VehicleTypes.Vehicle, dicts));
+
+            for (int i = 0; i < laneCount; i++)
+            {
+                var allowed = desc.Lanes[i].VehicleTypes; // get default value
+
+                for (int t = 1; t < dicts.GetLength(1); t++)
+                {
+                    if (dicts[i, t, (int)accessValues.designated])
+                        allowed = VehicleTypes.None;
+                }
+                for (int t = 1; t < dicts.GetLength(1); t++)
+                {
+                    var type = (VehicleTypes)(1 << t);
+                    if (dicts[i, t, (int)accessValues.yes] || dicts[i, t, (int)accessValues.designated])
+                        allowed |= type;
+                    else if (dicts[i, t, (int)accessValues.no])
+                        allowed &= ~type;
+                }
+                desc.Lanes[i].VehicleTypes = allowed;
+            }
 
             return desc;
         }
 
+        private void setVehicleType(LaneDescription lane, int index, accessValues v, VehicleTypes type, bool[,,] dicts)
+        {
+            for (int i = 0; (1 << i) <= (int)type; i++)
+            {
+                var n = (VehicleTypes)(1 << i);
+                if (type.HasFlag(n))
+                    dicts[index, i, (int)v] = true;
+
+            }
+        }
+
+        delegate bool ProcessTagValue<T>(string input, out T output);
+        private void processTag<T>(string v, TagsCollectionBase tags, LaneDescription[] descriptions, ProcessTagValue<T> process, Action<LaneDescription, int, T> setter)
+        {
+            T parsedValue;
+            string value;
+
+            if (tags.TryGetValue(v, out value))
+                if (process(value, out parsedValue))
+                    for (int i = 0; i < descriptions.Length; i++)
+                        setter(descriptions[i], i, parsedValue);
+
+
+            if (tags.TryGetValue(v + ":lanes", out value))
+            {
+                var initialSplit = value.Split(';');
+                foreach (var lanes in initialSplit)
+                {
+                    var split = lanes.Split('|');
+                    for (int i = 0; i < split.Length; i++)
+                    {
+                        if (i < descriptions.Length)
+                        {
+                            if (process(value, out parsedValue))
+                                setter(descriptions[i], i, parsedValue);
+                        }
+                        else
+                        {
+                            // something wrong here
+                        }
+                    }
+                }
+            }
+        }
+
+        private Turn getTurn(turnValues turn) => (Turn)(int)turn;
+
+        private enum turnValues
+        {
+            sharp_left = (int)Turn.SharpLeft,
+            left = (int)Turn.Left,
+            slight_left = (int)Turn.SlightLeft,
+            merge_to_left = (int)Turn.MergeLeft,
+            through = (int)Turn.Through,
+            none = 0,
+            merge_to_right = (int)Turn.MergeRight,
+            slight_right = (int)Turn.SlightRight,
+            right = (int)Turn.Right,
+            sharp_right = (int)Turn.SharpRight
+        }
         private float toY(coordinateSet bounds, float lon, float lat)
         {
             if (lat < bounds.minLat) throw new InvalidOperationException();
@@ -435,5 +613,12 @@ namespace OSMTool.Wpf
 
         }
 
+    }
+
+    internal enum accessValues
+    {
+        yes = 1,
+        no = 0,
+        designated = 2
     }
 }

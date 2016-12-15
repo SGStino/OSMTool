@@ -14,7 +14,7 @@ namespace OSMTool.Wpf.Traffic
     {
         private float height;
         private float width;
-        private float scale = 5; // wpf pixel = 1 / scale meters
+        private float scale = 1; // wpf pixel = 1 / scale meters
         private PointerAdorner pointerAdorner;
         public float Height => height;
         public float Width => width;
@@ -24,7 +24,9 @@ namespace OSMTool.Wpf.Traffic
             this.height = height;
             this.Drawing = drawing;
 
-            drawing.MouseMove += Drawing_MouseMove;
+            var parent = VisualTreeHelper.GetParent(drawing) as FrameworkElement;
+
+            parent.MouseMove += Drawing_MouseMove;
             var adornerLayer = AdornerLayer.GetAdornerLayer(drawing);
 
             adornerLayer.Add(pointerAdorner = new PointerAdorner(this, drawing));
@@ -45,7 +47,7 @@ namespace OSMTool.Wpf.Traffic
 
         private void Drawing_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            var senderHost = sender as DrawingVisualHost;
+            var senderHost = Drawing;
             var pos = e.GetPosition(sender as IInputElement);
             var p = new Vector3((float)(pos.X / senderHost.ActualWidth) * width, height - (float)(pos.Y / senderHost.ActualHeight) * height, 0);
 

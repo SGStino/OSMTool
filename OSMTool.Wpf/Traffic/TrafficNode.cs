@@ -27,7 +27,7 @@ namespace OSMTool.Wpf.Traffic
             var layer = mgr.Drawing.GetLayer(DrawingLayer.Markers);
 
             var start = new Point(Position.x * scale, height - Position.y * scale);
-            layer.DrawEllipse(null, new Pen(Brushes.Black, 1), start, 5, 5);
+            //layer.DrawEllipse(null, new Pen(Brushes.Black, 1), start, 5, 5);
 
 
             foreach (TrafficSegmentNodeConnection connection in Segments)

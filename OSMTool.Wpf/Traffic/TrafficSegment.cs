@@ -49,6 +49,8 @@ namespace OSMTool.Wpf.Traffic
             base.OnCreated();
         }
 
+
+
         public void Update()
         {
             var dsc = (Description as TrafficSegmentDescription);
@@ -82,23 +84,9 @@ namespace OSMTool.Wpf.Traffic
             {
                 laneWidth *= 2; // both ways
             }
-            laneWidth *= dsc.Lanes;
+            laneWidth *= dsc.LaneCount;
 
-
-
-
-            //var tangentStart = new Vector(this.Start.Tangent.x, -this.Start.Tangent.y);
-            //var tangentEnd = new Vector(this.End.Tangent.x, -this.End.Tangent.y);
-
-
-            //var center = getIntersection(start, tangentStart, end, tangentEnd);
-
-
-            //var len = 0.40 * (start - end).Length;
-
-
-            //var controlStart = start + tangentStart * len;
-            //var controlEnd = end + tangentEnd * len;
+             
 
 
             var pen = new Pen(laneColor, laneWidth * scale)
@@ -106,13 +94,8 @@ namespace OSMTool.Wpf.Traffic
                 StartLineCap = PenLineCap.Round,
                 EndLineCap = PenLineCap.Round
             };
-
-            //var p1 = new Vector2((float)start.X, (float)start.Y);
-            //var p2 = new Vector2((float)end.X, (float)end.Y);
-
-            //var t1 = new Vector2((float)tangentStart.X, (float)tangentStart.Y);
-            //var t2 = -new Vector2((float)tangentEnd.X, (float)tangentEnd.Y);
-
+            pen.Freeze();
+             
 
             Arc a1;
             Arc a2;
@@ -134,7 +117,7 @@ namespace OSMTool.Wpf.Traffic
             var geometry = new StreamGeometry();
 
             //if (dsc.OsmWay.Id == 198204219 && (End.Node as TrafficNode).OSMNode.Id == 2083678228) {
-            { 
+            {
                 using (var context = geometry.Open())
                 {
                     context.BeginFigure(start, false, false);
@@ -173,14 +156,16 @@ namespace OSMTool.Wpf.Traffic
 
                 if (isDouble)
                 {
-
                     var brush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(128, 0, 0, 0));
-                    var layer3 = mgr.Drawing.GetLayer(DrawingLayer.Markers);
-                    layer3.DrawGeometry(null, new Pen(brush, 1)
+                    brush.Freeze();
+                    pen = new Pen(brush, 1)
                     {
                         StartLineCap = PenLineCap.Round,
                         EndLineCap = PenLineCap.Round
-                    }, geometry);
+                    };
+                    pen.Freeze();
+                    var layer3 = mgr.Drawing.GetLayer(DrawingLayer.Markers);
+                    layer3.DrawGeometry(null, pen, geometry);
                 }
             }
 

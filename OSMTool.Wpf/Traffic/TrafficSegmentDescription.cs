@@ -9,7 +9,7 @@ namespace OSMTool.Wpf.Traffic
 {
     public class TrafficSegmentDescription : SegmentDescription
     {
-        public int Lanes { get; set; } = 1;
+        public int LaneCount { get; set; } = 1;
         public string Type { get; set; }
         public string Name { get; set; }
         public bool IsOneWay { get; set; }
@@ -20,7 +20,7 @@ namespace OSMTool.Wpf.Traffic
         internal static bool CanMerge(TrafficSegmentDescription a, TrafficSegmentDescription b)
         {
             return 
-                a.Lanes == b.Lanes && 
+                a.LaneCount == b.LaneCount && 
                 a.IsOneWay == b.IsOneWay && 
                 a.IsRoundabout == b.IsRoundabout && 
                 a.Type == b.Type;

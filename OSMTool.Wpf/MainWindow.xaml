@@ -7,15 +7,6 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" 
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
-    <Window.Resources>
-        <Style TargetType="Polyline">
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="StrokeDashArray" Value="1 5"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </Window.Resources>
     <DockPanel>
         <!--<Slider Name="zoom" Minimum="0.01" Maximum="10" Value="1" ValueChanged="zoom_ValueChanged" VerticalAlignment="Stretch"  Orientation="Vertical"/>-->
         <!--<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
@@ -26,14 +17,14 @@
                 <Canvas x:Name="canvas" Width="500" Height="500" Background="Wheat"></Canvas>
             </Viewbox>
         </ScrollViewer>-->
-        <local:ZoomBox>
+        <local:ZoomBox >
             <Viewbox>
-                <Border Background="AntiqueWhite">
-                    <AdornerDecorator>
-                        <local:DrawingVisualHost x:Name="canvas">
+                <AdornerDecorator>
+                    <Border Background="AntiqueWhite">
+                        <local:DrawingVisualHost x:Name="canvas" IsHitTestVisible="False">
                         </local:DrawingVisualHost>
-                    </AdornerDecorator>
-                </Border>
+                    </Border>
+                </AdornerDecorator>
             </Viewbox>
         </local:ZoomBox>
     </DockPanel>

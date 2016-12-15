@@ -2,5 +2,6 @@
 {
     public class SegmentDescription
     {
+        public LaneDescription[] Lanes { get; set; }
     }
 }

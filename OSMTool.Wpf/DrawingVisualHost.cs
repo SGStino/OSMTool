@@ -30,11 +30,20 @@ namespace OSMTool.Wpf
             int count = Enum.GetValues(typeof(DrawingLayer)).Cast<int>().Max()+1;
             for (int i = 0; i < count; i++)
                 children.Add(new DrawingVisual()
-                {
+                { 
                    // CacheMode = new BitmapCache()
-                });
-
+                }); 
             contexts = new DrawingContext[count];
+        }
+
+
+        protected override GeometryHitTestResult HitTestCore(GeometryHitTestParameters hitTestParameters)
+        {
+            return base.HitTestCore(hitTestParameters);
+        }
+        protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
+        {
+            return base.HitTestCore(hitTestParameters);
         }
 
 

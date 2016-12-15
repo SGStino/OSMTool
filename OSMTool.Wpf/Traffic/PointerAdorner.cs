@@ -113,7 +113,7 @@ namespace OSMTool.Wpf.Traffic
 
                     sb.Append(dsc.Type);
                     sb.Append(" ");
-                    sb.Append(dsc.Lanes);
+                    sb.Append(dsc.LaneCount);
                     if (dsc.IsOneWay)
                         sb.Append(" OneWay");
 
