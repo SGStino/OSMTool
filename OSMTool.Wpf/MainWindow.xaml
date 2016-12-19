@@ -17,15 +17,64 @@
                 <Canvas x:Name="canvas" Width="500" Height="500" Background="Wheat"></Canvas>
             </Viewbox>
         </ScrollViewer>-->
-        <local:ZoomBox >
-            <Viewbox>
-                <AdornerDecorator>
-                    <Border Background="AntiqueWhite">
-                        <local:DrawingVisualHost x:Name="canvas" IsHitTestVisible="False">
-                        </local:DrawingVisualHost>
-                    </Border>
-                </AdornerDecorator>
-            </Viewbox>
-        </local:ZoomBox>
+        <Grid DockPanel.Dock="Bottom" Height="200" x:Name="detailsGrid">
+            <ScrollViewer>
+                <DockPanel>
+                    <TextBlock Text="Bottom" DockPanel.Dock="Top"/>
+                    <TextBlock Text="{Binding SelectedNode.OSMNode.Id}" DockPanel.Dock="Top"/>
+                    <ItemsControl ItemsSource="{Binding SelectedNode.Segments}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel DataContext="{Binding Segment.Description}" Margin="5">
+                                    <TextBlock Text="{Binding OsmWay.Id}"/>
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding Type}"/>
+                                    <ItemsControl ItemsSource="{Binding Lanes}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock>
+                                                    <Run Text="{Binding Reverse}"/>
+                                                    <Run Text="{Binding Width}"/>
+                                                    <Run Text="{Binding Turn}"/>
+                                                    <Run Text="{Binding MaxSpeed}"/>
+                                                    <Run Text="{Binding VehicleTypes}"/>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <ItemsControl ItemsSource="{Binding OsmWay.Tags}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock>
+                                                    <Run Text="{Binding Key}" FontWeight="Bold"/>
+                                                    <Run Text="{Binding Value}"/>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </DockPanel>
+            </ScrollViewer>
+        </Grid>
+        <Border  ClipToBounds="True" Background="Gray">
+            <local:ZoomBox>
+                <Viewbox>
+                    <AdornerDecorator>
+                        <Border Background="AntiqueWhite">
+                            <local:DrawingVisualHost x:Name="canvas" IsHitTestVisible="False">
+                            </local:DrawingVisualHost>
+                        </Border>
+                    </AdornerDecorator>
+                </Viewbox>
+            </local:ZoomBox>
+        </Border>
     </DockPanel>
 </Window>

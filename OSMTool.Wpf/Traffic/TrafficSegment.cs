@@ -14,17 +14,6 @@ namespace OSMTool.Wpf.Traffic
 {
     internal class TrafficSegment : Segment
     {
-        private static Dictionary<string, double> laneWidths = new Dictionary<string, double>()
-        {
-            { "cycleway", 1.5 },
-            { "pedestrian", 2.5 },
-            { "footway", 1.5 },
-            { "path", 2.2 },
-            { "platform", 1.5 },
-            { "yard", 1.5 },
-            { "rail", 1.5 },
-            { "tram", 1 }
-        };
 
         private static Dictionary<string, Brush> laneColors = new Dictionary<string, Brush>()
         {
@@ -57,11 +46,7 @@ namespace OSMTool.Wpf.Traffic
             var mgr = (Manager as CanvasRoadManager);
             var scale = mgr.Scale;
             var height = mgr.Drawing.Height;
-
-            double laneWidth;
-
-            if (!laneWidths.TryGetValue(dsc.Type, out laneWidth))
-                laneWidth = 3.7;
+            
 
             Brush laneColor;
 
@@ -75,16 +60,11 @@ namespace OSMTool.Wpf.Traffic
             var layer2 = mgr.Drawing.GetLayer(DrawingLayer.Outlines);
 
 
-            string gauge;
-            if (dsc.OsmWay.Tags.TryGetValue("gauge", out gauge))
-                laneWidth = double.Parse(gauge, CultureInfo.InvariantCulture) * 0.001;
+            double laneWidth = dsc.Lanes.Sum(w => w.Width);
+ 
 
             bool isDouble = !dsc.IsOneWay && dsc.Type != "rail" && dsc.Type != "tram";
-            if (isDouble)
-            {
-                laneWidth *= 2; // both ways
-            }
-            laneWidth *= dsc.LaneCount;
+
 
              
 

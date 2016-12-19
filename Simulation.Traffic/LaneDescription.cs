@@ -13,5 +13,6 @@
         public float Width { get; set; }
 
         public VehicleTypes VehicleTypes { get; set; } = VehicleTypes.Vehicle;
+        public LaneType LaneType { get; set; }
     }
 }

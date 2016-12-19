@@ -15,5 +15,7 @@ namespace Simulation.Traffic
         Emergency = 32,
         Taxi = 64,
         Hazmat = 128,
+        Tram = 256,
+        Train = 512,
     }
 }

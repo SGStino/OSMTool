@@ -7,15 +7,19 @@ using System.Linq;
 using System.Windows;
 using UnityEngine;
 using System.Windows.Documents;
+using System.ComponentModel;
 
 namespace OSMTool.Wpf.Traffic
 {
-    public class CanvasRoadManager : RoadManager
+    public class CanvasRoadManager : RoadManager, INotifyPropertyChanged
     {
         private float height;
         private float width;
         private float scale = 1; // wpf pixel = 1 / scale meters
         private PointerAdorner pointerAdorner;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public float Height => height;
         public float Width => width;
         public CanvasRoadManager(DrawingVisualHost drawing, float width, float height)
@@ -38,8 +42,17 @@ namespace OSMTool.Wpf.Traffic
         {
             var node = pointerAdorner.Node;
 
-            if (node != null && node.Segments.Count() == 2 && node.IsDeletionPossible)
-                MergeSegments(node);
+            if (e.ChangedButton == System.Windows.Input.MouseButton.Right)
+            {
+                if (node != null && node.Segments.Count() == 2 && node.IsDeletionPossible)
+                    MergeSegments(node);
+            }
+            if(e.ChangedButton == System.Windows.Input.MouseButton.Left)
+            {
+
+                this.SelectedNode = node;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedNode)));
+            }
 
             pointerAdorner.SetPosition(null, e.GetPosition(sender as IInputElement));
             Update();
@@ -56,6 +69,8 @@ namespace OSMTool.Wpf.Traffic
             pointerAdorner.SetPosition(node as TrafficNode, pos);
 
         }
+
+
 
 
 
@@ -83,6 +98,7 @@ namespace OSMTool.Wpf.Traffic
         public DrawingVisualHost Drawing { get; private set; }
         public float Scale { get { return scale; } set { scale = value; Update(); } }
 
+        public TrafficNode SelectedNode { get; private set; }
 
         protected override Node createNode(UnityEngine.Vector3 position)
         {

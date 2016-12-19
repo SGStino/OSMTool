@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,7 +16,9 @@ namespace Simulation.Traffic.IO
             var nodes = new List<Node>();
             var reader = new JsonTextReader(new StreamReader(data));
 
+            var descriptions = new List<SegmentDescription>();
             var serializer = new JsonSerializer();
+            serializer.Converters.Add(new StringEnumConverter());
             if (reader.Read())
             {
                 // inside root
@@ -33,8 +36,11 @@ namespace Simulation.Traffic.IO
                                 case Constants.TAG_NODES:
                                     readNodes(reader, roads, serializer, nodes);
                                     break;
+                                case Constants.TAG_SEGMENT_DESCRIPTIONS:
+                                    readDescriptions(reader, serializer, descriptions);
+                                    break;
                                 case Constants.TAG_SEGMENTS:
-                                    readSegments(reader, roads, serializer, nodes);
+                                    readSegments(reader, roads, serializer, nodes, descriptions);
                                     break;
                             }
                         }
@@ -43,9 +49,72 @@ namespace Simulation.Traffic.IO
             }
         }
 
-        private void readSegments(JsonTextReader reader, RoadManager roads, JsonSerializer serializer, List<Node> nodes)
+        private void readDescriptions(JsonTextReader reader, JsonSerializer serializer, List<SegmentDescription> descriptions)
         {
-            //throw new NotImplementedException();
+            var lanes = new List<LaneDescription>();
+            if (reader.Read())
+            {
+                // start array
+                if (reader.TokenType == JsonToken.StartArray)
+                {
+                    do
+                    {
+                        if (reader.Read()) // inside node
+                        {
+                            if (reader.TokenType == JsonToken.StartObject)
+                            {
+                                var segmentDescription = new SegmentDescription();
+                                int depth = reader.Depth;
+                                do
+                                {
+                                    if (reader.Read())
+                                    {
+                                        if (reader.TokenType == JsonToken.PropertyName)
+                                        {
+                                            switch ((string)reader.Value)
+                                            {
+                                                case Constants.TAG_SEGMENT_DESCRIPTION_LANES:
+                                                    segmentDescription.Lanes = readLanes(reader, serializer, lanes);
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                } while (reader.Depth > depth);
+                                descriptions.Add(segmentDescription);
+                            }
+                        }
+                    } while (reader.TokenType != JsonToken.EndArray);
+                }
+            }
+        }
+
+        private LaneDescription[] readLanes(JsonTextReader reader, JsonSerializer serializer, List<LaneDescription> lanes)
+        {
+            if (reader.Read())
+            {
+                if (reader.TokenType == JsonToken.StartArray)
+                {
+                    int depth = reader.Depth;
+                    do
+                    {
+                        if (reader.Read())
+                        {
+                            // start array
+                            if (reader.TokenType == JsonToken.StartObject)
+                            {
+                                lanes.Add(serializer.Deserialize<LaneDescription>(reader));
+                            }
+                        }
+                    } while (reader.TokenType != JsonToken.EndArray);
+                }
+            }
+            var result = lanes.ToArray();
+            lanes.Clear();
+            return result;
+        }
+
+        private void readSegments(JsonTextReader reader, RoadManager roads, JsonSerializer serializer, List<Node> nodes, List<SegmentDescription> descriptions)
+        {
             if (reader.Read())
             {
                 // start array
@@ -60,6 +129,7 @@ namespace Simulation.Traffic.IO
                                 Node start = null, end = null;
                                 Vector3 startTangent = Vector3.zero, endTangent = Vector3.zero;
 
+                                SegmentDescription description = null;
                                 int depth = reader.Depth;
                                 do
                                 {
@@ -75,6 +145,9 @@ namespace Simulation.Traffic.IO
                                                 case Constants.TAG_SEGMENT_END:
                                                     readConnection(reader, serializer, roads, nodes, out end, out endTangent);
                                                     break;
+                                                case Constants.TAG_SEGMENT_DESCRIPTION:
+                                                    description = descriptions[reader.ReadAsInt32() ?? -1];
+                                                    break;
                                             }
                                         }
                                     }
@@ -82,7 +155,7 @@ namespace Simulation.Traffic.IO
 
                                 if (start != null && end != null)
                                 {
-                                    var seg = roads.CreateSegment(start, end, new SegmentDescription());
+                                    var seg = roads.CreateSegment(start, end, description);
                                     seg.Start.Tangent = startTangent;
                                     seg.End.Tangent = endTangent;
                                 }
@@ -94,6 +167,8 @@ namespace Simulation.Traffic.IO
                 }
             }
         }
+
+
 
         private void readConnection(JsonTextReader reader, JsonSerializer serializer, RoadManager roads, List<Node> nodes, out Node start, out Vector3 startTangent)
         {

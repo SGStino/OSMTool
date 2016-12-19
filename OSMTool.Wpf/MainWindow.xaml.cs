@@ -132,6 +132,7 @@ namespace OSMTool.Wpf
 
                         Simulation.Traffic.Node lastTrafficNode = null;
                         SegmentDescription description = getDescription(way);
+                        if (description == null) continue;
                         foreach (var n in way.Nodes)
                         {
                             OsmSharp.Node node;
@@ -170,6 +171,8 @@ namespace OSMTool.Wpf
                     manager.Update();
                 }
             }
+
+            detailsGrid.DataContext = manager;
         }
 
         private void cleanupCorners()
@@ -407,11 +410,11 @@ namespace OSMTool.Wpf
             if (way.Tags.TryGetValue("name", out value))
                 desc.Name = value;
 
-            int lanes = 1;
+            int laneCount = 1;
             int forwardLanes = 0;
             int backwardLanes = 0;
             if (way.Tags.TryGetValue("lanes", out value))
-                lanes = int.Parse(value);
+                laneCount = int.Parse(value);
             if (way.Tags.TryGetValue("lanes:forward", out value))
                 forwardLanes = int.Parse(value);
             if (way.Tags.TryGetValue("lanes:backward", out value))
@@ -430,59 +433,198 @@ namespace OSMTool.Wpf
 
 
 
-            if (backwardLanes > 0 || forwardLanes > 0 && lanes == 0)
+            if (backwardLanes > 0 || forwardLanes > 0 && laneCount == 0)
                 desc.LaneCount = backwardLanes + forwardLanes;
             else if (backwardLanes == 0 && forwardLanes == 0)
             {
                 if (desc.IsOneWay)
                 {
-                    forwardLanes = lanes;
+                    forwardLanes = laneCount;
                     backwardLanes = 0;
                 }
                 else {
-                    forwardLanes = backwardLanes = lanes;
-                    lanes *= 2;
+                    forwardLanes = backwardLanes = laneCount;
+                    laneCount *= 2;
                 }
             }
             else
-                desc.LaneCount = lanes;
-            if (forwardLanes > 0 && (lanes - forwardLanes) != backwardLanes)
-                backwardLanes = lanes - forwardLanes;
-            if (backwardLanes > 0 && (lanes - backwardLanes) != forwardLanes)
-                forwardLanes = lanes - backwardLanes;
+                desc.LaneCount = laneCount;
+            if (forwardLanes > 0 && (laneCount - forwardLanes) != backwardLanes)
+                backwardLanes = laneCount - forwardLanes;
+            if (backwardLanes > 0 && (laneCount - backwardLanes) != forwardLanes)
+                forwardLanes = laneCount - backwardLanes;
 
-            if (lanes - backwardLanes != forwardLanes)
+            if (laneCount - backwardLanes != forwardLanes)
             {
                 // issue
             }
-            if(lanes == 0)
+            if (laneCount == 0)
             {
                 // issue
             }
 
-            desc.LaneCount = lanes;
+            desc.LaneCount = laneCount;
 
             desc.OsmWay = way;
 
 
-            int laneCount = desc.LaneCount;
-            if (!desc.IsOneWay)
-                laneCount *= 2;
 
+
+            float laneWidth = 3.7f;
+            float maxSpeed = 130;
+            VehicleTypes vehicles = VehicleTypes.Vehicle;
+            LaneType laneType = LaneType.Road;
+            switch (desc.Type)
+            {
+                case "motorway":
+                case "motorway_link":
+                case "trunk":
+                case "trunk_link":
+                    laneType = LaneType.Highway;
+                    break;
+                case "primary":
+                case "primary_link":
+                    laneWidth = 3.25f;
+                    maxSpeed = 90;
+                    laneType = LaneType.Road;
+                    break;
+                case "secondary":
+                case "secondary_link":
+                    laneWidth = 3f;
+                    maxSpeed = 90;
+                    laneType = LaneType.Road;
+                    break;
+                case "tertiary":
+                case "tertiary_link":
+                case "unclassified":
+                    laneWidth = 2.8f;
+                    maxSpeed = 70;
+                    laneType = LaneType.Road;
+                    break;
+                case "residential":
+                    laneWidth = 2.8f;
+                    maxSpeed = 50;
+                    laneType = LaneType.Road;
+                    break;
+                case "service":
+                    laneWidth = 2.5f;
+                    maxSpeed = 30f;
+                    laneType = LaneType.Road;
+                    break;
+                case "living_street":
+                    laneWidth = 2.8f;
+                    maxSpeed = 30;
+                    laneType = LaneType.Road;
+                    break;
+                case "pedestrian":
+                    laneWidth = 2.5f;
+                    maxSpeed = 15;
+                    vehicles = VehicleTypes.Pedestrian | VehicleTypes.Bicycle;
+                    laneType = LaneType.Pedestrian;
+                    break;
+                case "track":
+                    laneWidth = 3f;
+                    maxSpeed = 20;
+                    laneType = LaneType.DirtTrack;
+                    break;
+                case "bus_guideway":
+                    laneWidth = 4f;
+                    maxSpeed = 70;
+                    vehicles = VehicleTypes.Bus;
+                    laneType = LaneType.Buslane;
+                    break;
+                case "escape":
+                    vehicles = VehicleTypes.Emergency;
+                    laneType = LaneType.Emergency;
+                    break;
+                case "road":
+                    maxSpeed = 50;
+                    laneType = LaneType.Road;
+                    break;
+                case "footway":
+                    maxSpeed = 10;
+                    vehicles = VehicleTypes.Pedestrian;
+                    laneWidth = 1.25f;
+                    laneType = LaneType.Path;
+                    break;
+                case "cycleway":
+                    laneWidth = 1.25f;
+                    maxSpeed = 15;
+                    vehicles = VehicleTypes.Bicycle;
+                    laneType = LaneType.Bicycle;
+                    break;
+                case "path":
+                case "bridleway":
+                case "steps":
+                    laneWidth = 1.10f;
+                    maxSpeed = 5;
+                    vehicles = VehicleTypes.Pedestrian;
+                    laneType = LaneType.Path;
+                    break;
+                case "tram":
+                    maxSpeed = 50;
+                    vehicles = VehicleTypes.Tram;
+                    laneWidth = 1;
+                    laneType = LaneType.Emergency;
+                    break;
+                case "rail":
+                    maxSpeed = 200;
+                    vehicles = VehicleTypes.Train;
+                    laneWidth = 1.45f;
+                    laneType = LaneType.Train;
+                    break;
+                case "platform":
+                case "vehicle_depot":
+                    return null; 
+                default:
+                    break;
+            }
 
             desc.Lanes = new LaneDescription[laneCount];
             for (int i = 0; i < desc.Lanes.Length; i++)
-                desc.Lanes[i] = new LaneDescription();
+                desc.Lanes[i] = new LaneDescription
+                {
+                    Width = laneWidth,
+                    MaxSpeed = maxSpeed,
+                    Turn = Turn.None,
+                    VehicleTypes = vehicles,
+                    Reverse = i >= forwardLanes,
+                    LaneType = laneType
+                };
 
 
 
-            // todo: get default values from classification (primary, secundary, tertiary, motorway, ...)
 
-
+            processTag<float>("gauge", way.Tags, desc.Lanes, float.TryParse, (d, i, v) => d.Width = v * 0.001f); // gauge is in mm            
             processTag<float>("maxspeed", way.Tags, desc.Lanes, float.TryParse, (d, i, v) => d.MaxSpeed = v);
             processTag<turnValues>("turn", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => d.Turn |= getTurn(v));
             processTag<float>("width", way.Tags, desc.Lanes, float.TryParse, (d, i, v) => d.Width = v);
 
+            for (int i = 0; i < desc.Lanes.Length; i++)
+            {
+                var l = desc.Lanes[i];
+                if (l.Turn == Turn.None)
+                {
+                    if (i == 0)
+                        l.Turn = Turn.Left;
+
+                    if (forwardLanes == 1 || (i > 0 && i < forwardLanes))
+                        l.Turn |= Turn.Through;
+
+                    if (i == forwardLanes - 1)
+                        l.Turn |= Turn.Right;
+
+                    if (backwardLanes > 0)
+                    {
+                        if (i == forwardLanes)
+                            l.Turn |= Turn.Right;
+                        if (backwardLanes == 1 || (i > forwardLanes && i < laneCount))
+                            l.Turn |= Turn.Through;
+                        if (i == laneCount - 1)
+                            l.Turn |= Turn.Left;
+                    }
+                }
+            }
             // todo: multiple designated values can be set: foot and bicycle for example, this should combine!
 
 
@@ -546,21 +688,18 @@ namespace OSMTool.Wpf
 
             if (tags.TryGetValue(v + ":lanes", out value))
             {
-                var initialSplit = value.Split(';');
-                foreach (var lanes in initialSplit)
+                var split = value.Split('|');
+                for (int i = 0; i < split.Length; i++)
                 {
-                    var split = lanes.Split('|');
-                    for (int i = 0; i < split.Length; i++)
+                    if (i < descriptions.Length)
                     {
-                        if (i < descriptions.Length)
-                        {
-                            if (process(value, out parsedValue))
+                        foreach (var val in split[i].Split(';'))
+                            if (process(val, out parsedValue))
                                 setter(descriptions[i], i, parsedValue);
-                        }
-                        else
-                        {
-                            // something wrong here
-                        }
+                    }
+                    else
+                    {
+                        // something wrong here
                     }
                 }
             }

@@ -6,7 +6,7 @@ using System.Windows.Shapes;
 
 namespace OSMTool.Wpf.Traffic
 {
-    internal class TrafficNode : Node
+    public class TrafficNode : Node
     { 
 
         public TrafficNode(UnityEngine.Vector3 position, CanvasRoadManager manager) : base(position, manager)
