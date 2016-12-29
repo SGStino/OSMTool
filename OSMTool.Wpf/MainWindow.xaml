@@ -22,6 +22,16 @@
                 <DockPanel>
                     <TextBlock Text="Bottom" DockPanel.Dock="Top"/>
                     <TextBlock Text="{Binding SelectedNode.OSMNode.Id}" DockPanel.Dock="Top"/>
+                    <ItemsControl ItemsSource="{Binding SelectedNode.OSMNode.Tags}" DockPanel.Dock="Left">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <Run Text="{Binding Key}" FontWeight="Bold"/>
+                                    <Run Text="{Binding Value}"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                     <ItemsControl ItemsSource="{Binding SelectedNode.Segments}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>

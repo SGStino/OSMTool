@@ -16,7 +16,7 @@ namespace Simulation.Traffic
 
         public Node CreateNodeAt(float x, float y)
         {
-            return CreateNode(new Vector3(x, y, 0));
+            return CreateNode(new Vector3(x, 0, y));
         }
 
         public Node CreateNode(Vector3 position)
@@ -37,9 +37,20 @@ namespace Simulation.Traffic
             segment.Start = connect(segment, start, -dir);
             segment.End = connect(segment, end, dir);
 
+
             segments.Add(segment);
             segment.NotifyOfCreation();
+
+            notifyConnect(start, segment.Start);
+            notifyConnect(end, segment.End);
+
             return segment;
+        }
+
+        private void notifyConnect(Node node, SegmentNodeConnection connection)
+        {
+            node.NotifyOfConnection(connection);
+            connection.NotifyOfCreation();
         }
 
         public Segment MergeSegments(Node node)
@@ -117,8 +128,6 @@ namespace Simulation.Traffic
             {
                 start.SegmentList.Add(connection);
             }
-            start.NotifyOfConnection(connection);
-            connection.NotifyOfCreation();
             return connection;
         }
 

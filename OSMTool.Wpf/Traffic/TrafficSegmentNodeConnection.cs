@@ -44,8 +44,8 @@ namespace OSMTool.Wpf.Traffic
 
 
 
-            var start = new Point(Node.Position.x * scale, height - Node.Position.y * scale);
-            var end = start + new Vector(Tangent.x * scale, -Tangent.y * scale) * 2;
+            var start = new Point(Node.Position.x * scale, height - Node.Position.z * scale);
+            var end = start + new Vector(Tangent.x * scale, -Tangent.z * scale) * 2;
 
             if (end != start)
                 layer.DrawLine(new Pen(Brushes.HotPink, 1.5) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Triangle }, start, end);

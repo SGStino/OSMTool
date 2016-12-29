@@ -2,7 +2,7 @@
 
 namespace Simulation.Traffic
 {
-    public class Segment
+    public class Segment 
     {
         public RoadManager Manager { get; internal set; }
 

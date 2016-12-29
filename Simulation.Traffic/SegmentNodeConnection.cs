@@ -13,7 +13,15 @@ namespace Simulation.Traffic
         public Vector3 Tangent
         {
             get { return tangent; }
-            set { tangent = value; OnTangentChanged(); }
+            set
+            {
+                if (tangent != value)
+                {
+                    tangent = value;
+                    if (isCreated)
+                        OnTangentChanged();
+                }
+            }
         }
 
         protected virtual void OnTangentChanged()
@@ -21,6 +29,7 @@ namespace Simulation.Traffic
         }
 
         private Vector3 tangent;
+        private bool isCreated = false;
 
         public SegmentNodeConnection(Segment segment, Node node, RoadManager manager)
         {
@@ -42,12 +51,13 @@ namespace Simulation.Traffic
 
         internal void NotifyOfCreation()
         {
+            isCreated = true;
             OnCreated();
         }
 
         protected virtual void OnCreated()
         {
- 
+
         }
     }
 }

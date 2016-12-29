@@ -53,8 +53,8 @@ namespace OSMTool.Wpf.Traffic
             if (!laneColors.TryGetValue(dsc.Type, out laneColor))
                 laneColor = Brushes.White;
 
-            var start = new Point(this.Start.Node.Position.x * scale, height - this.Start.Node.Position.y * scale);
-            var end = new Point(this.End.Node.Position.x * scale, height - this.End.Node.Position.y * scale);
+            var start = new Point(this.Start.Node.Position.x * scale, height - this.Start.Node.Position.z * scale);
+            var end = new Point(this.End.Node.Position.x * scale, height - this.End.Node.Position.z * scale);
 
             var layer1 = mgr.Drawing.GetLayer(DrawingLayer.Ways);
             var layer2 = mgr.Drawing.GetLayer(DrawingLayer.Outlines);

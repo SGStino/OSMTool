@@ -13,7 +13,12 @@ namespace Simulation.Traffic.Utilities
         {
             var t1 = start.Tangent;
             var t2 = end.Tangent;
-            Biarc(start.Node.Position, t1, end.Node.Position, -t2, out arc1, out arc2);
+            Biarc(t2d(start.Node.Position), t2d(t1),t2d( end.Node.Position), t2d(-t2), out arc1, out arc2);
+        }
+
+        private static Vector2 t2d(Vector3 position)
+        {
+            return new Vector2(position.x, position.z);
         }
 
         public static void Biarc(Vector2 p1, Vector2 t1, Vector2 p2, Vector2 t2, out Arc arc1, out Arc arc2)
