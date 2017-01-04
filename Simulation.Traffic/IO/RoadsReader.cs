@@ -9,16 +9,57 @@ using UnityEngine;
 
 namespace Simulation.Traffic.IO
 {
-    public class Reader
+    public enum RoadElementType
     {
-        public void Load(RoadManager roads, Stream data)
+        Node,
+        Description,
+        Segment
+    }
+    public class RoadsReader : IDisposable
+    {
+        private struct token
+        {
+            public token(RoadElementType type, object value)
+            {
+                Type = type;
+                Value = value;
+            }
+            public readonly RoadElementType Type;
+            public readonly object Value;
+        }
+
+
+        private readonly RoadManager roads;
+        private readonly bool keepOpen;
+        private readonly Stream stream;
+        private IEnumerator<token> enumerator;
+        private bool disposed;
+
+        public RoadsReader(RoadManager roads, Stream stream, bool keepOpen = false)
+        {
+            this.roads = roads;
+            this.stream = stream;
+            this.keepOpen = keepOpen;
+
+
+            var reading = getData(stream);
+            this.enumerator = reading.GetEnumerator();
+        }
+
+        public void ReadAll()
+        {
+            while (Read()) ;
+        }
+
+        private IEnumerable<token> getData(Stream stream)
         {
             var nodes = new List<Node>();
-            var reader = new JsonTextReader(new StreamReader(data));
+            var reader = new JsonTextReader(new StreamReader(stream));
 
             var descriptions = new List<SegmentDescription>();
             var serializer = new JsonSerializer();
             serializer.Converters.Add(new StringEnumConverter());
+
             if (reader.Read())
             {
                 // inside root
@@ -34,13 +75,16 @@ namespace Simulation.Traffic.IO
                             switch (name)
                             {
                                 case Constants.TAG_NODES:
-                                    readNodes(reader, roads, serializer, nodes);
+                                    foreach (var node in readNodes(reader, roads, serializer, nodes))
+                                        yield return new token(RoadElementType.Node, node);
                                     break;
                                 case Constants.TAG_SEGMENT_DESCRIPTIONS:
-                                    readDescriptions(reader, serializer, descriptions);
+                                    foreach (var description in readDescriptions(reader, serializer, descriptions))
+                                        yield return new token(RoadElementType.Description, description);
                                     break;
                                 case Constants.TAG_SEGMENTS:
-                                    readSegments(reader, roads, serializer, nodes, descriptions);
+                                    foreach (var segment in readSegments(reader, roads, serializer, nodes, descriptions))
+                                        yield return new token(RoadElementType.Segment, segment);
                                     break;
                             }
                         }
@@ -49,8 +93,21 @@ namespace Simulation.Traffic.IO
             }
         }
 
-        private void readDescriptions(JsonTextReader reader, JsonSerializer serializer, List<SegmentDescription> descriptions)
+        public bool Read()
         {
+            if (disposed)
+                throw new ObjectDisposedException(nameof(RoadsReader));
+            return enumerator.MoveNext();
+        }
+
+        public object Value => enumerator.Current.Value;
+        public RoadElementType Type => enumerator.Current.Type;
+
+         
+
+        private IEnumerable<SegmentDescription> readDescriptions(JsonTextReader reader, JsonSerializer serializer, List<SegmentDescription> descriptions)
+        {
+            // use single buffer for the lanes, they are usually the same size and clear doesn't reset the capacity?
             var lanes = new List<LaneDescription>();
             if (reader.Read())
             {
@@ -81,6 +138,7 @@ namespace Simulation.Traffic.IO
                                     }
                                 } while (reader.Depth > depth);
                                 descriptions.Add(segmentDescription);
+                                yield return segmentDescription;
                             }
                         }
                     } while (reader.TokenType != JsonToken.EndArray);
@@ -113,7 +171,7 @@ namespace Simulation.Traffic.IO
             return result;
         }
 
-        private void readSegments(JsonTextReader reader, RoadManager roads, JsonSerializer serializer, List<Node> nodes, List<SegmentDescription> descriptions)
+        private IEnumerable<Segment> readSegments(JsonTextReader reader, RoadManager roads, JsonSerializer serializer, List<Node> nodes, List<SegmentDescription> descriptions)
         {
             if (reader.Read())
             {
@@ -158,6 +216,7 @@ namespace Simulation.Traffic.IO
                                     var seg = roads.CreateSegment(start, end, description);
                                     seg.Start.Tangent = startTangent;
                                     seg.End.Tangent = endTangent;
+                                    yield return seg;
                                 }
                                 else
                                     throw new FormatException("expected start AND end connections for segment");
@@ -207,7 +266,7 @@ namespace Simulation.Traffic.IO
             }
         }
 
-        private void readNodes(JsonTextReader reader, RoadManager roads, JsonSerializer serializer, List<Node> nodes)
+        private IEnumerable<Node> readNodes(JsonTextReader reader, RoadManager roads, JsonSerializer serializer, List<Node> nodes)
         {
             if (reader.Read())
             {
@@ -221,7 +280,9 @@ namespace Simulation.Traffic.IO
                             if (reader.TokenType == JsonToken.StartObject)
                             {
                                 var position = serializer.Deserialize<Vector3D>(reader);
-                                nodes.Add(roads.CreateNode(position));
+                                var node = roads.CreateNode(position);
+                                nodes.Add(node);
+                                yield return node;
                             }
                         }
 
@@ -231,5 +292,23 @@ namespace Simulation.Traffic.IO
             }
         }
 
+        #region Dispose
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Dispose(true);
+        }
+
+        private void Dispose(bool v)
+        {
+            disposed = true;
+            if (v && !keepOpen)
+                stream.Close();
+        }
+        ~RoadsReader()
+        {
+            Dispose(false);
+        }
+        #endregion
     }
 }

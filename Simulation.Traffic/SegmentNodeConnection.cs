@@ -5,6 +5,20 @@ namespace Simulation.Traffic
 {
     public class SegmentNodeConnection
     {
+        public SegmentNodeConnection Left
+        {
+            get { return left; }
+            internal set { if (left != value) { left = value; OnLeftChanged(); } }
+        }
+        public SegmentNodeConnection Right
+        {
+            get { return right; }
+            internal set { if (right != value) { right = value; OnRightChanged(); } }
+        }
+
+        protected virtual void OnRightChanged() { }
+        protected virtual void OnLeftChanged() { }
+
         public RoadManager Manager { get; }
 
         public Node Node { get; }
@@ -20,6 +34,7 @@ namespace Simulation.Traffic
                     tangent = value;
                     if (isCreated)
                         OnTangentChanged();
+                    Node.OnTangentChanged(this);
                 }
             }
         }
@@ -30,6 +45,8 @@ namespace Simulation.Traffic
 
         private Vector3 tangent;
         private bool isCreated = false;
+        private SegmentNodeConnection left;
+        private SegmentNodeConnection right;
 
         public SegmentNodeConnection(Segment segment, Node node, RoadManager manager)
         {
@@ -42,6 +59,8 @@ namespace Simulation.Traffic
         /// </summary>
         internal void NotifyOfDisconnect()
         {
+            left.Right = right;
+            right.Left = left;
             OnDisconnected();
         }
 

@@ -47,8 +47,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IO\Constants.cs" />
-    <Compile Include="IO\Reader.cs" />
-    <Compile Include="IO\Writer.cs" />
+    <Compile Include="IO\RoadsReader.cs" />
+    <Compile Include="IO\RoadsWriter.cs" />
     <Compile Include="IO\Vector3D.cs" />
     <Compile Include="LaneDescription.cs" />
     <Compile Include="LaneType.cs" />

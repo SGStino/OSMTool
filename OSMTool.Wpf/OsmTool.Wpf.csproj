@@ -46,6 +46,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Device" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -93,6 +94,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DrawingVisualHost.cs" />
+    <Compile Include="SRTM\SRTMDownloader.cs" />
     <Compile Include="Traffic\PointerAdorner.cs" />
     <Compile Include="Traffic\TrafficNode.cs" />
     <Compile Include="Traffic\TrafficSegment.cs" />
@@ -142,6 +144,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Source\Git\Alpinechough.Srtm\Alpinechough.Srtm.csproj">
+      <Project>{cd10a6e7-745f-4c82-9aab-c5aa90944195}</Project>
+      <Name>Alpinechough.Srtm</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Simulation.Traffic\Simulation.Traffic.csproj">
       <Project>{d8bffc12-1277-4d9d-bf86-6e1f407f3bc0}</Project>
       <Name>Simulation.Traffic</Name>

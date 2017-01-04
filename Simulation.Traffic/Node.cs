@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Simulation.Traffic
@@ -28,6 +30,24 @@ namespace Simulation.Traffic
 
         protected virtual void OnCreated()
         {
+        }
+
+        internal void OnTangentChanged(SegmentNodeConnection segmentNodeConnection)
+        {
+            var segments = this.segments.OrderBy(getAngle).ToArray();
+            for(int i = 0; i < segments.Length; i++)
+            {
+                var current = segments[i];
+                var next = segments[(i + 1) % segments.Length];
+
+                next.Left = current;
+                current.Right = next;
+            }
+        }
+
+        private float getAngle(SegmentNodeConnection arg)
+        {
+            return Mathf.Atan2(arg.Node.Position.z, arg.Node.Position.x);
         }
 
         /// <summary>

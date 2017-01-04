@@ -1,4 +1,5 @@
-﻿using OsmSharp;
+﻿using Alpinechough.Srtm;
+using OsmSharp;
 using OsmSharp.Streams;
 using OsmSharp.Tags;
 using OSMTool.Wpf.Traffic;
@@ -37,15 +38,21 @@ namespace OSMTool.Wpf
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
             InitializeComponent();
-            //LoadAsync(@"C:\Users\stijn\Downloads\luxembourg-latest.osm.pbf");
-            LoadAsync(@"C:\Users\stijn\Downloads\knokke-heist_01_01.pbf");
+            startupAsync();
+        }
 
-            //LoadAsync(@"C:\Users\stijn\Downloads\bruges.osm.pbf");
+        private async void startupAsync()
+        {
+            //await LoadAsync(@"C:\Users\stijn\Downloads\luxembourg-latest.osm.pbf");
+            await LoadAsync(@"C:\Users\stijn\Downloads\knokke-heist_01_01.pbf");
+
+            //await LoadAsync(@"C:\Users\stijn\Downloads\bruges.osm.pbf");
+            //await LoadAsync(@"C:\Users\stijn\Downloads\ghent.osm.pbf");
 
             using (var stream = File.Create(@"C:\Users\stijn\Downloads\mapOutput.json"))
             {
-                var writer = new Simulation.Traffic.IO.Writer();
-                writer.Save(manager, stream);
+                var writer = new Simulation.Traffic.IO.RoadsWriter(stream);
+                writer.WriteAll(manager);
             }
 
             //var newSet = new RoadManager();
@@ -83,7 +90,7 @@ namespace OSMTool.Wpf
             public float width => (maxLon - minLon);
         }
 
-        public async void LoadAsync(string file)
+        public async Task LoadAsync(string file)
         {
             var bounds = new coordinateSet();
             var bounds2 = new coordinateSet();
@@ -91,15 +98,16 @@ namespace OSMTool.Wpf
             var nodeDictionary = new Dictionary<long, Simulation.Traffic.Node>();
             using (var stream = File.OpenRead(file))
             {
-                using (var source = new PBFOsmStreamSource(stream))
+                OsmStreamSource source;
+                if (file.EndsWith(".pbf"))
+                    source = new PBFOsmStreamSource(stream);
+                else
+                    source = new XmlOsmStreamSource(stream);
+
+                using (source)
                 {
-
-
-
                     var nodes = source.AsParallel().OfType<OsmSharp.Node>().ToDictionary(k => k.Id);
                     var ways = source.AsParallel().Where(s => s.Type == OsmSharp.OsmGeoType.Way).OfType<Way>();
-
-
 
                     var highWays = ways.Where(w => (w.Tags.ContainsKey("highway") || w.Tags.ContainsKey("railway")) && !w.Tags.ContainsKey("fixme")).ToArray();
 
@@ -120,6 +128,18 @@ namespace OSMTool.Wpf
                         }
                     });
 
+                    var srtmFolder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "SRTM");
+                    System.IO.Directory.CreateDirectory(srtmFolder);
+
+                    var b = new OsmSharp.API.Bounds
+                    {
+                        MinLatitude = bounds.minLat,
+                        MaxLatitude = bounds.maxLat,
+                        MinLongitude = bounds.minLon,
+                        MaxLongitude = bounds.maxLon
+                    };
+                    await SRTM.SRTMDownloader.DownloadAsync(b, srtmFolder);
+                    var data = new SrtmData(srtmFolder);
                     manager = new CanvasRoadManager(canvas, toX(bounds, bounds.maxLon, bounds.maxLat), toY(bounds, bounds.maxLon, bounds.maxLat));
                     foreach (var way in highWays)
                     {
@@ -143,7 +163,9 @@ namespace OSMTool.Wpf
                                 {
                                     var lat = node.Latitude ?? 0;
                                     var lon = node.Longitude ?? 0;
-                                    nodeDictionary.Add(n, trafficNode = manager.CreateNodeAt(toX(bounds, lon, lat), toY(bounds, lon, lat)));
+                                    var ele = GetHeight(data, lat, lon);
+
+                                    nodeDictionary.Add(n, trafficNode = manager.CreateNode(new Vector3(toX(bounds, lon, lat), ele, toY(bounds, lon, lat))));
                                     (trafficNode as TrafficNode).OSMNode = node;
                                 }
 
@@ -173,6 +195,39 @@ namespace OSMTool.Wpf
             }
 
             detailsGrid.DataContext = manager;
+        }
+
+        private float GetHeight(SrtmData data, float lat, float lon)
+        {
+            int pointsPerCell = 1201;
+
+            var latInt = (int)lat;
+            var lonInt = (int)lon;
+
+            float minLat = (float)Math.Floor((lat - latInt) * pointsPerCell) / pointsPerCell + latInt;
+            float minLon = (float)Math.Floor((lon - lonInt) * pointsPerCell) / pointsPerCell + lonInt;
+            float maxLat = minLat + 1.0f / pointsPerCell;
+            float maxLon = minLon + 1.0f / pointsPerCell;
+            // int points
+
+            float h00 = (short)data.GetHeight(new GeographicalCoordinates(minLat, minLon));
+            float h01 = (short)data.GetHeight(new GeographicalCoordinates(minLat, maxLon));
+            float h10 = (short)data.GetHeight(new GeographicalCoordinates(maxLat, minLon));
+            float h11 = (short)data.GetHeight(new GeographicalCoordinates(maxLat, maxLon));
+
+            var h0 = interpolate(h00, h01, minLon, maxLon, lon);
+            var h1 = interpolate(h10, h11, minLon, maxLon, lon);
+            var h = interpolate(h0, h1, minLat, maxLat, lat);
+
+            return h;
+        }
+
+        private float interpolate(float h0, float h1, float minLon, float maxLon, float lon)
+        {
+            var d = maxLon - minLon;
+            var o = lon - minLon;
+
+            return h0 + (h1 - h0) * o / d;
         }
 
         private void cleanupCorners()
@@ -534,33 +589,37 @@ namespace OSMTool.Wpf
                     laneType = LaneType.Buslane;
                     break;
                 case "escape":
-                    vehicles = VehicleTypes.Emergency;
-                    laneType = LaneType.Emergency;
-                    break;
+                //vehicles = VehicleTypes.Emergency;
+                //laneType = LaneType.Emergency;
+                //break;
+                //return null; // don't need paths
                 case "road":
                     maxSpeed = 50;
                     laneType = LaneType.Road;
                     break;
                 case "footway":
-                    maxSpeed = 10;
-                    vehicles = VehicleTypes.Pedestrian;
-                    laneWidth = 1.25f;
-                    laneType = LaneType.Path;
-                    break;
+                    //maxSpeed = 10;
+                    //vehicles = VehicleTypes.Pedestrian;
+                    //laneWidth = 1.25f;
+                    //laneType = LaneType.Path;
+                    //break;
+                    return null; // don't need paths
                 case "cycleway":
-                    laneWidth = 1.25f;
-                    maxSpeed = 15;
-                    vehicles = VehicleTypes.Bicycle;
-                    laneType = LaneType.Bicycle;
-                    break;
+                    //laneWidth = 1.25f;
+                    //maxSpeed = 15;
+                    //vehicles = VehicleTypes.Bicycle;
+                    //laneType = LaneType.Bicycle;
+                    //break;
+                    return null; // don't need paths
                 case "path":
                 case "bridleway":
                 case "steps":
-                    laneWidth = 1.10f;
-                    maxSpeed = 5;
-                    vehicles = VehicleTypes.Pedestrian;
-                    laneType = LaneType.Path;
-                    break;
+                    //laneWidth = 1.10f;
+                    //maxSpeed = 5;
+                    //vehicles = VehicleTypes.Pedestrian;
+                    //laneType = LaneType.Path;
+                    //break;
+                    return null; // don't need paths
                 case "tram":
                     maxSpeed = 50;
                     vehicles = VehicleTypes.Tram;
@@ -575,7 +634,7 @@ namespace OSMTool.Wpf
                     break;
                 case "platform":
                 case "vehicle_depot":
-                    return null; 
+                    return null;
                 default:
                     break;
             }
