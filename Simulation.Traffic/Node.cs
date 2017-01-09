@@ -12,7 +12,7 @@ namespace Simulation.Traffic
         private List<SegmentNodeConnection> segments = new List<SegmentNodeConnection>();
         public RoadManager Manager { get; internal set; }
 
-        public Vector3 Position { get; }
+        public Vector3 Position { get; protected set; }
 
         public Node(Vector3 position, RoadManager manager)
         {
@@ -32,10 +32,20 @@ namespace Simulation.Traffic
         {
         }
 
-        internal void OnTangentChanged(SegmentNodeConnection segmentNodeConnection)
+        internal void NotifyOfTangentChanged(SegmentNodeConnection segmentNodeConnection)
+        {
+            updateOrder();
+            OnTangentChanged(segmentNodeConnection);
+        }
+
+        protected virtual void OnTangentChanged(SegmentNodeConnection segmentNodeConnection)
+        {
+        }
+
+        private void updateOrder()
         {
             var segments = this.segments.OrderBy(getAngle).ToArray();
-            for(int i = 0; i < segments.Length; i++)
+            for (int i = 0; i < segments.Length; i++)
             {
                 var current = segments[i];
                 var next = segments[(i + 1) % segments.Length];
@@ -47,7 +57,7 @@ namespace Simulation.Traffic
 
         private float getAngle(SegmentNodeConnection arg)
         {
-            return Mathf.Atan2(arg.Node.Position.z, arg.Node.Position.x);
+            return Mathf.Atan2(arg.Tangent.z, arg.Tangent.x);
         }
 
         /// <summary>
@@ -64,6 +74,7 @@ namespace Simulation.Traffic
 
         internal void NotifiyOfDisconnect(SegmentNodeConnection connection)
         {
+            updateOrder();
             OnDisconnected(connection);
         }
 
@@ -73,11 +84,12 @@ namespace Simulation.Traffic
 
         internal void NotifyOfConnection(SegmentNodeConnection connection)
         {
+            updateOrder();
             OnConnected(connection);
         }
 
         protected virtual void OnConnected(SegmentNodeConnection connection)
-        { 
+        {
         }
     }
 }

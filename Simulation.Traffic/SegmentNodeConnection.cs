@@ -34,7 +34,7 @@ namespace Simulation.Traffic
                     tangent = value;
                     if (isCreated)
                         OnTangentChanged();
-                    Node.OnTangentChanged(this);
+                    Node.NotifyOfTangentChanged(this);
                 }
             }
         }

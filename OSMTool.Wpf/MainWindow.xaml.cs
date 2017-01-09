@@ -51,8 +51,10 @@ namespace OSMTool.Wpf
 
             using (var stream = File.Create(@"C:\Users\stijn\Downloads\mapOutput.json"))
             {
-                var writer = new Simulation.Traffic.IO.RoadsWriter(stream);
-                writer.WriteAll(manager);
+                using (var writer = new Simulation.Traffic.IO.RoadsWriter(stream))
+                {
+                    writer.WriteAll(manager);
+                }
             }
 
             //var newSet = new RoadManager();
