@@ -69,11 +69,13 @@ namespace Simulation.Traffic
             bool isAStart = segA.Start == a;
             bool isBStart = segB.Start == b;
 
+            if (isAStart == isBStart) throw new InvalidOperationException("can only merge nodes if the roads follow the same direction");
+
 
             SegmentNodeConnection otherA = isAStart ? segA.End : segA.Start;
             SegmentNodeConnection otherB = isBStart ? segB.End : segB.Start;
 
-            if (isAStart)
+            if (!isAStart)
             {
                 segment = CreateSegment(otherA.Node, otherB.Node, segA.Description);
                 segment.Start.Tangent = otherA.Tangent;

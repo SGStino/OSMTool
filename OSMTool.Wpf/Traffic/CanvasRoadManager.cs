@@ -15,7 +15,7 @@ namespace OSMTool.Wpf.Traffic
     {
         private float height;
         private float width;
-        private float scale = 1; // wpf pixel = 1 / scale meters
+        private float scale = 10; // wpf pixel = 1 / scale meters
         private PointerAdorner pointerAdorner;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -62,7 +62,7 @@ namespace OSMTool.Wpf.Traffic
         {
             var senderHost = Drawing;
             var pos = e.GetPosition(sender as IInputElement);
-            var p = new Vector3((float)(pos.X / senderHost.ActualWidth) * width, height - (float)(pos.Y / senderHost.ActualHeight) * height, 0);
+            var p = new Vector3((float)(pos.X / senderHost.ActualWidth) * width, 0, height - (float)(pos.Y / senderHost.ActualHeight) * height);
 
             var node = Nodes.AsParallel().OrderBy(n => (n.Position - p).sqrMagnitude).FirstOrDefault();
 

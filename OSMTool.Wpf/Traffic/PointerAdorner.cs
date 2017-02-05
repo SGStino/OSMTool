@@ -35,7 +35,7 @@ namespace OSMTool.Wpf.Traffic
             var Position = node?.Position ?? new UnityEngine.Vector3(0, 0, 0);
             var scale = manager.Scale;
             var height = manager.Height;
-            var nodePoint = new Point(Position.x * scale, (height - Position.y) * scale);
+            var nodePoint = new Point(Position.x * scale, (height - Position.z) * scale);
 
 
             base.OnRender(drawingContext);
@@ -67,9 +67,9 @@ namespace OSMTool.Wpf.Traffic
                 var otherB = b.Segment.Start == b ? b.Segment.End : b.Segment.Start;
 
                 var point1 = otherA.Node.Position;
-                var nodePoint1 = new Point(point1.x * scale, (height - point1.y) * scale);
+                var nodePoint1 = new Point(point1.x * scale, (height - point1.z) * scale);
                 var point2 = otherB.Node.Position;
-                var nodePoint2 = new Point(point2.x * scale, (height - point2.y) * scale);
+                var nodePoint2 = new Point(point2.x * scale, (height - point2.z) * scale);
 
                 Arc arc2;
                 Arc arc1;
@@ -106,7 +106,7 @@ namespace OSMTool.Wpf.Traffic
                     var dsc = seg.Description as TrafficSegmentDescription;
 
                     var center = (seg.Start.Node.Position + seg.End.Node.Position) / 2;
-                    var centerPoint = new Point(center.x * scale, (height - center.y) * scale);
+                    var centerPoint = new Point(center.x * scale, (height - center.z) * scale);
 
 
                     var sb = new StringBuilder();

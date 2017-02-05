@@ -7,7 +7,7 @@
         /// </summary>
         public float MaxSpeed { get; set; }
 
-        public bool Reverse { get; set; }
+        public bool Reverse { get; set; } 
 
         public Turn Turn { get; set; }
         public float Width { get; set; }

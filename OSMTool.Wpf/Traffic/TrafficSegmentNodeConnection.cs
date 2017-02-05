@@ -48,7 +48,7 @@ namespace OSMTool.Wpf.Traffic
             var end = start + new Vector(Tangent.x * scale, -Tangent.z * scale) * 2;
 
             if (end != start)
-                layer.DrawLine(new Pen(Brushes.HotPink, 1.5) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Triangle }, start, end);
+                layer.DrawLine(new Pen(Segment.Start == this ? Brushes.Green : Brushes.Red, 1.5) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Triangle }, start, end);
 
         }
     }

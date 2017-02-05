@@ -13,7 +13,7 @@ namespace Simulation.Traffic.Utilities
         {
             var t1 = start.Tangent;
             var t2 = end.Tangent;
-            Biarc(t2d(start.Node.Position), t2d(t1),t2d( end.Node.Position), t2d(-t2), out arc1, out arc2);
+            Biarc(t2d(start.Node.Position), t2d(t1).normalized, t2d(end.Node.Position), t2d(-t2).normalized, out arc1, out arc2);
         }
 
         private static Vector2 t2d(Vector3 position)

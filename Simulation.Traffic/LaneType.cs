@@ -17,5 +17,6 @@ namespace Simulation.Traffic
         DirtTrack = 7,
         Buslane = 8,
         Highway = 9, 
+        Tram = 10
     }
 }

@@ -247,7 +247,19 @@ namespace OSMTool.Wpf
             cleanupCorners(nodes, true);
             //cleanupCorners(nodes, true);
         }
-
+        //static long[] skipNodes = new long[]
+        //{
+        //    1022748617,
+        //    1022748358,
+        //    1022774264,
+        //    1022748183,
+        //    1022748524,
+        //    1022748317,
+        //    1022748156,
+        //    1022748462,
+        //    1022748256,
+        //    1022748147
+        //};
         private static void cleanupCorners(TrafficNode[] nodes, bool remove)
         {
             foreach (var node in nodes)
@@ -262,6 +274,9 @@ namespace OSMTool.Wpf
 
                     var otherA = a.Segment.Start == a ? a.Segment.End : a.Segment.Start;
                     var otherB = b.Segment.Start == b ? b.Segment.End : b.Segment.Start;
+
+                    if ((a.Segment.Start == a) == (b.Segment.Start == b))
+                        continue;
 
                     Arc arc2;
                     Arc arc1;
@@ -287,6 +302,8 @@ namespace OSMTool.Wpf
 
                     if (maxDistanceSqr < 1)
                     {
+                        //if (skipNodes.Contains(node.OSMNode?.Id ?? 0))
+                        //continue;
                         node.Manager.MergeSegments(node);
                     }
                 }
@@ -488,45 +505,7 @@ namespace OSMTool.Wpf
                 }
             }
 
-
-
-            if (backwardLanes > 0 || forwardLanes > 0 && laneCount == 0)
-                desc.LaneCount = backwardLanes + forwardLanes;
-            else if (backwardLanes == 0 && forwardLanes == 0)
-            {
-                if (desc.IsOneWay)
-                {
-                    forwardLanes = laneCount;
-                    backwardLanes = 0;
-                }
-                else {
-                    forwardLanes = backwardLanes = laneCount;
-                    laneCount *= 2;
-                }
-            }
-            else
-                desc.LaneCount = laneCount;
-            if (forwardLanes > 0 && (laneCount - forwardLanes) != backwardLanes)
-                backwardLanes = laneCount - forwardLanes;
-            if (backwardLanes > 0 && (laneCount - backwardLanes) != forwardLanes)
-                forwardLanes = laneCount - backwardLanes;
-
-            if (laneCount - backwardLanes != forwardLanes)
-            {
-                // issue
-            }
-            if (laneCount == 0)
-            {
-                // issue
-            }
-
-            desc.LaneCount = laneCount;
-
-            desc.OsmWay = way;
-
-
-
-
+            int minLanes = desc.IsOneWay ? 1 : 2;
             float laneWidth = 3.7f;
             float maxSpeed = 130;
             VehicleTypes vehicles = VehicleTypes.Vehicle;
@@ -537,31 +516,31 @@ namespace OSMTool.Wpf
                 case "motorway_link":
                 case "trunk":
                 case "trunk_link":
-                    laneType = LaneType.Highway;
+                    laneType = LaneType.Highway; 
                     break;
                 case "primary":
                 case "primary_link":
                     laneWidth = 3.25f;
                     maxSpeed = 90;
-                    laneType = LaneType.Road;
+                    laneType = LaneType.Road; 
                     break;
                 case "secondary":
                 case "secondary_link":
                     laneWidth = 3f;
                     maxSpeed = 90;
-                    laneType = LaneType.Road;
+                    laneType = LaneType.Road; 
                     break;
                 case "tertiary":
                 case "tertiary_link":
                 case "unclassified":
                     laneWidth = 2.8f;
                     maxSpeed = 70;
-                    laneType = LaneType.Road;
+                    laneType = LaneType.Road; 
                     break;
                 case "residential":
                     laneWidth = 2.8f;
                     maxSpeed = 50;
-                    laneType = LaneType.Road;
+                    laneType = LaneType.Road; 
                     break;
                 case "service":
                     laneWidth = 2.5f;
@@ -626,13 +605,17 @@ namespace OSMTool.Wpf
                     maxSpeed = 50;
                     vehicles = VehicleTypes.Tram;
                     laneWidth = 1;
-                    laneType = LaneType.Emergency;
+                    laneType = LaneType.Tram;
+                    minLanes = 1;
+                    desc.IsOneWay = true;
                     break;
                 case "rail":
                     maxSpeed = 200;
                     vehicles = VehicleTypes.Train;
                     laneWidth = 1.45f;
                     laneType = LaneType.Train;
+                    minLanes = 1;
+                    desc.IsOneWay = true;
                     break;
                 case "platform":
                 case "vehicle_depot":
@@ -640,6 +623,45 @@ namespace OSMTool.Wpf
                 default:
                     break;
             }
+
+            if (backwardLanes > 0 || forwardLanes > 0 && laneCount == 0)
+                desc.LaneCount = backwardLanes + forwardLanes;
+            else if (backwardLanes == 0 && forwardLanes == 0)
+            {
+                if (desc.IsOneWay)
+                {
+                    forwardLanes = laneCount;
+                    backwardLanes = 0;
+                }
+                else {
+                    laneCount = Math.Max(minLanes, laneCount);
+                    forwardLanes = (1 + laneCount) / 2;
+                    backwardLanes = laneCount - forwardLanes;
+                }
+            }
+            else
+                desc.LaneCount = laneCount;
+            if (forwardLanes > 0 && (laneCount - forwardLanes) != backwardLanes)
+                backwardLanes = laneCount - forwardLanes;
+            if (backwardLanes > 0 && (laneCount - backwardLanes) != forwardLanes)
+                forwardLanes = laneCount - backwardLanes;
+
+            if (laneCount - backwardLanes != forwardLanes)
+            {
+                // issue
+            }
+            if (laneCount == 0)
+            {
+                // issue
+            }
+
+            desc.LaneCount = laneCount;
+
+            desc.OsmWay = way;
+
+
+
+
 
             desc.Lanes = new LaneDescription[laneCount];
             for (int i = 0; i < desc.Lanes.Length; i++)
@@ -649,7 +671,7 @@ namespace OSMTool.Wpf
                     MaxSpeed = maxSpeed,
                     Turn = Turn.None,
                     VehicleTypes = vehicles,
-                    Reverse = i >= forwardLanes,
+                    Reverse = i < backwardLanes,
                     LaneType = laneType
                 };
 
@@ -659,7 +681,7 @@ namespace OSMTool.Wpf
             processTag<float>("gauge", way.Tags, desc.Lanes, float.TryParse, (d, i, v) => d.Width = v * 0.001f); // gauge is in mm            
             processTag<float>("maxspeed", way.Tags, desc.Lanes, float.TryParse, (d, i, v) => d.MaxSpeed = v);
             processTag<turnValues>("turn", way.Tags, desc.Lanes, Enum.TryParse, (d, i, v) => d.Turn |= getTurn(v));
-            processTag<float>("width", way.Tags, desc.Lanes, float.TryParse, (d, i, v) => d.Width = v);
+            processTag<float>("width", way.Tags, desc.Lanes, float.TryParse, (d, i, v) => d.Width = v / laneCount);
 
             for (int i = 0; i < desc.Lanes.Length; i++)
             {
@@ -667,7 +689,7 @@ namespace OSMTool.Wpf
                 if (l.Turn == Turn.None)
                 {
                     if (i == 0)
-                        l.Turn = Turn.Left;
+                        l.Turn |= Turn.Left;
 
                     if (forwardLanes == 1 || (i > 0 && i < forwardLanes))
                         l.Turn |= Turn.Through;
@@ -757,6 +779,44 @@ namespace OSMTool.Wpf
                         foreach (var val in split[i].Split(';'))
                             if (process(val, out parsedValue))
                                 setter(descriptions[i], i, parsedValue);
+                    }
+                    else
+                    {
+                        // something wrong here
+                    }
+                }
+            }
+
+
+            if (tags.TryGetValue(v + ":lanes:forward", out value))
+            {
+                var forwardLanes = descriptions.Where(l => !l.Reverse).ToArray();
+                var split = value.Split('|');
+                for (int i = 0; i < split.Length; i++)
+                {
+                    if (i < forwardLanes.Length)
+                    {
+                        foreach (var val in split[i].Split(';'))
+                            if (process(val, out parsedValue))
+                                setter(forwardLanes[i], i, parsedValue);
+                    }
+                    else
+                    {
+                        // something wrong here
+                    }
+                }
+            }
+            if (tags.TryGetValue(v + ":lanes:backward", out value))
+            {
+                var forwardLanes = descriptions.Where(l => l.Reverse).ToArray();
+                var split = value.Split('|');
+                for (int i = 0; i < split.Length; i++)
+                {
+                    if (i < forwardLanes.Length)
+                    {
+                        foreach (var val in split[i].Split(';'))
+                            if (process(val, out parsedValue))
+                                setter(forwardLanes[i], i, parsedValue);
                     }
                     else
                     {
