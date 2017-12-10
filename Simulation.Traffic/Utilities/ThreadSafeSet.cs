@@ -9,7 +9,7 @@ namespace Simulation.Traffic.Utilities
 {
     public class ThreadSafeSet<T> : ISet<T>
     {
-        private ReaderWriterLock readerWriterLock = new ReaderWriterLock();
+        private ReaderWriterLockSlim readerWriterLock = new ReaderWriterLockSlim();
 
         private readonly ISet<T> internalSet;
         public ThreadSafeSet(ISet<T> internalSet)
@@ -23,225 +23,225 @@ namespace Simulation.Traffic.Utilities
 
         public bool Add(T item)
         {
-            readerWriterLock.AcquireWriterLock(0);
+            readerWriterLock.EnterWriteLock();
             try
             {
                 return internalSet.Add(item);
             }
             finally
             {
-                readerWriterLock.ReleaseWriterLock();
+                readerWriterLock.ExitWriteLock();
             }
         }
 
         public void Clear()
         {
-            readerWriterLock.AcquireWriterLock(0);
+            readerWriterLock.EnterWriteLock();
             try
             {
                 internalSet.Clear();
             }
             finally
             {
-                readerWriterLock.ReleaseWriterLock();
+                readerWriterLock.ExitWriteLock();
             }
         }
 
         public bool Contains(T item)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 return internalSet.Contains(item);
             }
             finally
             {
-                readerWriterLock.ReleaseReaderLock();
+                readerWriterLock.ExitReadLock();
             }
         }
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 internalSet.CopyTo(array, arrayIndex);
             }
             finally
             {
-                readerWriterLock.ReleaseReaderLock();
+                readerWriterLock.ExitReadLock();
             }
         }
 
         public void ExceptWith(IEnumerable<T> other)
         {
-            readerWriterLock.AcquireWriterLock(0);
+            readerWriterLock.EnterWriteLock();
             try
             {
                 internalSet.ExceptWith(other);
             }
             finally
             {
-                readerWriterLock.ReleaseWriterLock();
+                readerWriterLock.ExitWriteLock();
             }
         }
 
         public IEnumerator<T> GetEnumerator()
         {
             T[] copy;
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
-                copy = new T[Count];
-                CopyTo(copy, 0);
+                copy = new T[internalSet.Count];
+                internalSet.CopyTo(copy, 0);
             }
             finally
             {
-                readerWriterLock.ReleaseReaderLock();
+                readerWriterLock.ExitReadLock();
             }
             return ((IEnumerable<T>)copy).GetEnumerator();
         }
 
         public void IntersectWith(IEnumerable<T> other)
         {
-            readerWriterLock.AcquireWriterLock(0);
+            readerWriterLock.EnterWriteLock();
             try
             {
                 internalSet.IntersectWith(other);
             }
             finally
             {
-                readerWriterLock.ReleaseWriterLock();
+                readerWriterLock.ExitWriteLock();
             }
         }
 
         public bool IsProperSubsetOf(IEnumerable<T> other)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 return internalSet.IsProperSubsetOf(other);
             }
             finally
             {
-                readerWriterLock.ReleaseReaderLock();
+                readerWriterLock.ExitReadLock();
             }
         }
 
         public bool IsProperSupersetOf(IEnumerable<T> other)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 return internalSet.IsProperSupersetOf(other);
             }
             finally
             {
-                readerWriterLock.ReleaseReaderLock();
+                readerWriterLock.ExitReadLock();
             }
         }
 
         public bool IsSubsetOf(IEnumerable<T> other)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 return internalSet.IsSubsetOf(other);
             }
             finally
             {
-                readerWriterLock.ReleaseReaderLock();
+                readerWriterLock.ExitReadLock();
             }
         }
 
         public bool IsSupersetOf(IEnumerable<T> other)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 return internalSet.IsSupersetOf(other);
             }
             finally
             {
-                readerWriterLock.ReleaseReaderLock();
+                readerWriterLock.ExitReadLock();
             }
         }
 
         public bool Overlaps(IEnumerable<T> other)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 return internalSet.Overlaps(other);
             }
             finally
             {
-                readerWriterLock.ReleaseReaderLock();
+                readerWriterLock.ExitReadLock();
             }
         }
 
         public bool Remove(T item)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 return internalSet.Remove(item);
             }
             finally
             {
-                readerWriterLock.ReleaseWriterLock();
+                readerWriterLock.ExitWriteLock();
             }
         }
 
         public bool SetEquals(IEnumerable<T> other)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 return internalSet.SetEquals(other);
             }
             finally
             {
-                readerWriterLock.ReleaseReaderLock();
+                readerWriterLock.ExitReadLock();
             }
         }
 
         public void SymmetricExceptWith(IEnumerable<T> other)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 internalSet.SymmetricExceptWith(other);
             }
             finally
             {
-                readerWriterLock.ReleaseWriterLock();
+                readerWriterLock.ExitWriteLock();
             }
         }
 
         public void UnionWith(IEnumerable<T> other)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 internalSet.UnionWith(other);
             }
             finally
             {
-                readerWriterLock.ReleaseWriterLock();
+                readerWriterLock.ExitWriteLock();
             }
         }
 
         void ICollection<T>.Add(T item)
         {
-            readerWriterLock.AcquireReaderLock(0);
+            readerWriterLock.EnterReadLock();
             try
             {
                 internalSet.Add(item);
             }
             finally
             {
-                readerWriterLock.ReleaseWriterLock();
+                readerWriterLock.ExitWriteLock();
             }
         }
 
