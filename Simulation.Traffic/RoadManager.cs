@@ -1,15 +1,17 @@
-﻿using System;
+﻿using Simulation.Traffic.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text; 
+using System.Text;
+using System.Threading;
 using UnityEngine;
 
 namespace Simulation.Traffic
 {
     public class RoadManager
     {
-        private HashSet<Node> nodes = new HashSet<Node>();
-        private HashSet<Segment> segments = new HashSet<Segment>();
+        private ISet<Node> nodes = new ThreadSafeSet<Node>(new HashSet<Node>());
+        private ISet<Segment> segments = new ThreadSafeSet<Segment>(new HashSet<Segment>());
 
         public IEnumerable<Node> Nodes => nodes;
         public IEnumerable<Segment> Segments => segments;
@@ -81,7 +83,8 @@ namespace Simulation.Traffic
                 segment.Start.Tangent = otherA.Tangent;
                 segment.End.Tangent = otherB.Tangent;
             }
-            else {
+            else
+            {
                 segment = CreateSegment(otherB.Node, otherA.Node, segA.Description);
                 segment.Start.Tangent = otherB.Tangent;
                 segment.End.Tangent = otherA.Tangent;
