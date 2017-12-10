@@ -88,8 +88,17 @@ namespace Simulation.Traffic.Utilities
 
         public IEnumerator<T> GetEnumerator()
         {
-            var copy = new T[Count];
-            CopyTo(copy, 0);
+            T[] copy;
+            readerWriterLock.AcquireReaderLock(0);
+            try
+            {
+                copy = new T[Count];
+                CopyTo(copy, 0);
+            }
+            finally
+            {
+                readerWriterLock.ReleaseReaderLock();
+            }
             return ((IEnumerable<T>)copy).GetEnumerator();
         }
 
