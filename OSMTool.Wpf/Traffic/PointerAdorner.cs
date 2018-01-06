@@ -105,6 +105,8 @@ namespace OSMTool.Wpf.Traffic
                     var seg = con.Segment as TrafficSegment;
                     var dsc = seg.Description as TrafficSegmentDescription;
 
+                    if (seg.End == null || seg.Start == null) continue;
+
                     var center = (seg.Start.Node.Position + seg.End.Node.Position) / 2;
                     var centerPoint = new Point(center.x * scale, (height - center.z) * scale);
 

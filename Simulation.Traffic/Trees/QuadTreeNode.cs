@@ -96,19 +96,34 @@ namespace Simulation.Traffic.Trees
             }
             return result;
         }
+        private bool isEmpty()
+        {
+            if (isSelfEmpty()) return false;
+            var children = this.children;
+            if (children == null) return true;
+            for (int i = 0; i < 4; i++)
+                if (!children[i].isEmpty()) return false;
+            return true;
+        }
+
+        private bool isSelfEmpty()
+        {
+            if (items.Count > 0) return false;
+            return true;
+        }
 
         private void emptyCheck()
         {
-            if (items.Count > 0)
+            if (isEmpty())
             {
-                this.Clear();
+                this.items.Clear();
                 parent?.NotifyEmpty(this);
             }
         }
 
         private void NotifyEmpty(QuadTreeNode<T> quadTreeNode)
         {
-            if (this.children?.All(t => t == quadTreeNode || !t.Items.Any()) == true)
+            if (this.children?.All(t => t == quadTreeNode || t.isEmpty()) == true && isSelfEmpty())
             {
                 this.Clear();
                 parent?.NotifyEmpty(this);

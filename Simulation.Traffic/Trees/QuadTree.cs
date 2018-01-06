@@ -129,7 +129,7 @@ namespace Simulation.Traffic.Trees
             }
             var containementNode = node.Add(item);
             lock (containmentDictionary)
-                containmentDictionary.Add(item, containementNode);
+                containmentDictionary[item] = containementNode;
             return containementNode;
         }
 

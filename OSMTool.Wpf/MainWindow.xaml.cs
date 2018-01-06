@@ -35,8 +35,8 @@ namespace OSMTool.Wpf
             //await LoadAsync(@"C:\Users\stijn\Downloads\luxembourg-latest.osm.pbf");
             //await LoadAsync(@"C:\Users\stijn\Downloads\knokke-heist_01_01.pbf");
 
-            //await LoadAsync(@"C:\Users\stijn\Downloads\bruges.osm.pbf");
-            await LoadAsync(@"C:\Users\stijn\Downloads\ghent.osm.pbf");
+            await LoadAsync(@"C:\Users\stijn\Downloads\bruges.osm.pbf");
+            //await LoadAsync(@"C:\Users\stijn\Downloads\ghent.osm.pbf");
 
             using (var stream = File.Create(@"C:\Users\stijn\Downloads\mapOutput.json"))
             {

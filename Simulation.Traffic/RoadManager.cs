@@ -117,7 +117,7 @@ namespace Simulation.Traffic
             return segment;
         }
 
-        public void MergeNodes(Node a, Node b)
+        public Node MergeNodes(Node a, Node b)
         {
             var aSegments = a.Segments;
             var bSegments = b.Segments;
@@ -146,6 +146,7 @@ namespace Simulation.Traffic
             }
             Remove(a);
             Remove(b);
+            return newNode;
         }
 
 

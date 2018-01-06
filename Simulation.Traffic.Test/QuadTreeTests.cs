@@ -46,6 +46,97 @@ namespace Simulation.Traffic.Test
             Assert.AreEqual(root, node);
         }
 
+
+        [TestMethod]
+        public void TestRemoveFromMultipleNodes()
+        {
+            var tree = new QuadTree<DummyItem>(new Rect(0, 0, 1, 1));
+
+            var root = tree.CurrentRoot;
+
+            var dummy1 = new DummyItem { Bounds = Rect.MinMaxRect(1.25f, 1.24f, 1.75f, 1.76f) };
+
+            var dummy2 = new DummyItem { Bounds = Rect.MinMaxRect(-1.24f, 1.25f, -1.76f, 1.75f) };
+
+            var dummy3 = new DummyItem { Bounds = Rect.MinMaxRect(1.25f, -1.24f, 1.75f, -1.76f) };
+
+            var dummy4 = new DummyItem { Bounds = Rect.MinMaxRect(-1.24f, -1.25f, -1.76f, -1.75f) };
+
+            var node1 = tree.Add(dummy1);
+            var node2 = tree.Add(dummy2);
+            var node3 = tree.Add(dummy3);
+            var node4 = tree.Add(dummy4);
+
+
+            Assert.AreNotEqual(root, tree.CurrentRoot);
+            Assert.AreNotEqual(root, node1);
+            Assert.AreNotEqual(root, node2);
+            Assert.AreNotEqual(root, node3);
+            Assert.AreNotEqual(root, node4);
+
+
+
+            Assert.IsTrue(tree.Remove(dummy1));
+
+            Assert.IsFalse(node1.Items.Contains(dummy1), "node contains dummy 1");
+            Assert.IsTrue(node2.Items.Contains(dummy2), "node contains dummy 2");
+            Assert.IsTrue(node3.Items.Contains(dummy3), "node contains dummy 3");
+            Assert.IsTrue(node4.Items.Contains(dummy4), "node contains dummy 4");
+
+
+            Assert.IsTrue(tree.Remove(dummy2));
+
+            Assert.IsFalse(node1.Items.Contains(dummy1), "node contains dummy 1");
+            Assert.IsFalse(node2.Items.Contains(dummy2), "node contains dummy 2");
+            Assert.IsTrue(node3.Items.Contains(dummy3), "node contains dummy 3");
+            Assert.IsTrue(node4.Items.Contains(dummy4), "node contains dummy 4");
+
+
+            Assert.IsTrue(tree.Remove(dummy3));
+
+            Assert.IsFalse(node1.Items.Contains(dummy1), "node contains dummy 1");
+            Assert.IsFalse(node2.Items.Contains(dummy2), "node contains dummy 2");
+            Assert.IsFalse(node3.Items.Contains(dummy3), "node contains dummy 3");
+            Assert.IsTrue(node4.Items.Contains(dummy4), "node contains dummy 4");
+
+            Assert.IsTrue(tree.Remove(dummy4));
+
+            Assert.IsFalse(node1.Items.Contains(dummy1), "node contains dummy 1");
+            Assert.IsFalse(node2.Items.Contains(dummy2), "node contains dummy 2");
+            Assert.IsFalse(node3.Items.Contains(dummy3), "node contains dummy 3");
+            Assert.IsFalse(node4.Items.Contains(dummy4), "node contains dummy 4");
+
+        }
+
+
+        [TestMethod]
+        public void TestRemoveFromSingleNode()
+        {
+            var tree = new QuadTree<DummyItem>(new Rect(0, 0, 1, 1));
+
+            var root = tree.CurrentRoot;
+
+            var dummy1 = new DummyItem { Bounds = Rect.MinMaxRect(0.25f, 0.24f, 0.75f, 0.76f) };
+
+            var dummy2 = new DummyItem { Bounds = Rect.MinMaxRect(0.24f, 0.25f, 0.76f, 0.75f) };
+
+            var node1 = tree.Add(dummy1);
+            var node2 = tree.Add(dummy2);
+
+
+            Assert.AreEqual(root, tree.CurrentRoot);
+            Assert.AreEqual(root, node1);
+            Assert.AreEqual(root, node2);
+
+
+
+            Assert.IsTrue(tree.Remove(dummy1));
+
+            Assert.IsFalse(node1.Items.Contains(dummy1), "node contains dummy 1");
+            Assert.IsTrue(node2.Items.Contains(dummy2), "node contains dummy 2");
+        }
+
+
         [TestMethod]
         public void TestTinyAddWithoutGrow()
         {

@@ -65,7 +65,7 @@ namespace OSMTool.Wpf.Traffic
             var p = new Vector3((float)(pos.X / senderHost.ActualWidth) * width, 0, height - (float)(pos.Y / senderHost.ActualHeight) * height);
 
 
-            var closenodes = QueryNodes(p, 10);
+            var closenodes = QueryNodes(p, 1000);
 
             var node = closenodes.OrderBy(n => (n.Position - p).sqrMagnitude).FirstOrDefault();
 
