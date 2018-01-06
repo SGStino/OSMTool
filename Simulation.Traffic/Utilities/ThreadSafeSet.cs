@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Simulation.Traffic.Utilities
+namespace Simulation.Traffic
 {
     public class ThreadSafeSet<T> : ISet<T>
     {
@@ -182,7 +182,7 @@ namespace Simulation.Traffic.Utilities
 
         public bool Remove(T item)
         {
-            readerWriterLock.EnterReadLock();
+            readerWriterLock.EnterWriteLock();
             try
             {
                 return internalSet.Remove(item);
@@ -208,7 +208,7 @@ namespace Simulation.Traffic.Utilities
 
         public void SymmetricExceptWith(IEnumerable<T> other)
         {
-            readerWriterLock.EnterReadLock();
+            readerWriterLock.EnterWriteLock();
             try
             {
                 internalSet.SymmetricExceptWith(other);

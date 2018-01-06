@@ -54,6 +54,17 @@ namespace Simulation.Traffic
             this.Node = node;
             this.Manager = manager;
         }
+
+        internal void NotifyOfMovement()
+        {
+            OnMoved();
+            Segment.NotifyOfMovement(this);
+        }
+
+        protected virtual void OnMoved()
+        {
+        }
+
         /// <summary>
         /// gets called from segment
         /// </summary>

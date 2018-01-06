@@ -4,26 +4,15 @@ using OsmSharp.Streams;
 using OsmSharp.Tags;
 using OSMTool.Wpf.Traffic;
 using Simulation.Traffic;
-using Simulation.Traffic.Utilities;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Device.Location;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using UnityEngine;
 
 namespace OSMTool.Wpf
@@ -44,10 +33,10 @@ namespace OSMTool.Wpf
         private async void startupAsync()
         {
             //await LoadAsync(@"C:\Users\stijn\Downloads\luxembourg-latest.osm.pbf");
-            await LoadAsync(@"C:\Users\stijn\Downloads\knokke-heist_01_01.pbf");
+            //await LoadAsync(@"C:\Users\stijn\Downloads\knokke-heist_01_01.pbf");
 
             //await LoadAsync(@"C:\Users\stijn\Downloads\bruges.osm.pbf");
-            //await LoadAsync(@"C:\Users\stijn\Downloads\ghent.osm.pbf");
+            await LoadAsync(@"C:\Users\stijn\Downloads\ghent.osm.pbf");
 
             using (var stream = File.Create(@"C:\Users\stijn\Downloads\mapOutput.json"))
             {
@@ -125,7 +114,7 @@ namespace OSMTool.Wpf
                                 var lat = (node.Latitude ?? 0);
                                 var lon = (node.Longitude ?? 0);
                                 lock (bounds)
-                                bounds.fit(lat, lon);
+                                    bounds.fit(lat, lon);
                             }
                         }
                     });
@@ -210,12 +199,11 @@ namespace OSMTool.Wpf
             float minLon = (float)Math.Floor((lon - lonInt) * pointsPerCell) / pointsPerCell + lonInt;
             float maxLat = minLat + 1.0f / pointsPerCell;
             float maxLon = minLon + 1.0f / pointsPerCell;
-            // int points
-
-            float h00 = (short)data.GetHeight(new GeographicalCoordinates(minLat, minLon));
-            float h01 = (short)data.GetHeight(new GeographicalCoordinates(minLat, maxLon));
-            float h10 = (short)data.GetHeight(new GeographicalCoordinates(maxLat, minLon));
-            float h11 = (short)data.GetHeight(new GeographicalCoordinates(maxLat, maxLon));
+            // int points 
+            float h00 = (short)data.TryGetHeight(new GeographicalCoordinates(minLat, minLon));
+            float h01 = (short)data.TryGetHeight(new GeographicalCoordinates(minLat, maxLon));
+            float h10 = (short)data.TryGetHeight(new GeographicalCoordinates(maxLat, minLon));
+            float h11 = (short)data.TryGetHeight(new GeographicalCoordinates(maxLat, maxLon));
 
             var h0 = interpolate(h00, h01, minLon, maxLon, lon);
             var h1 = interpolate(h10, h11, minLon, maxLon, lon);
@@ -378,7 +366,7 @@ namespace OSMTool.Wpf
                 target = segment.End;
             else
                 target = segment.Start;
-            if (processed.Add(target))
+            if (target != null && processed.Add(target))
                 walkToNextSegment(target, processed);
         }
 
@@ -411,20 +399,26 @@ namespace OSMTool.Wpf
 
         private double fixTangents(SegmentNodeConnection a, SegmentNodeConnection b)
         {
-            var targetLen = (a.Segment.Start.Node.Position - a.Segment.End.Node.Position).sqrMagnitude;
-            var otherLen = (b.Segment.Start.Node.Position - b.Segment.End.Node.Position).sqrMagnitude;
+            var targetLen = (a.Segment.Start?.Node.Position - a.Segment.End?.Node.Position)?.sqrMagnitude;
+            var otherLen = (b.Segment.Start?.Node.Position - b.Segment.End?.Node.Position)?.sqrMagnitude;
 
-            var dot = Vector3.Dot(a.Tangent, b.Tangent);
 
-            if (dot < -Math.Cos(Math.PI / 4))
+            if (targetLen.HasValue && otherLen.HasValue)
             {
 
-                var t = (a.Tangent * targetLen - b.Tangent * otherLen).normalized;
+                var dot = Vector3.Dot(a.Tangent, b.Tangent);
 
-                a.Tangent = t;
-                b.Tangent = -t;
+                if (dot < -Math.Cos(Math.PI / 4))
+                {
+
+                    var t = (a.Tangent * targetLen.Value - b.Tangent * otherLen.Value).normalized;
+
+                    a.Tangent = t;
+                    b.Tangent = -t;
+                }
+                return dot;
             }
-            return dot;
+            return 0;
         }
 
         private void mergeCloseNodes()
@@ -432,21 +426,29 @@ namespace OSMTool.Wpf
             var mergedNodes = new ConcurrentBag<Tuple<Simulation.Traffic.Node, Simulation.Traffic.Node>>();
             bool any = false;
             var allNodes = manager.Nodes.ToArray();
-            Parallel.For(0, allNodes.Length, x =>
-            //for (int x = 0; x < allNodes.Length; x++)
+            //Parallel.For(0, allNodes.Length, x =>
+            for (int x = 0; x < allNodes.Length; x++)
             {
-                for (int y = x + 1; y < allNodes.Length; y++)
+                var a = allNodes[x];
+
+                var closeNodes = manager.QueryNodes(a.Position, 1).ToArray();
+
+
+                foreach (var b in closeNodes)
                 {
-                    var a = allNodes[x];
-                    var b = allNodes[y];
-                    if ((a.Position - b.Position).sqrMagnitude < 2)
-                    {
-                        mergedNodes.Add(new Tuple<Simulation.Traffic.Node, Simulation.Traffic.Node>(a, b));
-                        //manager.MergeNodes(a, b); 
-                    }
+                    if (a != b)
+                        if ((a.Position - b.Position).sqrMagnitude < 2)
+                        {
+                            mergedNodes.Add(new Tuple<Simulation.Traffic.Node, Simulation.Traffic.Node>(a, b));
+                            //manager.MergeNodes(a, b); 
+                        }
                 }
-            });
-            foreach (var merge in mergedNodes)
+            }//);
+
+
+            var mergedNodesDistinct = mergedNodes.Distinct(new NodePairComparer()).ToArray();
+
+            foreach (var merge in mergedNodesDistinct)
                 manager.MergeNodes(merge.Item1, merge.Item2);
         }
 
@@ -516,31 +518,31 @@ namespace OSMTool.Wpf
                 case "motorway_link":
                 case "trunk":
                 case "trunk_link":
-                    laneType = LaneType.Highway; 
+                    laneType = LaneType.Highway;
                     break;
                 case "primary":
                 case "primary_link":
                     laneWidth = 3.25f;
                     maxSpeed = 90;
-                    laneType = LaneType.Road; 
+                    laneType = LaneType.Road;
                     break;
                 case "secondary":
                 case "secondary_link":
                     laneWidth = 3f;
                     maxSpeed = 90;
-                    laneType = LaneType.Road; 
+                    laneType = LaneType.Road;
                     break;
                 case "tertiary":
                 case "tertiary_link":
                 case "unclassified":
                     laneWidth = 2.8f;
                     maxSpeed = 70;
-                    laneType = LaneType.Road; 
+                    laneType = LaneType.Road;
                     break;
                 case "residential":
                     laneWidth = 2.8f;
                     maxSpeed = 50;
-                    laneType = LaneType.Road; 
+                    laneType = LaneType.Road;
                     break;
                 case "service":
                     laneWidth = 2.5f;
@@ -633,7 +635,8 @@ namespace OSMTool.Wpf
                     forwardLanes = laneCount;
                     backwardLanes = 0;
                 }
-                else {
+                else
+                {
                     laneCount = Math.Max(minLanes, laneCount);
                     forwardLanes = (1 + laneCount) / 2;
                     backwardLanes = laneCount - forwardLanes;
@@ -873,6 +876,19 @@ namespace OSMTool.Wpf
 
         }
 
+    }
+
+    internal class NodePairComparer : IEqualityComparer<Tuple<Simulation.Traffic.Node, Simulation.Traffic.Node>>
+    {
+        public bool Equals(Tuple<Simulation.Traffic.Node, Simulation.Traffic.Node> x, Tuple<Simulation.Traffic.Node, Simulation.Traffic.Node> y)
+        {
+            return (x.Item1 == y.Item1 && x.Item2 == y.Item2) || (x.Item2 == y.Item1 && x.Item1 == y.Item2);
+        }
+
+        public int GetHashCode(Tuple<Simulation.Traffic.Node, Simulation.Traffic.Node> obj)
+        {
+            return obj.Item1.GetHashCode() ^ obj.Item2.GetHashCode();
+        }
     }
 
     internal enum accessValues

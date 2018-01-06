@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+using Simulation.Traffic;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -179,16 +180,19 @@ namespace Simulation.Traffic.IO
 
         public void WriteAll(RoadManager roads)
         {
+            var nodes = roads.Nodes.ToArray();
+            var segments = roads.Segments.ToArray();
+
             BeginWriteNodes();
-            foreach (var node in roads.Nodes.OrderBy(n => n.Position.sqrMagnitude))
+            foreach (var node in nodes.OrderBy(n => n.Position.sqrMagnitude))
                 Write(node);
             EndWriteNodes();
             BeginWriteDescriptions();
-            foreach (var description in roads.Segments.Select(s => s.Description).Distinct())
+            foreach (var description in segments.Select(s => s.Description).Distinct())
                 Write(description);
             EndWriteDescriptions();
             BeginWriteSegments();
-            foreach (var segment in roads.Segments.OrderBy(s => s.Start.Node.Position.sqrMagnitude))
+            foreach (var segment in segments.OrderBy(s => s.Start.Node.Position.sqrMagnitude))
                 Write(segment);
             EndWriteSegments();
             writer.Flush();

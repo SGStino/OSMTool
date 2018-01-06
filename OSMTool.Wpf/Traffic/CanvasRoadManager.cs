@@ -47,7 +47,7 @@ namespace OSMTool.Wpf.Traffic
                 if (node != null && node.Segments.Count() == 2 && node.IsDeletionPossible)
                     MergeSegments(node);
             }
-            if(e.ChangedButton == System.Windows.Input.MouseButton.Left)
+            if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
             {
 
                 this.SelectedNode = node;
@@ -64,7 +64,10 @@ namespace OSMTool.Wpf.Traffic
             var pos = e.GetPosition(sender as IInputElement);
             var p = new Vector3((float)(pos.X / senderHost.ActualWidth) * width, 0, height - (float)(pos.Y / senderHost.ActualHeight) * height);
 
-            var node = Nodes.AsParallel().OrderBy(n => (n.Position - p).sqrMagnitude).FirstOrDefault();
+
+            var closenodes = QueryNodes(p, 10);
+
+            var node = closenodes.OrderBy(n => (n.Position - p).sqrMagnitude).FirstOrDefault();
 
             pointerAdorner.SetPosition(node as TrafficNode, pos);
 
@@ -80,9 +83,12 @@ namespace OSMTool.Wpf.Traffic
             Drawing.Width = width * Scale;
             Drawing.Height = height * Scale;
             Drawing.OpenLayers();
-            foreach (TrafficNode node in Nodes)
+
+            var nodes = Nodes.Where(n => n != null).ToArray();
+            var segments = Segments.Where(n => n != null).ToArray();
+            foreach (TrafficNode node in nodes)
                 node.Update();
-            foreach (TrafficSegment segment in Segments.OrderBy(m => (m.Description as TrafficSegmentDescription).Type))
+            foreach (TrafficSegment segment in segments.OrderBy(m => (m?.Description as TrafficSegmentDescription)?.Type))
                 segment.Update();
 
             var layer = Drawing.GetLayer(DrawingLayer.Outlines);

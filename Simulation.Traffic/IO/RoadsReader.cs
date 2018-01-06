@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Simulation.Traffic;
 using System;
 using System.Collections.Generic;
 using System.IO;

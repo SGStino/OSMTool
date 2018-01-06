@@ -1,4 +1,4 @@
-﻿namespace Simulation.Traffic.Utilities
+﻿namespace Simulation.Traffic
 {
 
     public static class Angles

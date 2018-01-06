@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Simulation.Traffic.Utilities
+namespace Simulation.Traffic
 {
     public static class BiarcInterpolation
     {

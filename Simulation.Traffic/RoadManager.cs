@@ -1,4 +1,5 @@
-﻿using Simulation.Traffic.Utilities;
+﻿using Simulation.Traffic;
+using Simulation.Traffic.Trees;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +11,21 @@ namespace Simulation.Traffic
 {
     public class RoadManager
     {
-        private ISet<Node> nodes = new ThreadSafeSet<Node>(new HashSet<Node>());
-        private ISet<Segment> segments = new ThreadSafeSet<Segment>(new HashSet<Segment>());
 
-        public IEnumerable<Node> Nodes => nodes;
-        public IEnumerable<Segment> Segments => segments;
+
+
+        private QuadTree<Node> nodes = new QuadTree<Node>(new Rect(0, 0, 1000, 1000));
+        private QuadTree<Segment> segments = new QuadTree<Segment>(new Rect(0, 0, 1000, 1000));
+
+        public IEnumerable<Node> Nodes => nodes.Items;
+        public IEnumerable<Segment> Segments => segments.Items;
+
+        public IEnumerable<Segment> QuerySegments(Rect bounds) => segments.Query(bounds);
+        public IEnumerable<Segment> QuerySegments(Vector2 point, float radius) => segments.Query(point, radius);
+
+
+        public IEnumerable<Node> QueryNodes(Rect bounds) => nodes.Query(bounds);
+        public IEnumerable<Node> QueryNodes(Vector2 point, float radius) => nodes.Query(point, radius);
 
         public Node CreateNodeAt(float x, float y)
         {
@@ -29,6 +40,11 @@ namespace Simulation.Traffic
             return node;
         }
 
+        internal void BoundsChanged(Node node)
+        {
+            nodes.Update(node);
+        }
+
         public Segment CreateSegment(Node start, Node end, SegmentDescription description)
         {
             var segment = createSegment(start, end, description);
@@ -39,6 +55,7 @@ namespace Simulation.Traffic
             segment.Start = connect(segment, start, -dir);
             segment.End = connect(segment, end, dir);
 
+            if (segment.Start == null || segment.End == null) throw new InvalidOperationException("Segments need starts and ends!");
 
             segments.Add(segment);
             segment.NotifyOfCreation();
@@ -48,6 +65,12 @@ namespace Simulation.Traffic
 
             return segment;
         }
+
+        internal void BoundsChanged(Segment segment)
+        {
+            segments.Update(segment);
+        }
+
 
         private void notifyConnect(Node node, SegmentNodeConnection connection)
         {
@@ -106,18 +129,20 @@ namespace Simulation.Traffic
             {
                 var start = segment.Segment.Start;
                 var end = segment.Segment.End;
+                if (start != null && end != null)
+                {
+                    if (start.Node == a && end.Node != b && end.Node != a)
+                        CreateSegment(newNode, end.Node, segment.Segment.Description);
 
-                if (start.Node == a && end.Node != b && end.Node != a)
-                    CreateSegment(newNode, end.Node, segment.Segment.Description);
+                    if (start.Node == b && end.Node != a && end.Node != b)
+                        CreateSegment(newNode, end.Node, segment.Segment.Description);
 
-                if (start.Node == b && end.Node != a && end.Node != b)
-                    CreateSegment(newNode, end.Node, segment.Segment.Description);
+                    if (end.Node == a && start.Node != b && start.Node != a)
+                        CreateSegment(start.Node, newNode, segment.Segment.Description);
 
-                if (end.Node == a && start.Node != b && start.Node != a)
-                    CreateSegment(start.Node, newNode, segment.Segment.Description);
-
-                if (end.Node == b && start.Node != a && start.Node != b)
-                    CreateSegment(start.Node, newNode, segment.Segment.Description);
+                    if (end.Node == b && start.Node != a && start.Node != b)
+                        CreateSegment(start.Node, newNode, segment.Segment.Description);
+                }
             }
             Remove(a);
             Remove(b);

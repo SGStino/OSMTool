@@ -1,4 +1,4 @@
-﻿using Simulation.Traffic.Utilities;
+﻿using Simulation.Traffic;
 using System;
 using System.Globalization;
 using System.Linq;
