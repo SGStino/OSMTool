@@ -178,7 +178,7 @@ namespace Simulation.Traffic
         {
             var a = InterpolateAngle(p);
 
-            var r = radius + offset;
+            var r = radius + (IsClockwise() ? offset : -offset);
             var cos = Mathf.Cos(a) * r;
             var sin = Mathf.Sin(a) * r;
 

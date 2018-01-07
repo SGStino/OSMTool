@@ -76,11 +76,8 @@
     <Compile Include="IRoadComponent.cs" />
     <Compile Include="RoadManager.cs" />
     <Compile Include="Segment.cs" />
-    <Compile Include="SegmentAIPathComponent.cs" />
     <Compile Include="SegmentDescription.cs" />
-    <Compile Include="SegmentLoftPathComponent.cs" />
     <Compile Include="SegmentNodeConnection.cs" />
-    <Compile Include="SegmentDummyShapeFactory.cs" />
     <Compile Include="FactoryComponent.cs" />
     <Compile Include="SegmentPathFactory.cs" />
     <Compile Include="Trees\ItemCollection.cs" />

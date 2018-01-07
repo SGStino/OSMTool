@@ -12,55 +12,15 @@ namespace Simulation.Traffic
 {
     public class AINode : Node
     {
-        public IRoadComponent<NodeAIPath[]> AIPaths { get; }
-
         public AINode(Vector3 position, RoadManager manager, INodeAIPathFactory aiFactory = null) : base(position, manager)
         {
-            AIPaths = new NodeAIPathComponent(this, aiFactory ?? NodeAIPathsFactory.Default);
-
-            Invalidated += AIPaths.Invalidate;
-
-            AIPaths.Invalidated += NotifyOfAIPathInvalidation;
-        }
-
-        private void NotifyOfAIPathInvalidation()
-        {
-            //TODO: ask roadmanager for an update
         }
 
         public void InvalidateAIPaths(AISegment aISegment)
         {
-            AIPaths.Invalidate();
         }
     }
-
-    internal class NodeAIPathComponent : RoadComponent<NodeAIPath[]>
-    {
-        private AINode aINode;
-        private INodeAIPathFactory factory;
-
-        public NodeAIPathComponent(AINode aINode, INodeAIPathFactory factory)
-        {
-            this.aINode = aINode;
-            this.factory = factory;
-        }
-
-        protected override async Task<NodeAIPath[]> GetValueAsync(CancellationToken cancel)
-        {
-            var paths = await CreatePaths(cancel);
-
-            var compositeDisposable = new CompositeDisposable();
-            compositeDisposable.AddRange(paths);
-            compositeDisposable.Add(cancel.Register(compositeDisposable.Dispose));
-
-            return paths;
-        }
-        private Task<NodeAIPath[]> CreatePaths(CancellationToken cancel)
-        {
-            return factory.CreateAsync(aINode, cancel);
-        }
-    }
-
+    
     public class Node : IBoundsObject2D
     {
         public event Action Invalidated;

@@ -22,8 +22,7 @@ namespace OSMTool.Wpf.Traffic
         private CanvasRoadManager manager;
 
         public TrafficNode Node => node;
-
-        public IAIPath[] AiPaths { get => aiPaths; set { aiPaths = value; InvalidateVisual(); } }
+        
 
         public PointerAdorner(CanvasRoadManager manager, UIElement element) : base(element)
         {
@@ -36,53 +35,22 @@ namespace OSMTool.Wpf.Traffic
             this.node = node;
             this.mouse = mouse;
             this.InvalidateVisual();
-            cancel = new CancellationTokenSource();
-            await LoadAiPaths(node, cancel.Token);
         }
-
-        private async Task LoadAiPaths(TrafficNode node, CancellationToken cancel)
-        {
-            if (node == null || cancel.IsCancellationRequested) return;
-            try
-            {
-                var list = new List<IAIPath>();
-                var nodeAiPaths = await node.AIPaths.Result.Task;
-
-                var segmentAiPaths = (await Task.WhenAll(node.Segments.Select(t => t.Segment).Where(s => s.Start != null & s.End != null).OfType<AISegment>().Select(t => t.AIPaths.Result.Task))).SelectMany(t => t);
-                list.AddRange(nodeAiPaths);
-                list.AddRange(segmentAiPaths);
-                cancel.ThrowIfCancellationRequested();
-
-
-                AiPaths = list.ToArray();
-            }
-            catch (OperationCanceledException)
-            {
-
-            }
-        }
-
-        private IAIPath[] aiPaths;
+        
 
 
         protected override void OnRender(DrawingContext drawingContext)
         {
             if (node == null) return;
 
-            if (aiPaths != null)
+
+
+            foreach(TrafficSegmentNodeConnection seg in node.Segments)
             {
-                foreach (var path in aiPaths)
-                {
-                    var p3d1 = path.Path.GetTransformedPoint(0, Vector3.zero);
-                    var p3d2 = path.Path.GetTransformedPoint(path.Path.Length, Vector3.zero);
-
-                    var p1 = new Point(p3d1.x, p3d1.z);
-                    var p2 = new Point(p3d2.x, p3d2.z);
-
-                    drawingContext.DrawLine(new Pen(Brushes.Red, 1), p1, p2);
-                }
+                seg.Segment.RenderAIPaths(drawingContext);
             }
-            return;
+
+            
             var Position = node?.Position ?? new UnityEngine.Vector3(0, 0, 0);
             var scale = manager.Scale;
             var height = manager.Height;

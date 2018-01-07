@@ -9,22 +9,43 @@ namespace Simulation.Traffic
 
     public class AISegment : Segment
     {
-        public IRoadComponent<ILoftPath> LoftPath { get; }
-        public IRoadComponent<SegmentAIPath[]> AIPaths { get; }
+        private ISegmentAIPathsFactory aiPathFactory = SegmentAIPathsFactory.Default;
+        private ISegmentPathFactory loftPathFactory = SegmentPathFactory.Default;
+        private ILoftPath loftPath;
+        private SegmentAIPath[] aiPaths;
 
-        public AISegment(SegmentDescription description, RoadManager manager, ISegmentAIPathsFactory aiFactory = null) : base(description, manager)
+        public AISegment(SegmentDescription description, RoadManager manager) : base(description, manager)
         {
-            LoftPath = new SegmentLoftPathComponent(this, SegmentPathFactory.Default);
-            AIPaths = new SegmentAIPathComponent(this, aiFactory ?? SegmentAIPathsFactory.Default);
-            Invalidated += LoftPath.Invalidate;
-            LoftPath.Invalidated += AIPaths.Invalidate;
-            AIPaths.Invalidated += InvalidateNodeAIPaths;
         }
 
-        private void InvalidateNodeAIPaths()
-        {
-            (Start.Node as AINode).InvalidateAIPaths(this);
-        }
+        public ILoftPath LoftPath => loftPath ?? (loftPath = createLoftPath());
+        public SegmentAIPath[] AIPaths => aiPaths ?? (aiPaths = createAIPaths());
+
+        private SegmentAIPath[] createAIPaths() => aiPathFactory.Create(this);
+
+        private ILoftPath createLoftPath() => loftPathFactory.Create(this);
+
+        private void InvalidateLoftPath() => loftPath = null;
+
+
+
+
+        //public IRoadComponent<ILoftPath> LoftPath { get; }
+        //public IRoadComponent<SegmentAIPath[]> AIPaths { get; }
+
+        //public AISegment(SegmentDescription description, RoadManager manager, ISegmentAIPathsFactory aiFactory = null) : base(description, manager)
+        //{
+        //    LoftPath = new SegmentLoftPathComponent(this, SegmentPathFactory.Default);
+        //    AIPaths = new SegmentAIPathComponent(this, aiFactory ?? SegmentAIPathsFactory.Default);
+        //    Invalidated += LoftPath.Invalidate;
+        //    LoftPath.Invalidated += AIPaths.Invalidate;
+        //    AIPaths.Invalidated += InvalidateNodeAIPaths;
+        //}
+
+        //private void InvalidateNodeAIPaths()
+        //{
+        //    (Start.Node as AINode).InvalidateAIPaths(this);
+        //}
     }
 
     public class Segment : IBoundsObject2D
@@ -137,5 +158,6 @@ namespace Simulation.Traffic
         protected virtual void OnRemoved()
         {
         }
+
     }
 }

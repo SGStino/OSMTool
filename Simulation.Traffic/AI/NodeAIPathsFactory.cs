@@ -13,14 +13,12 @@ namespace Simulation.Traffic.AI
     {
         public static NodeAIPathsFactory Default { get; } = new NodeAIPathsFactory();
 
-        public async Task<NodeAIPath[]> CreateAsync(AINode node, CancellationToken cancel)
+        public   NodeAIPath[] Create(AINode node)
         {
             var nodeRadius = 10;
 
             var segments = node.Segments.Select(t => t.Segment).OfType<AISegment>().Where(t => t.Start != null && t.End != null).ToArray();
 
-            var segmentPathArrays = await Task.WhenAll(segments.Select(t => t.AIPaths.Result.Task));
-            var segmentLofts = await Task.WhenAll(segments.Select(t => t.LoftPath.Result.Task));
 
             var nodePaths = new List<NodeAIPath>();
             for (int iA = 1; iA < segments.Length; iA++)
@@ -28,9 +26,9 @@ namespace Simulation.Traffic.AI
                 for (int iB = 0; iB < iA; iB++)
                 {
                     var segA = segments[iA];
-                    var loftA = segmentLofts[iA];
+                    var loftA = segA.LoftPath;
                     var segB = segments[iB];
-                    var loftB = segmentLofts[iB];
+                    var loftB = segB.LoftPath;
 
 
                     var isAStart = segA.End?.Node == node;

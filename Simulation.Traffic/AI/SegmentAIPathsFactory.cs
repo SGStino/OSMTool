@@ -12,7 +12,7 @@ namespace Simulation.Traffic.AI
     {
         public static SegmentAIPathsFactory Default { get; } = new SegmentAIPathsFactory();
 
-        public Task<SegmentAIPath[]> CreateAsync(Segment segment, ILoftPath loftPath, CancellationToken cancel)
+        public SegmentAIPath[] Create(AISegment segment)
         {
             var lanes = segment.Description.Lanes;
             var paths = new SegmentAIPath[lanes.Length];
@@ -21,21 +21,19 @@ namespace Simulation.Traffic.AI
 
             for (int i = 0; i < paths.Length; i++)
             {
-                cancel.ThrowIfCancellationRequested();
-                var path = Create(lanes[i], loftPath, ref offset);
+                var path = Create(segment, lanes[i], ref offset);
                 if (i > 0)
                     SegmentAIPath.ConnectParralel(paths[i - 1], path);
                 paths[i] = path;
             }
 
-            return Task.FromResult(paths);
+            return paths;
         }
 
 
-        private SegmentAIPath Create(LaneDescription laneDescription, ILoftPath loftPath, ref float offset)
+        private SegmentAIPath Create(AISegment segment, LaneDescription laneDescription, ref float offset)
         {
-            var path = new SegmentAIPath(laneDescription, loftPath, offset);
-
+            var path = new SegmentAIPath(segment, laneDescription, offset + laneDescription.Width / 2);
             offset += path.Lane.Width;
             return path;
         }
@@ -45,14 +43,14 @@ namespace Simulation.Traffic.AI
 
     public class SegmentAIPath : IAIPath, IDisposable
     {
+        private readonly AISegment segment;
         private LaneDescription laneDescription;
-        private readonly ILoftPath loftPath;
         private readonly float offset;
         private List<NodeAIPath> endConnections = new List<NodeAIPath>();
-        public SegmentAIPath(LaneDescription laneDescription, ILoftPath loftPath, float offset)
+        public SegmentAIPath(AISegment segment, LaneDescription laneDescription, float offset)
         {
+            this.segment = segment;
             this.laneDescription = laneDescription;
-            this.loftPath = loftPath;
             this.offset = offset;
         }
 
@@ -83,7 +81,7 @@ namespace Simulation.Traffic.AI
 
         public LaneDescription Lane => laneDescription;
 
-        public ILoftPath Path => loftPath;
+        public ILoftPath Path => segment.LoftPath;
 
         public float PathOffsetStart => offset;
 

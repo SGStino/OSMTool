@@ -6,6 +6,6 @@ namespace Simulation.Traffic
 {
     public interface INodeAIPathFactory
     {
-        Task<NodeAIPath[]> CreateAsync(AINode aINode, CancellationToken cancel);
+        NodeAIPath[] Create(AINode aINode);
     }
 }

@@ -7,6 +7,6 @@ namespace Simulation.Traffic
 {
     public interface ISegmentAIPathsFactory
     {
-        Task<SegmentAIPath[]> CreateAsync(Segment segment, ILoftPath path, CancellationToken cancel);
+        SegmentAIPath[] Create(AISegment segment);
     }
 }

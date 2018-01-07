@@ -10,9 +10,11 @@ using System.Windows;
 
 namespace OSMTool.Wpf.Traffic
 {
-    public class TrafficSegmentNodeConnection : SegmentNodeConnection
-    {
-        private Line tangentLine;
+    internal class TrafficSegmentNodeConnection : SegmentNodeConnection
+    { 
+
+
+        public new TrafficSegment Segment => base.Segment as TrafficSegment;
 
         public TrafficSegmentNodeConnection(Segment segment, Node start, CanvasRoadManager canvasRoadManager) : base(segment, start, canvasRoadManager)
         {
