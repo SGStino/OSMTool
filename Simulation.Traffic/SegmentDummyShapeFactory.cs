@@ -15,7 +15,7 @@ namespace Simulation.Traffic
         {
         }
 
-        public Task<ILoftShape> Create(Segment segment, CancellationToken cancel)
+        public Task<ILoftShape> CreateAsync(Segment segment, CancellationToken cancel)
         {
             return Task.Run(() => CreateShape(segment, cancel), cancel);
         }

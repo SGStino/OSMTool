@@ -1,9 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Simulation.Traffic.Lofts;
+using System;
 
 namespace Simulation.Traffic
 {
+    [Obsolete]
     public class FactoryComponent<TResult, TOwner> : RoadComponent<TResult>
         where TResult : class
     {
@@ -15,9 +17,9 @@ namespace Simulation.Traffic
             this.owner = owner;
             this.factory = factory;
         }
-        protected override Task<TResult> GetValue(CancellationToken cancel)
+        protected override Task<TResult> GetValueAsync(CancellationToken cancel)
         {
-            return factory.Create(owner, cancel);
+            return factory.CreateAsync(owner, cancel);
         }
     }
 }

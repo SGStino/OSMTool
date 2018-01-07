@@ -9,6 +9,19 @@ using UnityEngine;
 
 namespace Simulation.Traffic
 {
+    public class AIRoadManager : RoadManager
+    {
+        protected override Node createNode(Vector3 position)
+        {
+            return new AINode(position, this);
+        }
+
+        protected override Segment createSegment(Node start, Node end, SegmentDescription description)
+        {
+            return new AISegment(description, this);
+        }
+    }
+
     public class RoadManager
     {
 

@@ -15,14 +15,85 @@ namespace Simulation.Traffic
     }
     public interface IRoadComponent<T> : IRoadComponent
     {
-        Task<T> Value { get; }
+        RoadComponentValue<T> Result { get; }
     }
-    
+
+    public struct RoadComponentValue<T>
+    {
+
+        public RoadComponentValue(Task<T> task, CancellationToken token) : this()
+        {
+            this.Task = task;
+            this.Validity = token;
+        }
+
+        public Task<T> Task { get; }
+        public CancellationToken Validity { get; }
+    }
+
+    public struct InternalStore<T>
+    {
+        public InternalStore(Task<T> task, CancellationTokenSource cts) : this()
+        {
+            Value = task;
+            CancelSource = cts;
+        }
+
+        public Task<T> Value { get; }
+        public CancellationTokenSource CancelSource { get; }
+    }
 
     public abstract class RoadComponent<T> : IRoadComponent<T>
         where T : class
     {
 
+
+        public RoadComponent()
+        {
+            reset();
+        }
+
+        private void reset()
+        {
+            lazy = new Lazy<InternalStore<T>>(initialize, true);
+        }
+
+        private Lazy<InternalStore<T>> lazy;
+
+        public event Action Invalidated;
+
+        public RoadComponentValue<T> Result
+        {
+            get
+            {
+                var value = lazy.Value;
+                return new RoadComponentValue<T>(value.Value, value.CancelSource.Token);
+            }
+        }
+
+        private InternalStore<T> initialize()
+        {
+            var cts = new CancellationTokenSource();
+            return new InternalStore<T>(GetValueAsync(cts.Token), cts);
+        }
+
+        public void Invalidate()
+        {
+            if (lazy.IsValueCreated)
+            {
+                lazy.Value.CancelSource.Cancel();
+                reset();
+            }
+        }
+
+        protected abstract Task<T> GetValueAsync(CancellationToken cancel);
+
+        public Task ValidateAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        /*
         private CancellationTokenSource cancelSource;
 
         private Task<T> value;
@@ -30,7 +101,7 @@ namespace Simulation.Traffic
 
         public event Action Invalidated;
 
-        public Task<T> Value => GetValueInternal();
+        public RoadComponentValue<T> Value => new RoadComponentValue<T>(GetValueInternal( ), cancelSource.Token);
 
         private async Task<T> GetValueInternal()
         {
@@ -51,7 +122,7 @@ namespace Simulation.Traffic
 
                 var cts = new CancellationTokenSource();
                 value = GetValue(cts.Token);
-                cancelSource = cts;
+                cancelSource = cts; 
             }
             finally
             {
@@ -60,7 +131,6 @@ namespace Simulation.Traffic
             return await value;
         }
 
-        protected abstract Task<T> GetValue(CancellationToken cancel);
 
         public void Invalidate()
         {
@@ -70,5 +140,6 @@ namespace Simulation.Traffic
         }
 
         public Task ValidateAsync() => GetValueInternal();
+        */
     }
 }

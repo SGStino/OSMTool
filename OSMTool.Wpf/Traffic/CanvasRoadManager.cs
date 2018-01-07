@@ -11,7 +11,7 @@ using System.ComponentModel;
 
 namespace OSMTool.Wpf.Traffic
 {
-    public class CanvasRoadManager : RoadManager, INotifyPropertyChanged
+    public class CanvasRoadManager : AIRoadManager, INotifyPropertyChanged
     {
         private float height;
         private float width;

@@ -20,7 +20,7 @@ namespace Simulation.TrafficTest
 
             public Action AssertAction { get; set; }
 
-            protected override async Task<string> GetValue(CancellationToken cancel)
+            protected override async Task<string> GetValueAsync(CancellationToken cancel)
             {
                 cts?.TrySetCanceled();
                 cts = new TaskCompletionSource<string>();
@@ -29,7 +29,7 @@ namespace Simulation.TrafficTest
                 {
                     return await cts.Task;
                 }
-            }
+            } 
         }
 
         [TestMethod]
@@ -37,7 +37,7 @@ namespace Simulation.TrafficTest
         {
             var component = new TestComponent();
 
-            var task1 = component.Value;
+            var task1 = component.Result.Task;
 
             var result1 = "value1";
             component.CompleteTest(result1);
@@ -45,14 +45,14 @@ namespace Simulation.TrafficTest
             Assert.IsTrue(task1.IsCompleted, "completed 1");
             Assert.AreEqual(result1, task1.Result);
 
-            var task2 = component.Value;
+            var task2 = component.Result.Task;
 
             Assert.IsTrue(task2.IsCompleted, "completed 2");
             Assert.AreEqual(result1, task2.Result);
 
             component.Invalidate();
 
-            var task3 = component.Value;
+            var task3 = component.Result.Task;
 
             Assert.IsFalse(task3.IsCanceled, "task3.IsCanceled before .CompleteTest()");
             Assert.IsFalse(task3.IsCompleted, "task3.IsCompleted before .CompleteTest()");
@@ -77,7 +77,7 @@ namespace Simulation.TrafficTest
             component.AssertAction = () => creating = true;
 
             Assert.IsFalse(creating, "creating before .Value call");
-            var task = component.Value;
+            var task = component.Result.Task;
             Assert.IsTrue(creating, "creating after .Value call");
 
             Assert.IsFalse(task.IsCanceled, "task.IsCanceled before .CompleteTest()");

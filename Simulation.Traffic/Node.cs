@@ -1,13 +1,69 @@
-﻿using Simulation.Traffic.Trees;
+﻿using Simulation.Traffic.AI;
+using Simulation.Traffic.Trees;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System.Threading;
+using System.Threading.Tasks;
+using Simulation.Traffic.Utilities;
 
 namespace Simulation.Traffic
 {
+    public class AINode : Node
+    {
+        public IRoadComponent<NodeAIPath[]> AIPaths { get; }
+
+        public AINode(Vector3 position, RoadManager manager, INodeAIPathFactory aiFactory = null) : base(position, manager)
+        {
+            AIPaths = new NodeAIPathComponent(this, aiFactory ?? NodeAIPathsFactory.Default);
+
+            Invalidated += AIPaths.Invalidate;
+
+            AIPaths.Invalidated += NotifyOfAIPathInvalidation;
+        }
+
+        private void NotifyOfAIPathInvalidation()
+        {
+            //TODO: ask roadmanager for an update
+        }
+
+        public void InvalidateAIPaths(AISegment aISegment)
+        {
+            AIPaths.Invalidate();
+        }
+    }
+
+    internal class NodeAIPathComponent : RoadComponent<NodeAIPath[]>
+    {
+        private AINode aINode;
+        private INodeAIPathFactory factory;
+
+        public NodeAIPathComponent(AINode aINode, INodeAIPathFactory factory)
+        {
+            this.aINode = aINode;
+            this.factory = factory;
+        }
+
+        protected override async Task<NodeAIPath[]> GetValueAsync(CancellationToken cancel)
+        {
+            var paths = await CreatePaths(cancel);
+
+            var compositeDisposable = new CompositeDisposable();
+            compositeDisposable.AddRange(paths);
+            compositeDisposable.Add(cancel.Register(compositeDisposable.Dispose));
+
+            return paths;
+        }
+        private Task<NodeAIPath[]> CreatePaths(CancellationToken cancel)
+        {
+            return factory.CreateAsync(aINode, cancel);
+        }
+    }
+
     public class Node : IBoundsObject2D
     {
+        public event Action Invalidated;
         internal IList<SegmentNodeConnection> SegmentList => segments;
 
         private List<SegmentNodeConnection> segments = new List<SegmentNodeConnection>();
@@ -57,10 +113,16 @@ namespace Simulation.Traffic
 
         internal void NotifyOfMovement()
         {
+            Invalidate();
             OnMoved();
             Manager.BoundsChanged(this);
             foreach (var con in segments)
                 con.NotifyOfMovement();
+        }
+
+        private void Invalidate()
+        {
+            Invalidated?.Invoke();
         }
 
         protected virtual void OnMoved()
@@ -76,6 +138,7 @@ namespace Simulation.Traffic
         {
             updateOrder();
             OnTangentChanged(segmentNodeConnection);
+            Invalidate();
         }
 
         protected virtual void OnTangentChanged(SegmentNodeConnection segmentNodeConnection)
@@ -116,6 +179,7 @@ namespace Simulation.Traffic
         {
             updateOrder();
             OnDisconnected(connection);
+            Invalidate();
         }
 
         protected virtual void OnDisconnected(SegmentNodeConnection connection)
@@ -126,6 +190,7 @@ namespace Simulation.Traffic
         {
             updateOrder();
             OnConnected(connection);
+            Invalidate();
         }
 
         protected virtual void OnConnected(SegmentNodeConnection connection)

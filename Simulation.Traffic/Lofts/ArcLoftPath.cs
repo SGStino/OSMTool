@@ -92,7 +92,16 @@ namespace Simulation.Traffic.Lofts
 
         static Vector3 GetPosition(float angle, Vector3 normal, Vector3 startPosition)
         {
-            return Quaternion.AngleAxis(angle * Mathf.Rad2Deg, normal) * startPosition;
+
+            var e = normal.normalized;
+            var v = startPosition;
+            var cos = Mathf.Cos(angle);
+            var sin = Mathf.Sin(angle);
+
+            return cos * v + sin * Vector3.Cross(e, v) + (1 - cos) * Vector3.Dot(e, v) * e;
+
+
+            //return Quaternion.AngleAxis(angle * Mathf.Rad2Deg, normal) * startPosition;
         }
 
         public bool GetOffsetToPoint(Vector3 point, out float offset)

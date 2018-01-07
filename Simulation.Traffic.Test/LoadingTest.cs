@@ -40,13 +40,7 @@ namespace Simulation.Traffic.Test
 
                 await Task.Run((Action)loader.ReadAll); 
             }
-
-            var valueTasks = new List<Task<ILoftPath>>(roadManager.Segments.Select(t => t.Path.Value));
-
-            var values = await Task.WhenAll(valueTasks);
-
-            foreach (var value in values)
-                IsValid(value);
+ 
         }
 
         private void IsValid(ILoftPath value)

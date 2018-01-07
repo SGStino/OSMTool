@@ -48,11 +48,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AI\NodeAIPathsFactory.cs" />
+    <Compile Include="AI\SegmentAIPathsFactory.cs" />
+    <Compile Include="AI\IAIPath.cs" />
+    <Compile Include="INodeAIPathFactory.cs" />
     <Compile Include="IO\Constants.cs" />
     <Compile Include="IO\RoadsReader.cs" />
     <Compile Include="IO\RoadsWriter.cs" />
     <Compile Include="IO\Vector3D.cs" />
     <Compile Include="IComponentValueFactory.cs" />
+    <Compile Include="ISegmentAIPathsFactory.cs" />
+    <Compile Include="ISegmentPathFactory.cs" />
     <Compile Include="LaneDescription.cs" />
     <Compile Include="LaneType.cs" />
     <Compile Include="Lofts\ArcLoftPath.cs" />
@@ -70,7 +76,9 @@
     <Compile Include="IRoadComponent.cs" />
     <Compile Include="RoadManager.cs" />
     <Compile Include="Segment.cs" />
+    <Compile Include="SegmentAIPathComponent.cs" />
     <Compile Include="SegmentDescription.cs" />
+    <Compile Include="SegmentLoftPathComponent.cs" />
     <Compile Include="SegmentNodeConnection.cs" />
     <Compile Include="SegmentDummyShapeFactory.cs" />
     <Compile Include="FactoryComponent.cs" />
@@ -82,6 +90,7 @@
     <Compile Include="Turn.cs" />
     <Compile Include="Utilities\Angles.cs" />
     <Compile Include="Utilities\BiarcInterpolation.cs" />
+    <Compile Include="Utilities\CompositeDisposable.cs" />
     <Compile Include="Utilities\LinqUtils.cs" />
     <Compile Include="Utilities\Sequence.cs" />
     <Compile Include="Utilities\ThreadSafeSet.cs" />

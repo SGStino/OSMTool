@@ -1,12 +1,35 @@
-﻿using Simulation.Traffic.Lofts;
+﻿using Simulation.Traffic.AI;
+using Simulation.Traffic.Lofts;
 using Simulation.Traffic.Trees;
 using System;
 using UnityEngine;
 
 namespace Simulation.Traffic
 {
+
+    public class AISegment : Segment
+    {
+        public IRoadComponent<ILoftPath> LoftPath { get; }
+        public IRoadComponent<SegmentAIPath[]> AIPaths { get; }
+
+        public AISegment(SegmentDescription description, RoadManager manager, ISegmentAIPathsFactory aiFactory = null) : base(description, manager)
+        {
+            LoftPath = new SegmentLoftPathComponent(this, SegmentPathFactory.Default);
+            AIPaths = new SegmentAIPathComponent(this, aiFactory ?? SegmentAIPathsFactory.Default);
+            Invalidated += LoftPath.Invalidate;
+            LoftPath.Invalidated += AIPaths.Invalidate;
+            AIPaths.Invalidated += InvalidateNodeAIPaths;
+        }
+
+        private void InvalidateNodeAIPaths()
+        {
+            (Start.Node as AINode).InvalidateAIPaths(this);
+        }
+    }
+
     public class Segment : IBoundsObject2D
     {
+        public event Action Invalidated;
         public RoadManager Manager { get; internal set; }
 
         public SegmentDescription Description { get; }
@@ -26,8 +49,6 @@ namespace Simulation.Traffic
         }
         public bool IsRemoved { get; internal set; }
 
-        public IRoadComponent<ILoftPath> Path { get; }
-
         public Rect Bounds => getBounds();
 
         private Rect getBounds()
@@ -44,13 +65,12 @@ namespace Simulation.Traffic
             return Rect.MinMaxRect(minX, minY, maxX, maxY);
         }
 
-        public Segment(SegmentDescription description, RoadManager manager, IComponentValueFactory<ILoftPath, Segment> pathFactory = null)
+        public Segment(SegmentDescription description, RoadManager manager)
         {
             this.Description = description;
             this.Manager = manager;
-
-            Path = new FactoryComponent<ILoftPath, Segment>(this, pathFactory ?? SegmentPathFactory.Default);
         }
+
 
 
         internal void NotifyOfMovement(SegmentNodeConnection segmentNodeConnection)
@@ -74,7 +94,7 @@ namespace Simulation.Traffic
 
         public void Invalidate()
         {
-            Path.Invalidate();
+            Invalidated?.Invoke();
         }
 
         internal void NotifyOfRemoval()

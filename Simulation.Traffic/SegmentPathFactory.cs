@@ -5,15 +5,15 @@ using UnityEngine;
 
 namespace Simulation.Traffic
 {
-    public class SegmentPathFactory : IComponentValueFactory<ILoftPath, Segment>
+    public class SegmentPathFactory : ISegmentPathFactory
     {
         public static SegmentPathFactory Default { get; } = new SegmentPathFactory();
-        public Task<ILoftPath> Create(Segment owner, CancellationToken cancel)
+        public ILoftPath Create(Segment owner)
         {
             var start = owner.Start;
             var end = owner.End;
-
-            return Task.FromResult<ILoftPath>(new BiArcLoftPath(start.Node.Position, start.GetHeading(), end.Node.Position, end.GetHeading()));
+            if (start == null || end == null) return null;
+            return new BiArcLoftPath(start.Node.Position, start.GetHeading(), end.Node.Position, end.GetHeading());
         }
     }
 

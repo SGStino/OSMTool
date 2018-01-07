@@ -12,7 +12,7 @@ using System.Globalization;
 
 namespace OSMTool.Wpf.Traffic
 {
-    internal class TrafficSegment : Segment
+    internal class TrafficSegment : AISegment
     {
 
         private static Dictionary<string, Brush> laneColors = new Dictionary<string, Brush>()
