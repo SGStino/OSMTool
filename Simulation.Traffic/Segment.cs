@@ -12,16 +12,16 @@ namespace Simulation.Traffic
         private ISegmentAIPathsFactory aiPathFactory = SegmentAIPathsFactory.Default;
         private ISegmentPathFactory loftPathFactory = SegmentPathFactory.Default;
         private ILoftPath loftPath;
-        private SegmentAIPath[] aiPaths;
+        private SegmentAIRoute[] aiRoutes;
 
-        public AISegment(SegmentDescription description, RoadManager manager) : base(description, manager)
+        public AISegment(SegmentDescription description, AIRoadManager manager) : base(description, manager)
         {
         }
 
         public ILoftPath LoftPath => loftPath ?? (loftPath = createLoftPath());
-        public SegmentAIPath[] AIPaths => aiPaths ?? (aiPaths = createAIPaths());
+        public SegmentAIRoute[] AIRoutes => aiRoutes ?? (aiRoutes = createAIRoutes());
 
-        private SegmentAIPath[] createAIPaths() => aiPathFactory.Create(this);
+        private SegmentAIRoute[] createAIRoutes() => aiPathFactory.CreateRoutes(this);
 
         private ILoftPath createLoftPath() => loftPathFactory.Create(this);
 
@@ -29,6 +29,29 @@ namespace Simulation.Traffic
 
 
 
+        public new AISegmentNodeConnection Start
+        {
+            get => base.Start as AISegmentNodeConnection;
+            internal set => base.Start = value;
+        }
+        public new AISegmentNodeConnection End
+        { 
+            get => base.End as AISegmentNodeConnection;
+            internal set => base.End = value;
+        }
+
+        protected override void OnOffsetChanged(SegmentNodeConnection segmentNodeConnection)
+        {
+            base.OnOffsetChanged(segmentNodeConnection);
+            InvalidateLoftPath();
+        }
+
+        protected override void OnMoved()
+        {
+            base.OnMoved();
+            InvalidateLoftPath();
+        }
+         
 
         //public IRoadComponent<ILoftPath> LoftPath { get; }
         //public IRoadComponent<SegmentAIPath[]> AIPaths { get; }
@@ -56,6 +79,16 @@ namespace Simulation.Traffic
         public SegmentDescription Description { get; }
 
         private SegmentNodeConnection start;
+
+        internal void NotifyOfOffsetChanged(SegmentNodeConnection segmentNodeConnection)
+        {
+            OnOffsetChanged(segmentNodeConnection);
+        }
+        internal void NotifyOfTangentChanged(SegmentNodeConnection segmentNodeConnection)
+        {
+            OnTangentChanged(segmentNodeConnection);
+        }
+
         private SegmentNodeConnection end;
 
         public SegmentNodeConnection Start
@@ -100,7 +133,12 @@ namespace Simulation.Traffic
             Manager.BoundsChanged(this);
             Invalidate();
         }
-
+        protected virtual void OnOffsetChanged(SegmentNodeConnection segmentNodeConnection)
+        {
+        }
+        protected virtual void OnTangentChanged(SegmentNodeConnection segmentNodeConnection)
+        {
+        }
         protected virtual void OnMoved()
         {
         }

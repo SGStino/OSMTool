@@ -22,7 +22,7 @@ namespace OSMTool.Wpf.Traffic
         private CanvasRoadManager manager;
 
         public TrafficNode Node => node;
-        
+
 
         public PointerAdorner(CanvasRoadManager manager, UIElement element) : base(element)
         {
@@ -36,7 +36,99 @@ namespace OSMTool.Wpf.Traffic
             this.mouse = mouse;
             this.InvalidateVisual();
         }
-        
+
+        public void RenderAIPaths(System.Windows.Media.DrawingContext drawingContext, IEnumerable<IAIPath> paths, Brush color, Pen connector)
+        {
+            var mgr = manager;
+            var scale = mgr.Scale;
+            var height = mgr.Drawing.Height;
+
+            var laneColor = color;
+            var pen = new Pen(laneColor, 0.125f * scale)
+            {
+                StartLineCap = PenLineCap.Flat,
+                EndLineCap = PenLineCap.Flat
+            };
+            pen.Freeze();
+            var pen2 = new Pen(laneColor, 0.125f * scale * 0.5f)
+            {
+                StartLineCap = PenLineCap.Flat,
+                EndLineCap = PenLineCap.Flat
+            };
+            pen2.Freeze();
+
+
+            float offset = 5 * (float)Math.Sin((DateTime.Now - DateTime.Today).TotalSeconds);
+
+
+            //drawingContext.DrawLine(pen, start, end);
+
+            float time = DateTime.Now.Millisecond / 1000.0f;
+
+            foreach (var path in paths)
+            {
+                if (path.Path == null) continue;
+                //DrawArc(drawingContext, scale, height, pen, path.PathOffsetStart);
+
+
+                var len = path.Path.Length - path.PathOffsetStart - path.PathOffsetEnd;
+
+                var t = path.Reverse ? 1 - time : time;
+                //for (float i = path.PathOffsetStart; i < len; i++)
+                //{
+                //    if (i + t < len)
+                //    {
+                //        Vector3 pos = new Vector3(Mathf.Lerp(path.SideOffsetStart, path.SideOffsetEnd, (i - path.PathOffsetStart) / len), 0, 0);
+                //        var p = path.Path.GetTransformedPoint(t + i, pos);
+
+                //        drawDot(drawingContext, p, scale, height, color, null);
+                //    }
+                //}
+
+
+                int count = 1 + (int)(len * 4);
+                var points = Enumerable.Range(0, count+1)
+                    .Select(n => n / (float)count)
+                    .Select(n => path.Path.GetTransformedPoint(n * len, new Vector3(Mathf.Lerp(path.SideOffsetStart, path.SideOffsetEnd, n), 0, 0)))
+                    .Select(p => new Point(p.x * scale, height - p.z * scale))
+                    .ToArray();
+
+
+                var first = points.FirstOrDefault();
+                bool draw = true;
+                foreach (var point in points.Skip(1))
+                {
+                    if (draw)
+                    {
+                        drawingContext.DrawLine(pen, first, point);
+                    }
+                    else
+                        drawingContext.DrawLine(pen2, first, point);
+                    draw = !draw;
+                    first = point;
+                }
+
+                //if (connector != null)
+                //{
+
+                //    Vector3 pos = new Vector3(path.Reverse ? path.SideOffsetStart : path.SideOffsetEnd, 0, 0);
+                //    var p = path.Path.GetTransformedPoint(path.Reverse ? path.Path.Length : 0, pos);
+
+                //    if (path.Reverse)
+                //        drawDot(drawingContext, p, scale, height, Brushes.Cyan, connector);
+                //    else
+                //        drawDot(drawingContext, p, scale, height, Brushes.Magenta, connector);
+                //}
+            }
+        }
+
+        private void drawDot(DrawingContext drawingContext, Vector3 pos, float scale, double height, Brush color, Pen pen)
+        {
+            var center = new Point(pos.x * scale, height - pos.z * scale);
+
+            drawingContext.DrawEllipse(color, pen, center, 1, 1);
+        }
+
 
 
         protected override void OnRender(DrawingContext drawingContext)
@@ -45,12 +137,17 @@ namespace OSMTool.Wpf.Traffic
 
 
 
-            foreach(TrafficSegmentNodeConnection seg in node.Segments)
+            foreach (TrafficSegmentNodeConnection seg in node.Segments)
             {
-                seg.Segment.RenderAIPaths(drawingContext);
+                RenderAIPaths(drawingContext, seg.Segment.AIRoutes.SelectMany(t => t.Paths), Brushes.Red, new Pen(Brushes.Lime, 1));
+                RenderAIPaths(drawingContext, seg.AIRoutes.SelectMany(t => t.Paths), Brushes.Blue, null);
+
+
             }
 
-            
+            this.InvalidateVisual();
+
+
             var Position = node?.Position ?? new UnityEngine.Vector3(0, 0, 0);
             var scale = manager.Scale;
             var height = manager.Height;

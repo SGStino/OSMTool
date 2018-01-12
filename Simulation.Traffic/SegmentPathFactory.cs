@@ -13,7 +13,7 @@ namespace Simulation.Traffic
             var start = owner.Start;
             var end = owner.End;
             if (start == null || end == null) return null;
-            return new BiArcLoftPath(start.Node.Position, start.GetHeading(), end.Node.Position, end.GetHeading());
+            return new BiArcLoftPath(start.GetPosition(), start.GetHeading(), end.GetPosition(), end.GetHeading());
         }
     }
 
@@ -21,5 +21,15 @@ namespace Simulation.Traffic
     {
         public static Vector3 GetHeading(this SegmentNodeConnection connnection) => connnection.Segment.Start == connnection ? -connnection.Tangent : connnection.Tangent;
         public static void SetHeading(this SegmentNodeConnection connnection, Vector3 heading) => connnection.Tangent = connnection.Segment.Start == connnection ? -heading : heading;
+
+
+        public static Vector3 GetPosition(this SegmentNodeConnection con)
+        {
+            var tangent = con.Tangent;
+            return con.Node.Position
+            + tangent * con.Offset.z
+            + Vector3.Cross(tangent, Vector3.up) * con.Offset.x
+            + Vector3.up * con.Offset.y;
+        }
     }
 }

@@ -4,8 +4,9 @@ using System.Threading.Tasks;
 
 namespace Simulation.Traffic
 {
-    public interface INodeAIPathFactory
+
+    public interface INodeAIPathsFactory
     {
-        NodeAIPath[] Create(AINode aINode);
+        NodeAIRoute[] CreateRoutes(AISegmentNodeConnection node);
     }
 }

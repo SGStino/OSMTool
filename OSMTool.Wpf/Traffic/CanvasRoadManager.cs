@@ -117,7 +117,7 @@ namespace OSMTool.Wpf.Traffic
 
         protected override SegmentNodeConnection createConnection(Segment segment, Node start)
         {
-            return new TrafficSegmentNodeConnection(segment, start, this);
+            return new TrafficSegmentNodeConnection(segment as TrafficSegment, start as TrafficNode, this);
         }
     }
 }

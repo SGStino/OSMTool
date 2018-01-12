@@ -10,6 +10,9 @@ namespace Simulation.Traffic.AI
     public interface IAIPath
     {
         ILoftPath Path { get; }
+        float SideOffsetStart { get; }
+        float SideOffsetEnd { get; }
+
         float PathOffsetStart { get; }
         float PathOffsetEnd { get; }
 

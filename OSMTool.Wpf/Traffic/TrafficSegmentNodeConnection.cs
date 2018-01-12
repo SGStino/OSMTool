@@ -10,13 +10,13 @@ using System.Windows;
 
 namespace OSMTool.Wpf.Traffic
 {
-    internal class TrafficSegmentNodeConnection : SegmentNodeConnection
+    internal class TrafficSegmentNodeConnection : AISegmentNodeConnection
     { 
 
 
         public new TrafficSegment Segment => base.Segment as TrafficSegment;
 
-        public TrafficSegmentNodeConnection(Segment segment, Node start, CanvasRoadManager canvasRoadManager) : base(segment, start, canvasRoadManager)
+        public TrafficSegmentNodeConnection(TrafficSegment segment, TrafficNode start, CanvasRoadManager canvasRoadManager) : base(segment, start, canvasRoadManager)
         {
 
         }

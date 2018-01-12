@@ -12,13 +12,16 @@ namespace Simulation.Traffic
 {
     public class AINode : Node
     {
-        public AINode(Vector3 position, RoadManager manager, INodeAIPathFactory aiFactory = null) : base(position, manager)
+        public AINode(Vector3 position, RoadManager manager, INodeAIPathsFactory aiFactory = null) : base(position, manager)
         {
         }
 
         public void InvalidateAIPaths(AISegment aISegment)
         {
         }
+
+        public new IEnumerable<AISegmentNodeConnection> Segments => base.Segments.OfType<AISegmentNodeConnection>();
+         
     }
     
     public class Node : IBoundsObject2D
@@ -83,6 +86,15 @@ namespace Simulation.Traffic
         private void Invalidate()
         {
             Invalidated?.Invoke();
+        }
+
+        internal void NotifyOfOffsetChanged(SegmentNodeConnection segmentNodeConnection)
+        {
+            OnOffsetChanged(segmentNodeConnection);
+        }
+
+        protected virtual void OnOffsetChanged(SegmentNodeConnection segmentNodeConnection)
+        { 
         }
 
         protected virtual void OnMoved()

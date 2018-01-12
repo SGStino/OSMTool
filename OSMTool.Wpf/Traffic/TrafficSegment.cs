@@ -8,6 +8,7 @@ using System;
 using UnityEngine;
 using System.Linq;
 using System.Globalization;
+using Simulation.Traffic.Lofts;
 
 namespace OSMTool.Wpf.Traffic
 {
@@ -29,7 +30,7 @@ namespace OSMTool.Wpf.Traffic
             { "tram", Brushes.Green }
         };
 
-        public TrafficSegment(SegmentDescription description, RoadManager manager) : base(description, manager)
+        public TrafficSegment(SegmentDescription description, CanvasRoadManager manager) : base(description, manager)
         {
         }
         protected override void OnCreated()
@@ -37,34 +38,6 @@ namespace OSMTool.Wpf.Traffic
             base.OnCreated();
         }
 
-
-        public void RenderAIPaths(System.Windows.Media.DrawingContext drawingContext)
-        {
-            if (Start == null || End == null) return;
-            var dsc = (Description as TrafficSegmentDescription);
-            var mgr = (Manager as CanvasRoadManager);
-            var scale = mgr.Scale;
-            var height = mgr.Drawing.Height;
-
-            var laneColor = Brushes.Red;
-            var pen = new Pen(laneColor, 0.5f * scale)
-            {
-                StartLineCap = PenLineCap.Round,
-                EndLineCap = PenLineCap.Round
-            };
-            pen.Freeze();
-
-
-            float offset = 5 * (float)Math.Sin((DateTime.Now - DateTime.Today).TotalSeconds);
-
-
-            //drawingContext.DrawLine(pen, start, end);
-
-            foreach (var path in AIPaths)
-            {
-                DrawArc(drawingContext, scale, height, pen, path.PathOffsetStart);
-            }
-        }
 
         private void DrawArc(DrawingContext drawingContext, float scale, double height, Pen pen, float offset)
         {
@@ -92,7 +65,7 @@ namespace OSMTool.Wpf.Traffic
             var r1 = Math.Max(0, a1.radius + (a1.IsClockwise() ? offset : -offset));
             var r2 = Math.Max(0, a2.radius + (a2.IsClockwise() ? offset : -offset));
 
-             
+
             var size1 = new Size(r1 * scale, r1 * scale);
             var size2 = new Size(r2 * scale, r2 * scale);
 
