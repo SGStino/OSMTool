@@ -28,4 +28,5 @@ namespace Simulation.Traffic.AI
         LaneType LaneType { get; }
         VehicleTypes VehicleTypes { get; }
     }
+
 }

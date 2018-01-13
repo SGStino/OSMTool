@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+using Simulation.Traffic.Lofts;
+
+namespace Simulation.Traffic.AI
+{
+    public class NodeAIPath : IAIPath, IDisposable
+    {
+        private readonly SegmentAIPath source;
+        private readonly SegmentAIPath destination;
+        private readonly ILoftPath path;
+
+        public NodeAIPath(SegmentAIPath source, SegmentAIPath destination, ILoftPath path)
+        {
+            this.source = source;
+            this.destination = destination;
+            this.path = path;
+            source.ConnectTo(this);
+        }
+
+
+        public ILoftPath Path => path;
+
+        public float SideOffsetStart => source.Reverse ? -source.SideOffsetStart : source.SideOffsetEnd;
+
+        public float SideOffsetEnd => destination.Reverse ? -destination.SideOffsetEnd : destination.SideOffsetStart;
+
+        public IAIPath LeftParralel { get; private set; }
+
+        public IAIPath RightParralel { get; private set; }
+
+        public bool Reverse => false;
+
+        public float MaxSpeed => destination.MaxSpeed;
+
+        public float AverageSpeed => (source.AverageSpeed + destination.AverageSpeed) / 2;
+
+        public IEnumerable<IAIPath> EndConnections => new[] { destination };
+
+        public LaneType LaneType => destination.LaneType;
+
+        public VehicleTypes VehicleTypes => destination.VehicleTypes;
+
+        public float PathOffsetStart => 0.0f;
+
+        public float PathOffsetEnd => 0.0f;
+
+        public void Dispose()
+        {
+            source.DisconnectFrom(this);
+        }
+    }
+}

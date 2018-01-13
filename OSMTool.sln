@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Traffic", "Simul
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alpinechough.Srtm", "..\..\..\..\Source\Git\Alpinechough.Srtm\Alpinechough.Srtm.csproj", "{CD10A6E7-745F-4C82-9AAB-C5AA90944195}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Traffic.Test", "Simulation.Traffic.Test\Simulation.Traffic.Test.csproj", "{9F4049F2-1307-4321-A393-3D2E8528BC2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Traffic.Test", "Simulation.Traffic.Test\Simulation.Traffic.Test.csproj", "{9F4049F2-1307-4321-A393-3D2E8528BC2D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

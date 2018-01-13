@@ -48,9 +48,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AI\Agents\Agent.cs" />
+    <Compile Include="AI\AIPathExtensions.cs" />
+    <Compile Include="AI\IAIGraphNode.cs" />
+    <Compile Include="AI\IAIRoute.cs" />
+    <Compile Include="AI\Navigation\GraphSolver.cs" />
+    <Compile Include="AI\Navigation\RouteSolver.cs" />
+    <Compile Include="AI\NodeAIPath.cs" />
     <Compile Include="AI\NodeAIPathsFactory.cs" />
+    <Compile Include="AI\NodeAIRoute.cs" />
+    <Compile Include="AI\SegmentAIPath.cs" />
     <Compile Include="AI\SegmentAIPathsFactory.cs" />
     <Compile Include="AI\IAIPath.cs" />
+    <Compile Include="AI\SegmentAIRoute.cs" />
+    <Compile Include="AI\SegmentAIRouteExtensions.cs" />
     <Compile Include="INodeAIPathFactory.cs" />
     <Compile Include="IO\Constants.cs" />
     <Compile Include="IO\RoadsReader.cs" />

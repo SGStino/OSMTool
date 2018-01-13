@@ -22,6 +22,21 @@ namespace Simulation.Traffic.Lofts
 
         public BiArcLoftPath(Vector3 start, Vector3 tangentStart, Vector3 end, Vector3 tangentEnd)
         {
+#if DEBUG
+            if (float.IsNaN(start.x)) throw new InvalidOperationException("start.x is not a number");
+            if (float.IsNaN(start.y)) throw new InvalidOperationException("start.y is not a number");
+            if (float.IsNaN(start.z)) throw new InvalidOperationException("start.z is not a number");
+            if (float.IsNaN(end.x)) throw new InvalidOperationException("end.x is not a number");
+            if (float.IsNaN(end.y)) throw new InvalidOperationException("end.y is not a number");
+            if (float.IsNaN(end.z)) throw new InvalidOperationException("end.z is not a number");
+            if (float.IsNaN(tangentStart.x)) throw new InvalidOperationException("tangentStart.x is not a number");
+            if (float.IsNaN(tangentStart.y)) throw new InvalidOperationException("tangentStart.y is not a number");
+            if (float.IsNaN(tangentStart.z)) throw new InvalidOperationException("tangentStart.z is not a number");
+            if (float.IsNaN(tangentEnd.x)) throw new InvalidOperationException("tangentEnd.x is not a number");
+            if (float.IsNaN(tangentEnd.y)) throw new InvalidOperationException("tangentEnd.y is not a number");
+            if (float.IsNaN(tangentEnd.z)) throw new InvalidOperationException("tangentEnd.z is not a number");
+#endif
+
             tangentStart.Normalize();
             tangentEnd.Normalize();
 

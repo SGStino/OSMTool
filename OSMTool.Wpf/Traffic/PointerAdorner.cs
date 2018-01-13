@@ -87,38 +87,55 @@ namespace OSMTool.Wpf.Traffic
 
 
                 int count = 1 + (int)(len * 4);
-                var points = Enumerable.Range(0, count+1)
+
+                count = Math.Min(100, count);
+                var points = Enumerable.Range(0, count + 1)
                     .Select(n => n / (float)count)
-                    .Select(n => path.Path.GetTransformedPoint(n * len, new Vector3(Mathf.Lerp(path.SideOffsetStart, path.SideOffsetEnd, n), 0, 0)))
+                    .Select(n => path.Path.GetTransformedPoint(path.GetOffsetPercentual(n), new Vector3(Mathf.Lerp(path.SideOffsetStart, path.SideOffsetEnd, n), 0, 0)))
                     .Select(p => new Point(p.x * scale, height - p.z * scale))
                     .ToArray();
 
 
                 var first = points.FirstOrDefault();
                 bool draw = true;
+                int pI = 0;
                 foreach (var point in points.Skip(1))
                 {
-                    if (draw)
-                    {
-                        drawingContext.DrawLine(pen, first, point);
-                    }
-                    else
-                        drawingContext.DrawLine(pen2, first, point);
+
+                    var s = ((double)pI++ / points.Length);
+
+                    var w = draw ? 0.125 : 0.25;
+                    var p = new Pen(color, 15 * w * s);
+
+
+                    drawingContext.DrawLine(p, first, point);
+
+
                     draw = !draw;
                     first = point;
                 }
 
-                //if (connector != null)
-                //{
+                if (connector != null)
+                {
 
-                //    Vector3 pos = new Vector3(path.Reverse ? path.SideOffsetStart : path.SideOffsetEnd, 0, 0);
-                //    var p = path.Path.GetTransformedPoint(path.Reverse ? path.Path.Length : 0, pos);
+                    Vector3 pos = new Vector3(path.Reverse ? path.SideOffsetStart : path.SideOffsetEnd, 0, 0);
+                    var p = path.Path.GetTransformedPoint(path.GetEndOffset(), pos);
 
-                //    if (path.Reverse)
-                //        drawDot(drawingContext, p, scale, height, Brushes.Cyan, connector);
-                //    else
-                //        drawDot(drawingContext, p, scale, height, Brushes.Magenta, connector);
-                //}
+                    //if (path.Reverse)
+                    //    drawDot(drawingContext, p, scale, height, Brushes.Cyan, connector);
+                    //else
+                    //    drawDot(drawingContext, p, scale, height, Brushes.Magenta, connector);
+
+
+                    var segPath = path as SegmentAIPath;
+                    if (segPath != null)
+                    {
+
+                        var point = new Point(p.x * scale, height - p.z * scale);
+                        drawingContext.DrawText(new FormattedText(segPath.Lane.Turn.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), 5, Brushes.Red), point);
+                    }
+
+                }
             }
         }
 
@@ -137,12 +154,16 @@ namespace OSMTool.Wpf.Traffic
 
 
 
+
+
+
+
+
+
             foreach (TrafficSegmentNodeConnection seg in node.Segments)
             {
                 RenderAIPaths(drawingContext, seg.Segment.AIRoutes.SelectMany(t => t.Paths), Brushes.Red, new Pen(Brushes.Lime, 1));
                 RenderAIPaths(drawingContext, seg.AIRoutes.SelectMany(t => t.Paths), Brushes.Blue, null);
-
-
             }
 
             this.InvalidateVisual();
@@ -155,6 +176,22 @@ namespace OSMTool.Wpf.Traffic
 
 
             base.OnRender(drawingContext);
+
+            int i = 0;
+            foreach (var con in node.Segments) {
+                i++;
+                var r = i % 3 == 0 ? (byte)0xff : (byte)0x00;
+                var g = i % 3 == 1 ? (byte)0xff : (byte)0x00;
+                var b = i % 3 == 2 ? (byte)0xff : (byte)0x00;
+                var w = con.Segment.GetWidth();
+                var sPen = new Pen(new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x22, r, g, b)), w * scale);
+
+                var point = (con.GetPosition()) ;
+
+                var p1 = new Point(point.x * scale, (height - point.z) * scale);
+
+                drawingContext.DrawLine(sPen, nodePoint, p1);
+            }
 
 
             Pen pen = null;

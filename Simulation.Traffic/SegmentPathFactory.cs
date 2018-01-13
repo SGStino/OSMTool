@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Simulation.Traffic.Lofts;
 using UnityEngine;
+using System.Linq;
 
 namespace Simulation.Traffic
 {
@@ -22,6 +23,10 @@ namespace Simulation.Traffic
         public static Vector3 GetHeading(this SegmentNodeConnection connnection) => connnection.Segment.Start == connnection ? -connnection.Tangent : connnection.Tangent;
         public static void SetHeading(this SegmentNodeConnection connnection, Vector3 heading) => connnection.Tangent = connnection.Segment.Start == connnection ? -heading : heading;
 
+        public static float GetWidth(this Segment segment)
+        {
+            return segment.Description.Lanes.Sum(l => l.Width);
+        }
 
         public static Vector3 GetPosition(this SegmentNodeConnection con)
         {

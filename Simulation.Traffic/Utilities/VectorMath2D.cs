@@ -15,6 +15,36 @@ namespace Simulation.Traffic.Utilities
         }
 
 
+        public static bool IntersectsLineLine(Vector2 a, Vector2 dA, float widthA, Vector2 b, Vector2 dB, float widthB, out float distA, out float distB)
+        {
+            var tA = new Vector2(-dA.y, dA.x).normalized;
+            var tB = new Vector2(-dB.y, dB.x).normalized;
+
+            var dotA = Vector2.Dot(tA, dB);
+            var dotB = Vector2.Dot(tB, dA);
+
+            var dot = Vector2.Dot(dA, dB);
+
+            if(dot > 0.9999f || dot < -0.9999f || Mathf.Abs(dotA) < 0.0001f)
+            {
+                distA = float.PositiveInfinity;
+                distB = float.PositiveInfinity;
+                return false;
+            }
+
+         
+
+            var signA = Mathf.Sign(dotA);
+            var signB = Mathf.Sign(dotB);
+
+            tA *= signA;
+            tB *= signB;
+
+            IntersectsLineLine(a + tA * widthA * 0.5f, dA, b + tB * widthB * 0.5f, dB, out distB, out distA);
+            return true;
+        }
+
+
 
         public static bool IntersectsLineCircle(Vector2 a, Vector2 dA, Vector2 c, float radius, out float nearDistance, out float farDistance)
         {

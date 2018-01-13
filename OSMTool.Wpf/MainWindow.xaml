@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OSMTool.Wpf"       
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" 
+        xmlns:ai="clr-namespace:Simulation.Traffic.AI;assembly=Simulation.Traffic"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
     <DockPanel>
@@ -18,59 +19,96 @@
             </Viewbox>
         </ScrollViewer>-->
         <Grid DockPanel.Dock="Bottom" Height="200" x:Name="detailsGrid">
-            <ScrollViewer>
+            <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
                 <DockPanel>
                     <TextBlock Text="Bottom" DockPanel.Dock="Top"/>
+                    <Button Content="Invalidate" Click="Invalidate_Click" DataContext="{Binding SelectedNode}"/>
+                    <StackPanel>
+                        <TextBlock Text="{Binding FromSegment.Description.Name}" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding ToSegment.Description.Name}" FontWeight="Bold"/>
+                        <Button Click="Navigate_Click">Navigate</Button>
+                    </StackPanel>
                     <TextBlock Text="{Binding SelectedNode.OSMNode.Id}" DockPanel.Dock="Top"/>
-                    <ItemsControl ItemsSource="{Binding SelectedNode.OSMNode.Tags}" DockPanel.Dock="Left">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock>
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" DockPanel.Dock="Left">
+                        <ItemsControl ItemsSource="{Binding SelectedNode.OSMNode.Tags}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
                                     <Run Text="{Binding Key}" FontWeight="Bold"/>
                                     <Run Text="{Binding Value}"/>
-                                </TextBlock>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <ItemsControl ItemsSource="{Binding SelectedNode.Segments}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel DataContext="{Binding Segment.Description}" Margin="5">
-                                    <TextBlock Text="{Binding OsmWay.Id}"/>
-                                    <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding Type}"/>
-                                    <ItemsControl ItemsSource="{Binding Lanes}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" DockPanel.Dock="Left">
+                        <ItemsControl ItemsSource="{Binding SelectedNode.Segments}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <UniformGrid Columns="2" DataContext="{Binding Segment}">
+                                            <Button Click="FromButton_Click">From</Button>
+                                            <Button Click="ToButton_Click">To</Button>
+                                        </UniformGrid>
+                                        <StackPanel DataContext="{Binding Segment.Description}" Margin="5">
+
+                                            <TextBlock Text="{Binding OsmWay.Id}"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Type}"/>
+                                            <ItemsControl ItemsSource="{Binding Lanes}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock>
                                                     <Run Text="{Binding Reverse}"/>
                                                     <Run Text="{Binding Width}"/>
                                                     <Run Text="{Binding Turn}"/>
                                                     <Run Text="{Binding MaxSpeed}"/>
                                                     <Run Text="{Binding VehicleTypes}"/>
-                                                </TextBlock>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                    <ItemsControl ItemsSource="{Binding OsmWay.Tags}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <ItemsControl ItemsSource="{Binding OsmWay.Tags}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock>
                                                     <Run Text="{Binding Key}" FontWeight="Bold"/>
                                                     <Run Text="{Binding Value}"/>
-                                                </TextBlock>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                        <TreeView  ItemsSource="{Binding Segment.AIRoutes}"  >
+                                            <TreeView.Resources>
+                                                <HierarchicalDataTemplate DataType="{x:Type ai:NodeAIRoute}"  ItemsSource="{Binding NextRoutes}">
+
+                                                    <TextBlock>
+                                                                        <Run Text="Node:"/>
+                                                                        <Run Text="{Binding Node.OSMNode.Id, Mode=OneWay}"/>
+                                                    </TextBlock>
+                                                </HierarchicalDataTemplate>
+                                                <HierarchicalDataTemplate DataType="{x:Type ai:SegmentAIRoute}" ItemsSource="{Binding NextRoutes}">
+                                                    <TextBlock>
+                                                            <Run Text="Id:"/>
+                                                            <Run Text="{Binding Segment.Description.OsmWay.Id, Mode=OneWay}"/>
+                                                        <LineBreak/>
+                                                            <Run Text="Reverse:"/>
+                                                            <Run Text="{Binding Reverse, Mode=OneWay}"/>
+                                                    </TextBlock>
+                                                </HierarchicalDataTemplate>
+                                            </TreeView.Resources>
+                                        </TreeView>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </DockPanel>
             </ScrollViewer>
         </Grid>

@@ -172,6 +172,8 @@ namespace Simulation.Traffic.IO
                 writer.WriteValue(nodes[connection.Node]);
                 writer.WritePropertyName(Constants.TAG_SEGMENT_CONNECTION_TANGENT);
                 serializer.Serialize(writer, (Vector3D)connection.Tangent);
+                writer.WritePropertyName(Constants.TAG_SEGMENT_CONNECTION_OFFSET);
+                serializer.Serialize(writer, (Vector3D)connection.Offset);
             }
             writer.WriteEndObject();
         }

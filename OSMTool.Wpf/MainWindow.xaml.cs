@@ -4,6 +4,7 @@ using OsmSharp.Streams;
 using OsmSharp.Tags;
 using OSMTool.Wpf.Traffic;
 using Simulation.Traffic;
+using Simulation.Traffic.AI.Navigation;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using UnityEngine;
 
 namespace OSMTool.Wpf
@@ -180,6 +182,9 @@ namespace OSMTool.Wpf
                     int nodeCountAfter = this.manager.Nodes.Count();
 
                     System.Diagnostics.Debug.WriteLine($"Before:  {nodeCountBefore}, after: {nodeCountAfter}");
+
+                    foreach (var node in manager.Nodes)
+                        node.UpdateOffsets();
 
                     manager.Update();
                 }
@@ -876,6 +881,38 @@ namespace OSMTool.Wpf
 
         }
 
+       
+
+        private void Invalidate_Click(object sender, RoutedEventArgs e)
+        {
+            var node = ((sender as Button)?.DataContext as Simulation.Traffic.Node);
+            node?.Invalidate();
+            if (node != null)
+            {
+                node.UpdateOffsets();
+                foreach (SegmentNodeConnection con in node.Segments)
+                {
+                    con.Invalidate();
+                }
+            }
+
+        }
+
+        private void FromButton_Click(object sender, RoutedEventArgs e)
+        {
+            manager.FromSegment = ((sender as Button)?.DataContext as Simulation.Traffic.Segment);
+        }
+
+        private void ToButton_Click(object sender, RoutedEventArgs e)
+        {
+            manager.ToSegment = ((sender as Button)?.DataContext as Simulation.Traffic.Segment);
+
+        }
+
+        private void Navigate_Click(object sender, RoutedEventArgs e)
+        {
+            manager.Navigate();
+        }
     }
 
     internal class NodePairComparer : IEqualityComparer<Tuple<Simulation.Traffic.Node, Simulation.Traffic.Node>>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,20 +53,24 @@ namespace Simulation.Traffic.AI
 
         public NodeAIRoute[] CreateRoutes(AISegmentNodeConnection con)
         {
-            var incomingRoutes = GetRoutes(con, false);
+            var incomingRoutes = con.Segment.AIRoutes.Where(r => r.GetEnd()?.Node == con.Node).ToArray();
 
-            var outgoingRoutes = con.Node.Segments.SelectMany(t => GetRoutes(t, true));
+            var allRoutes = con.Node.Segments.SelectMany(t => t.Segment.AIRoutes);
+            var outgoingRoutes = allRoutes.Where(r => r.GetStart()?.Node == con.Node).ToArray();
 
             var routes = new List<NodeAIRoute>();
+
             foreach (var incoming in incomingRoutes)
             {
                 foreach (var outgoing in outgoingRoutes)
                 {
                     var paths = create(incoming, outgoing);
+                    if (paths.Any())
+                    {
+                        var node = new NodeAIRoute(con, outgoing, paths.ToArray());
 
-                    var node = new NodeAIRoute(con, outgoing.Segment, paths.ToArray());
-
-                    routes.Add(node);
+                        routes.Add(node);
+                    }
                 }
             }
             return routes.ToArray();
@@ -77,14 +80,83 @@ namespace Simulation.Traffic.AI
         {
             var from = incoming.GetEnd();
             var to = outgoing.GetStart();
-            foreach (var iPath in incoming.Paths)
+
+
+            if (incoming.Paths.Length == outgoing.Paths.Length)
             {
-                foreach (var oPath in outgoing.Paths)
+                for (int i = 0; i < incoming.Paths.Length; i++)
                 {
-                    if (iPath.Path != null && oPath.Path != null)
-                        yield return new NodeAIPath(iPath, oPath, createLineLoft(iPath, from, oPath, to));
+                    var iPath = incoming.Paths[i];
+                    var oPath = outgoing.Paths[i];
+                    yield return new NodeAIPath(iPath, oPath, createLineLoft(iPath, from, oPath, to));
                 }
             }
+            else
+            {
+                float angle = getAngle(from, to);
+
+                int index = Mathf.RoundToInt(angle * 16 / (2 * Mathf.PI));
+
+                if (index < 0) index += 16;
+                if (index >= 16) index -= 16;
+
+                foreach (var iPath in incoming.Paths)
+                {
+                    var turn = iPath.Lane.Turn;
+
+                    var angleMap = getAngleMap(turn);
+
+                    bool accept = angleMap == null || angleMap[index];
+                    if (accept)
+                        foreach (var oPath in outgoing.Paths)
+                        {
+
+                            if (iPath.Path != null && oPath.Path != null)
+                            {
+
+                                yield return new NodeAIPath(iPath, oPath, createLineLoft(iPath, from, oPath, to));
+                            }
+                        }
+                }
+            }
+        }
+
+        private float getAngle(AISegmentNodeConnection from, AISegmentNodeConnection to)
+        {
+            var a2d = new Vector2(from.Tangent.x, from.Tangent.z);
+            var b2d = -new Vector2(to.Tangent.x, to.Tangent.z);
+
+            return Mathf.Atan2(a2d.y, a2d.x) - Mathf.Atan2(b2d.y, b2d.x);
+        }
+
+        private static bool[] getAngleMap(Turn turn)
+        {
+            bool[] angleMap = new bool[16];
+
+            if (turn.HasFlag(Turn.Through))
+                angleMap[0] = angleMap[1] = angleMap[14] = angleMap[15] = true;
+            if (turn.HasFlag(Turn.MergeLeft))
+                angleMap[14] = angleMap[15] = true;
+            if (turn.HasFlag(Turn.MergeRight))
+                angleMap[0] = angleMap[1] = true;
+            if (turn.HasFlag(Turn.SlightLeft))
+                angleMap[13] = angleMap[14] = true;
+            if (turn.HasFlag(Turn.SlightRight))
+                angleMap[1] = angleMap[2] = true;
+            if (turn.HasFlag(Turn.Left))
+                angleMap[10] = angleMap[11] = angleMap[12] = angleMap[13] = true;
+            if (turn.HasFlag(Turn.Right))
+                angleMap[2] = angleMap[3] = angleMap[4] = angleMap[5] = true;
+            if (turn.HasFlag(Turn.SharpLeft))
+                angleMap[9] = angleMap[10] = true;
+            if (turn.HasFlag(Turn.SharpRight))
+                angleMap[5] = angleMap[6] = true;
+            if (turn.HasFlag(Turn.Reverse))
+                angleMap[7] = angleMap[8] = true;
+
+            if (turn == Turn.None)
+                return null;
+            return angleMap;
         }
 
         private ILoftPath createLineLoft(SegmentAIPath iPath, AISegmentNodeConnection from, SegmentAIPath oPath, AISegmentNodeConnection to)
@@ -92,7 +164,6 @@ namespace Simulation.Traffic.AI
             var point1 = from.GetPosition();
             var point2 = to.GetPosition();
             return new BiArcLoftPath(point1, from.Tangent, point2, -to.Tangent);
-            return new LinearPath(point1, point2);
         }
 
         private static Vector3 GetPoint(SegmentAIPath iPath, bool end)
@@ -115,82 +186,6 @@ namespace Simulation.Traffic.AI
         private static IEnumerable<SegmentAIRoute> GetRoutes(bool isEnd, AISegment segment)
         {
             return segment?.AIRoutes.Where(t => t.Reverse != isEnd);
-        }
-    }
-
-    public class NodeAIRoute : IAIRoute, IDisposable
-    {
-        private AISegmentNodeConnection con;
-        private AISegment segment;
-
-        public NodeAIRoute(AISegmentNodeConnection con, AISegment segment, NodeAIPath[] paths)
-        {
-            this.con = con;
-            this.segment = segment;
-            Paths = paths;
-        }
-
-        public float Length => 1;
-
-        public float Speed => 1;
-
-        public float Cost => 1;
-
-        public NodeAIPath[] Paths { get; }
-
-        public IEnumerable<IAIRoute> NextRoutes => Enumerable.Empty<IAIRoute>();
-
-        IAIPath[] IAIRoute.Paths => Paths;
-
-        public void Dispose()
-        {
-        }
-    }
-
-    public class NodeAIPath : IAIPath, IDisposable
-    {
-        private readonly SegmentAIPath source;
-        private readonly SegmentAIPath destination;
-        private readonly ILoftPath path;
-
-        public NodeAIPath(SegmentAIPath source, SegmentAIPath destination, ILoftPath path)
-        {
-            this.source = source;
-            this.destination = destination;
-            this.path = path;
-            source.ConnectTo(this);
-        }
-
-
-        public ILoftPath Path => path;
-
-        public float SideOffsetStart => source.Reverse ? -source.SideOffsetStart : source.SideOffsetEnd;
-
-        public float SideOffsetEnd => destination.Reverse ? -destination.SideOffsetEnd : destination.SideOffsetStart;
-
-        public IAIPath LeftParralel { get; private set; }
-
-        public IAIPath RightParralel { get; private set; }
-
-        public bool Reverse => false;
-
-        public float MaxSpeed => destination.MaxSpeed;
-
-        public float AverageSpeed => (source.AverageSpeed + destination.AverageSpeed) / 2;
-
-        public IEnumerable<IAIPath> EndConnections => new[] { destination };
-
-        public LaneType LaneType => destination.LaneType;
-
-        public VehicleTypes VehicleTypes => destination.VehicleTypes;
-
-        public float PathOffsetStart => 0.0f;
-
-        public float PathOffsetEnd => 0.0f;
-
-        public void Dispose()
-        {
-            source.DisconnectFrom(this);
         }
     }
 }

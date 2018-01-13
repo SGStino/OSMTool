@@ -22,6 +22,15 @@ namespace Simulation.Traffic.Lofts
 
         public LinearPath(Vector3 start, Vector3 end)
         {
+#if DEBUG
+            if (float.IsNaN(start.x)) throw new InvalidOperationException("start.x is not a number");
+            if (float.IsNaN(start.y)) throw new InvalidOperationException("start.y is not a number");
+            if (float.IsNaN(start.z)) throw new InvalidOperationException("start.z is not a number");
+            if (float.IsNaN(end.x)) throw new InvalidOperationException("end.x is not a number");
+            if (float.IsNaN(end.y)) throw new InvalidOperationException("end.y is not a number");
+            if (float.IsNaN(end.z)) throw new InvalidOperationException("end.z is not a number");
+#endif
+
             var dir = (end - start);
             this.length = dir.magnitude;
             this.start = start;

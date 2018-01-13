@@ -8,6 +8,10 @@ using System.Windows;
 using UnityEngine;
 using System.Windows.Documents;
 using System.ComponentModel;
+using Simulation.Traffic.AI.Navigation;
+using System.Threading.Tasks;
+using System.Runtime.Serialization;
+using Simulation.Traffic.AI;
 
 namespace OSMTool.Wpf.Traffic
 {
@@ -105,6 +109,11 @@ namespace OSMTool.Wpf.Traffic
         public float Scale { get { return scale; } set { scale = value; Update(); } }
 
         public TrafficNode SelectedNode { get; private set; }
+        public Segment FromSegment { get => fromSegment; set { fromSegment = value; this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FromSegment")); } }
+        public Segment ToSegment { get => toSegment; set { toSegment = value; this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("toSegment")); } }
+
+        private Segment toSegment;
+        private Segment fromSegment;
 
         protected override Node createNode(UnityEngine.Vector3 position)
         {
@@ -118,6 +127,48 @@ namespace OSMTool.Wpf.Traffic
         protected override SegmentNodeConnection createConnection(Segment segment, Node start)
         {
             return new TrafficSegmentNodeConnection(segment as TrafficSegment, start as TrafficNode, this);
+        }
+
+        internal async void Navigate()
+        {
+            var fromAI = fromSegment as AISegment;
+            var toAI = toSegment as AISegment;
+            if (fromAI != null && toAI != null)
+            {
+                var solver = new RouteSolver(fromAI.AIRoutes, toAI.AIRoutes);
+
+                while (solver.Iterate())
+                {
+                    await Task.Yield();
+                }
+                if (solver.IsSuccess)
+                {
+                    var solution = solver.Solution.ToArray();
+                }
+                else
+                {
+                }
+                    var idGen = new ObjectIDGenerator();
+                    var graph = solver.GetGraph(node => getUniqueName(node, idGen));
+            }
+        }
+
+        private string getUniqueName(IAIRoute route, ObjectIDGenerator idGen)
+        {
+            var seg = (route as SegmentAIRoute)?.Segment as TrafficSegment;
+            if (seg != null)
+            {
+
+                var name = (seg.Description as TrafficSegmentDescription).Name;
+                var id = (seg.Description as TrafficSegmentDescription).OsmWay.Id;
+
+                var from = (route as SegmentAIRoute).GetStart();
+                var to = (route as SegmentAIRoute).GetEnd();
+                return $"{name} ({id}: ({(from.Node as TrafficNode).OSMNode.Id} -> {(to.Node as TrafficNode).OSMNode.Id})) [{idGen.GetId(route, out var isNew1)}]";
+            }
+
+            var node = ((route as NodeAIRoute)?.Node as TrafficNode).OSMNode;
+            return $"node {node.Id} [{idGen.GetId(route, out var isNew2)}]" ;
         }
     }
 }

@@ -10,6 +10,68 @@ using Simulation.Traffic.Utilities;
 
 namespace Simulation.Traffic
 {
+    public static class NodeExtensions
+    {
+        public static void UpdateOffsets(this Node node)
+        {
+            int segmentCount = node.SegmentList.Count;
+
+            if (segmentCount <= 0) return;
+            if (segmentCount <= 1)
+            {
+                var radius = node.Segments.Max(l => l.Segment.GetWidth()) / 4;
+                foreach (var seg in node.Segments)
+                    seg.Offset = new Vector3(0, 0, radius);
+            }
+            else
+            {
+                var segments = node.Segments.OrderBy(t => Math.Atan2(t.Tangent.z, t.Tangent.x)).ToArray();
+                float[] offsets = new float[segments.Length];
+
+                for (int curr = 0; curr < segmentCount; curr++)
+                {
+                    var prev = (curr - 1);
+                    if (prev < 0) prev += segmentCount;
+
+                    if (getOffsets(node, segments[prev], segments[curr], out var offsetA, out var offsetB))
+                    {
+                        offsets[curr] = Mathf.Max(offsets[curr], offsetA);
+                        offsets[prev] = Mathf.Max(offsets[prev], offsetB);
+                    }
+                }
+
+                for (int i = 0; i < segmentCount; i++)
+                {
+                    var offset = offsets[i];
+                    if (!float.IsNaN(offset) && !float.IsInfinity(offset))
+                    {
+                        segments[i].Offset = new Vector3(0, 0, offsets[i]);
+                    }
+                    else
+                    {
+
+                    }
+                }
+            }
+
+        }
+
+        private static bool getOffsets(Node node, SegmentNodeConnection con1, SegmentNodeConnection con2, out float offsetA, out float offsetB)
+        {
+            var wA = con1.Segment.GetWidth();
+            var wB = con2.Segment.GetWidth();
+
+            var o = node.Position.GetXZ();
+
+            var dA = con1.Tangent.GetXZ();
+            var dB = con2.Tangent.GetXZ();
+
+
+            return VectorMath2D.IntersectsLineLine(o, dA, wA, o, dB, wB, out offsetA, out offsetB);
+
+        }
+    }
+
     public class AINode : Node
     {
         public AINode(Vector3 position, RoadManager manager, INodeAIPathsFactory aiFactory = null) : base(position, manager)
@@ -21,12 +83,11 @@ namespace Simulation.Traffic
         }
 
         public new IEnumerable<AISegmentNodeConnection> Segments => base.Segments.OfType<AISegmentNodeConnection>();
-         
+
     }
-    
+
     public class Node : IBoundsObject2D
     {
-        public event Action Invalidated;
         internal IList<SegmentNodeConnection> SegmentList => segments;
 
         private List<SegmentNodeConnection> segments = new List<SegmentNodeConnection>();
@@ -83,9 +144,8 @@ namespace Simulation.Traffic
                 con.NotifyOfMovement();
         }
 
-        private void Invalidate()
+        public virtual void Invalidate()
         {
-            Invalidated?.Invoke();
         }
 
         internal void NotifyOfOffsetChanged(SegmentNodeConnection segmentNodeConnection)
@@ -94,7 +154,7 @@ namespace Simulation.Traffic
         }
 
         protected virtual void OnOffsetChanged(SegmentNodeConnection segmentNodeConnection)
-        { 
+        {
         }
 
         protected virtual void OnMoved()

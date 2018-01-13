@@ -187,6 +187,7 @@ namespace Simulation.Traffic.IO
                             {
                                 Node start = null, end = null;
                                 Vector3 startTangent = Vector3.zero, endTangent = Vector3.zero;
+                                Vector3 startOffset = Vector3.zero, endOffset = Vector3.zero;
 
                                 SegmentDescription description = null;
                                 int depth = reader.Depth;
@@ -199,10 +200,10 @@ namespace Simulation.Traffic.IO
                                             switch ((string)reader.Value)
                                             {
                                                 case Constants.TAG_SEGMENT_START:
-                                                    readConnection(reader, serializer, roads, nodes, out start, out startTangent);
+                                                    readConnection(reader, serializer, roads, nodes, out start, out startTangent, out startOffset);
                                                     break;
                                                 case Constants.TAG_SEGMENT_END:
-                                                    readConnection(reader, serializer, roads, nodes, out end, out endTangent);
+                                                    readConnection(reader, serializer, roads, nodes, out end, out endTangent, out endOffset);
                                                     break;
                                                 case Constants.TAG_SEGMENT_DESCRIPTION:
                                                     description = descriptions[reader.ReadAsInt32() ?? -1];
@@ -217,6 +218,8 @@ namespace Simulation.Traffic.IO
                                     var seg = roads.CreateSegment(start, end, description);
                                     seg.Start.Tangent = startTangent;
                                     seg.End.Tangent = endTangent;
+                                    seg.Start.Offset = startOffset;
+                                    seg.End.Offset = endOffset;
                                     yield return seg;
                                 }
                                 else
@@ -230,10 +233,11 @@ namespace Simulation.Traffic.IO
 
 
 
-        private void readConnection(JsonTextReader reader, JsonSerializer serializer, RoadManager roads, List<Node> nodes, out Node start, out Vector3 startTangent)
+        private void readConnection(JsonTextReader reader, JsonSerializer serializer, RoadManager roads, List<Node> nodes, out Node start, out Vector3 startTangent, out Vector3 startOffset)
         {
             start = null;
             startTangent = new Vector3(float.NaN, float.NaN, float.NaN);
+            startOffset = new Vector3(float.NaN, float.NaN, float.NaN);
             if (reader.Read())
             {
                 if (reader.TokenType == JsonToken.StartObject)
@@ -257,6 +261,12 @@ namespace Simulation.Traffic.IO
                                         {
                                             if (reader.Read())
                                                 startTangent = serializer.Deserialize<Vector3D>(reader);
+                                        }
+                                        break;
+                                    case Constants.TAG_SEGMENT_CONNECTION_OFFSET:
+                                        {
+                                            if (reader.Read())
+                                                startOffset = serializer.Deserialize<Vector3D>(reader);
                                         }
                                         break;
                                 }

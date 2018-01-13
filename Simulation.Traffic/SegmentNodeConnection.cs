@@ -1,5 +1,6 @@
 ﻿using Simulation.Traffic.AI;
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Simulation.Traffic
@@ -37,6 +38,12 @@ namespace Simulation.Traffic
         {
             InvalidateRoutes();
         }
+
+        public override void Invalidate()
+        {
+            base.Invalidate();
+            InvalidateRoutes();
+        }
     }
 
     public class SegmentNodeConnection
@@ -70,7 +77,7 @@ namespace Simulation.Traffic
             {
                 if (offset != value)
                 {
-                    tangent = value;
+                    offset = value;
                     if (isCreated)
                         OnOffsethanged();
                     Node.NotifyOfOffsetChanged(this);
@@ -88,6 +95,7 @@ namespace Simulation.Traffic
             get { return tangent; }
             set
             {
+                if (value.magnitude == 0) throw new InvalidOperationException();
                 if (tangent != value)
                 {
                     tangent = value;
@@ -109,7 +117,7 @@ namespace Simulation.Traffic
         private bool isCreated = false;
         private SegmentNodeConnection left;
         private SegmentNodeConnection right;
-        private Vector3 offset = new Vector3(0, 0, 2);
+        private Vector3 offset;
 
 
 
@@ -118,6 +126,8 @@ namespace Simulation.Traffic
             this.Segment = segment;
             this.Node = node;
             this.Manager = manager;
+            
+            offset = new Vector3(0, 0, 5);
         }
 
         internal void NotifyOfMovement()
@@ -151,6 +161,11 @@ namespace Simulation.Traffic
         }
 
         protected virtual void OnCreated()
+        {
+
+        }
+
+        public virtual void Invalidate()
         {
 
         }

@@ -14,6 +14,7 @@ namespace Simulation.Traffic
         MergeRight = 32,
         SlightRight = 64,
         Right = 128,
-        SharpRight = 256
+        SharpRight = 256,
+        Reverse = 512
     }
 }
