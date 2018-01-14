@@ -36,6 +36,13 @@ namespace Simulation.Traffic
 
         protected override void OnTangentChanged()
         {
+            base.OnTangentChanged();
+            InvalidateRoutes();
+        }
+
+        protected override void OnMoved()
+        {
+            base.OnMoved();
             InvalidateRoutes();
         }
 
@@ -134,6 +141,7 @@ namespace Simulation.Traffic
         {
             OnMoved();
             Segment.NotifyOfMovement(this);
+            Invalidate();
         }
 
         protected virtual void OnMoved()

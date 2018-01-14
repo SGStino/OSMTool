@@ -76,7 +76,7 @@ namespace Simulation.Traffic.AI.Navigation
 
                 }
 
-                foreach (var neighbor in current.NextNodes.Where(filter))
+                foreach (var neighbor in getNeighbors(current).Where(filter))
                 {
                     if (closedSet.Contains(neighbor)) continue; // already processed
                     openSet.Add(neighbor); // ready to process
@@ -95,6 +95,18 @@ namespace Simulation.Traffic.AI.Navigation
                 else
                     return failure();
             }
+        }
+
+        private IEnumerable<IAIGraphNode> getNeighbors(IAIGraphNode current)
+        {
+            if (current is T)
+                return GetNeighbors((T)current).OfType<IAIGraphNode>();
+            return current.NextNodes;
+        }
+
+        protected virtual IEnumerable<T> GetNeighbors(T t)
+        {
+            return t.NextNodes.OfType<T>();
         }
 
         private bool filter(IAIGraphNode arg)
@@ -186,7 +198,7 @@ namespace Simulation.Traffic.AI.Navigation
             foreach (var con in connections)
                 sb.AppendLine(con);
             sb.AppendLine("}");
-            var res = sb.ToString(); 
+            var res = sb.ToString();
             return res;
         }
     }

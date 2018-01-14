@@ -53,6 +53,7 @@
     <Compile Include="AI\IAIGraphNode.cs" />
     <Compile Include="AI\IAIRoute.cs" />
     <Compile Include="AI\Navigation\GraphSolver.cs" />
+    <Compile Include="AI\Navigation\PathSolver.cs" />
     <Compile Include="AI\Navigation\RouteSolver.cs" />
     <Compile Include="AI\NodeAIPath.cs" />
     <Compile Include="AI\NodeAIPathsFactory.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Utilities\Angles.cs" />
     <Compile Include="Utilities\BiarcInterpolation.cs" />
     <Compile Include="Utilities\CompositeDisposable.cs" />
+    <Compile Include="Utilities\GraphViz.cs" />
     <Compile Include="Utilities\LinqUtils.cs" />
     <Compile Include="Utilities\Sequence.cs" />
     <Compile Include="Utilities\ThreadSafeSet.cs" />
@@ -110,6 +112,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "C:\Users\stijn\Documents\Unity\Simulation\Assets\References\$(ProjectName).dll"
+copy /Y "$(TargetDir)$(ProjectName).pdb" "C:\Users\stijn\Documents\Unity\Simulation\Assets\References\$(ProjectName).pdb"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

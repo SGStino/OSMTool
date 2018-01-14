@@ -9,7 +9,7 @@ namespace Simulation.Traffic.Utilities
     public static class VectorMath3D
     {
         public static Vector2 GetXZ(this Vector3 input) => new Vector2(input.x, input.z);
-
+        public static Vector3 GetTranslate(this Matrix4x4 input) => input.MultiplyPoint3x4(Vector3.zero);
 
         public static float GetAngle(Vector3 start, Vector3 end, Vector3 normal)
         {

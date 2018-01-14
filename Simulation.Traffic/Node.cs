@@ -14,6 +14,7 @@ namespace Simulation.Traffic
     {
         public static void UpdateOffsets(this Node node)
         {
+            float minOffset = 1;
             int segmentCount = node.SegmentList.Count;
 
             if (segmentCount <= 0) return;
@@ -21,7 +22,7 @@ namespace Simulation.Traffic
             {
                 var radius = node.Segments.Max(l => l.Segment.GetWidth()) / 4;
                 foreach (var seg in node.Segments)
-                    seg.Offset = new Vector3(0, 0, radius);
+                    seg.Offset = new Vector3(0, 0, Math.Max(minOffset, radius));
             }
             else
             {
@@ -35,8 +36,8 @@ namespace Simulation.Traffic
 
                     if (getOffsets(node, segments[prev], segments[curr], out var offsetA, out var offsetB))
                     {
-                        offsets[curr] = Mathf.Max(offsets[curr], offsetA);
-                        offsets[prev] = Mathf.Max(offsets[prev], offsetB);
+                        offsets[curr] = Math.Max(minOffset, Mathf.Max(offsets[curr], offsetA));
+                        offsets[prev] = Math.Max(minOffset, Mathf.Max(offsets[prev], offsetB));
                     }
                 }
 
@@ -45,7 +46,7 @@ namespace Simulation.Traffic
                     var offset = offsets[i];
                     if (!float.IsNaN(offset) && !float.IsInfinity(offset))
                     {
-                        segments[i].Offset = new Vector3(0, 0, offsets[i]);
+                        segments[i].Offset = new Vector3(0, 0, Math.Max(minOffset, Mathf.Min(50, offsets[i])));
                     }
                     else
                     {
@@ -66,6 +67,13 @@ namespace Simulation.Traffic
             var dA = con1.Tangent.GetXZ();
             var dB = con2.Tangent.GetXZ();
 
+            var dot = Vector3.Dot(dA, dB);
+            if (dot < -0.75)
+            {
+                offsetA = float.PositiveInfinity;
+                offsetB = float.PositiveInfinity;
+                return false;
+            }
 
             return VectorMath2D.IntersectsLineLine(o, dA, wA, o, dB, wB, out offsetA, out offsetB);
 

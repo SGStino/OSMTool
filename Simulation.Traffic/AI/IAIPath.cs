@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Simulation.Traffic.AI
 {
-    public interface IAIPath
+    public interface IAIPath : IAIGraphNode
     {
-        ILoftPath Path { get; }
+        ILoftPath LoftPath { get; }
         float SideOffsetStart { get; }
         float SideOffsetEnd { get; }
 
@@ -23,7 +23,7 @@ namespace Simulation.Traffic.AI
         bool Reverse { get; }
         float MaxSpeed { get; }
         float AverageSpeed { get; }
-        IEnumerable<IAIPath> EndConnections { get; }
+        IEnumerable<IAIPath> NextPaths { get; }
 
         LaneType LaneType { get; }
         VehicleTypes VehicleTypes { get; }

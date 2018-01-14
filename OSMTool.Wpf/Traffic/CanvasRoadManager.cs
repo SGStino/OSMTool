@@ -12,6 +12,7 @@ using Simulation.Traffic.AI.Navigation;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
 using Simulation.Traffic.AI;
+using Simulation.Traffic.AI.Agents;
 
 namespace OSMTool.Wpf.Traffic
 {
@@ -144,6 +145,10 @@ namespace OSMTool.Wpf.Traffic
                 if (solver.IsSuccess)
                 {
                     var solution = solver.Solution.ToArray();
+
+                    var agent = new Agent();
+                    agent.SetRoute(solution);
+
                 }
                 else
                 {

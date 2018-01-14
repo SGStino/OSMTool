@@ -67,11 +67,11 @@ namespace OSMTool.Wpf.Traffic
 
             foreach (var path in paths)
             {
-                if (path.Path == null) continue;
+                if (path.LoftPath == null) continue;
                 //DrawArc(drawingContext, scale, height, pen, path.PathOffsetStart);
 
 
-                var len = path.Path.Length - path.PathOffsetStart - path.PathOffsetEnd;
+                var len = path.LoftPath.Length - path.PathOffsetStart - path.PathOffsetEnd;
 
                 var t = path.Reverse ? 1 - time : time;
                 //for (float i = path.PathOffsetStart; i < len; i++)
@@ -91,7 +91,7 @@ namespace OSMTool.Wpf.Traffic
                 count = Math.Min(100, count);
                 var points = Enumerable.Range(0, count + 1)
                     .Select(n => n / (float)count)
-                    .Select(n => path.Path.GetTransformedPoint(path.GetOffsetPercentual(n), new Vector3(Mathf.Lerp(path.SideOffsetStart, path.SideOffsetEnd, n), 0, 0)))
+                    .Select(n => path.LoftPath.GetTransformedPoint(path.GetOffsetPercentual(n), new Vector3(Mathf.Lerp(path.SideOffsetStart, path.SideOffsetEnd, n), 0, 0)))
                     .Select(p => new Point(p.x * scale, height - p.z * scale))
                     .ToArray();
 
@@ -119,7 +119,7 @@ namespace OSMTool.Wpf.Traffic
                 {
 
                     Vector3 pos = new Vector3(path.Reverse ? path.SideOffsetStart : path.SideOffsetEnd, 0, 0);
-                    var p = path.Path.GetTransformedPoint(path.GetEndOffset(), pos);
+                    var p = path.LoftPath.GetTransformedPoint(path.GetEndOffset(), pos);
 
                     //if (path.Reverse)
                     //    drawDot(drawingContext, p, scale, height, Brushes.Cyan, connector);

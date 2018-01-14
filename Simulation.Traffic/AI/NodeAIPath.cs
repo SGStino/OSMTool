@@ -15,11 +15,11 @@ namespace Simulation.Traffic.AI
             this.source = source;
             this.destination = destination;
             this.path = path;
-            source.ConnectTo(this);
         }
 
 
-        public ILoftPath Path => path;
+
+        public ILoftPath LoftPath => Path;
 
         public float SideOffsetStart => source.Reverse ? -source.SideOffsetStart : source.SideOffsetEnd;
 
@@ -35,7 +35,7 @@ namespace Simulation.Traffic.AI
 
         public float AverageSpeed => (source.AverageSpeed + destination.AverageSpeed) / 2;
 
-        public IEnumerable<IAIPath> EndConnections => new[] { destination };
+        public IEnumerable<IAIPath> NextPaths => new[] { destination };
 
         public LaneType LaneType => destination.LaneType;
 
@@ -45,9 +45,14 @@ namespace Simulation.Traffic.AI
 
         public float PathOffsetEnd => 0.0f;
 
+        public ILoftPath Path => path;
+
+        public SegmentAIPath Source => source;
+
+          IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextPaths;
+
         public void Dispose()
         {
-            source.DisconnectFrom(this);
         }
     }
 }

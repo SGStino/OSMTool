@@ -13,9 +13,9 @@ namespace Simulation.Traffic.AI
 
         IAIPath[] IAIRoute.Paths => Paths;
 
-        public IEnumerable<IAIRoute> NextRoutes => GetRoutes(this.GetEnd());
+        public IEnumerable<NodeAIRoute> NextRoutes => GetRoutes(this.GetEnd());
 
-        private IEnumerable<IAIRoute> GetRoutes(AISegmentNodeConnection segmentNodeConnection) => segmentNodeConnection.AIRoutes;
+        private IEnumerable<NodeAIRoute> GetRoutes(AISegmentNodeConnection segmentNodeConnection) => segmentNodeConnection.AIRoutes;
 
         public float Length => Segment.LoftPath?.Length ?? 0;
 
@@ -30,6 +30,7 @@ namespace Simulation.Traffic.AI
 
         public Vector3 EndPosition => this.GetEnd()?.GetPosition() ?? Vector3.zero;
 
+        IEnumerable<IAIRoute> IAIRoute.NextRoutes => NextRoutes;
 
         public SegmentAIRoute(AISegment segment, SegmentAIPath[] segmentAIPath, bool reverse)
         {

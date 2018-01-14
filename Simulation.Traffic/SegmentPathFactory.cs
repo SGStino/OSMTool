@@ -30,11 +30,17 @@ namespace Simulation.Traffic
 
         public static Vector3 GetPosition(this SegmentNodeConnection con)
         {
+            return GetPosition(con, Vector3.zero);
+        }
+
+        public static Vector3 GetPosition(this SegmentNodeConnection con, Vector3 additionalOffset)
+        {
+            var off = con.Offset + additionalOffset;
             var tangent = con.Tangent;
             return con.Node.Position
-            + tangent * con.Offset.z
-            + Vector3.Cross(tangent, Vector3.up) * con.Offset.x
-            + Vector3.up * con.Offset.y;
+            + tangent * off.z
+            + Vector3.Cross(tangent, Vector3.up) * off.x
+            + Vector3.up * off.y;
         }
     }
 }

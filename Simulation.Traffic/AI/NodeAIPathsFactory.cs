@@ -111,7 +111,7 @@ namespace Simulation.Traffic.AI
                         foreach (var oPath in outgoing.Paths)
                         {
 
-                            if (iPath.Path != null && oPath.Path != null)
+                            if (iPath.LoftPath != null && oPath.LoftPath != null)
                             {
 
                                 yield return new NodeAIPath(iPath, oPath, createLineLoft(iPath, from, oPath, to));
@@ -169,8 +169,8 @@ namespace Simulation.Traffic.AI
         private static Vector3 GetPoint(SegmentAIPath iPath, bool end)
         {
             var point = new Vector3(iPath.Reverse ^ end ? iPath.PathOffsetStart : iPath.PathOffsetEnd, 0, 0);
-            var p = iPath.Reverse ^ end ? iPath.Path.Length : 0;
-            point = iPath.Path.GetTransformedPoint(p, point);
+            var p = iPath.Reverse ^ end ? iPath.LoftPath.Length : 0;
+            point = iPath.LoftPath.GetTransformedPoint(p, point);
             return point;
         }
 

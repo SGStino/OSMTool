@@ -1,6 +1,7 @@
 ﻿using Simulation.Traffic.Lofts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Simulation.Traffic.AI
 {
@@ -8,24 +9,15 @@ namespace Simulation.Traffic.AI
     {
         public byte ID { get; }
         private readonly AISegment segment;
-        private LaneDescription laneDescription;
-        private readonly float offset;
-        private List<NodeAIPath> endConnections = new List<NodeAIPath>();
-        public SegmentAIPath(AISegment segment, LaneDescription laneDescription, float offset, byte id)
-        {
+        private readonly LaneDescription laneDescription;
+        private readonly float offset; 
+        public SegmentAIPath( AISegment segment, LaneDescription laneDescription, float offset, byte id)
+        { 
             this.segment = segment;
             this.laneDescription = laneDescription;
             this.offset = offset;
         }
 
-        public void ConnectTo(NodeAIPath path)
-        {
-            endConnections.Add(path);
-        }
-        public void DisconnectFrom(NodeAIPath path)
-        {
-            endConnections.Remove(path);
-        }
 
         public IAIPath LeftParralel { get; private set; }
 
@@ -33,7 +25,11 @@ namespace Simulation.Traffic.AI
 
         public bool Reverse => laneDescription.Reverse;
 
-        public IEnumerable<IAIPath> EndConnections => endConnections;
+        public IEnumerable<IAIPath> NextPaths 
+            => this.GetEnd()
+            .AIRoutes
+            .SelectMany(t => t.Paths)
+            .Where(t => t.Source == this);
 
         public LaneType LaneType => laneDescription.LaneType;
 
@@ -45,7 +41,7 @@ namespace Simulation.Traffic.AI
 
         public LaneDescription Lane => laneDescription;
 
-        public ILoftPath Path => segment.LoftPath;
+        public ILoftPath LoftPath => Segment.LoftPath;
 
         public float SideOffsetStart => offset;
 
@@ -55,6 +51,10 @@ namespace Simulation.Traffic.AI
 
         public float PathOffsetEnd => 0;
 
+        public AISegment Segment => segment;
+
+         IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextPaths;
+
         public static void ConnectParralel(SegmentAIPath left, SegmentAIPath right)
         {
             left.RightParralel = right;
@@ -62,8 +62,7 @@ namespace Simulation.Traffic.AI
         }
 
         public void Dispose()
-        {
-            endConnections.Clear();
+        { 
         }
     }
 }
