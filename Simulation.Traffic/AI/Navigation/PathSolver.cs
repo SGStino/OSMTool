@@ -25,8 +25,10 @@ namespace Simulation.Traffic.AI.Navigation
 
         protected override float CostBetween(IAIPath current, IAIPath neighbor)
         {
-            if (current.RightParralel == neighbor || neighbor.RightParralel == current)
-                return 2f; // not totally free
+            if (current.RightParralel == neighbor)
+                return 4f; // not totally free
+            if (current.LeftParralel == neighbor)
+                return 2f;
             return neighbor.GetLength() * neighbor.AverageSpeed;
         }
 
@@ -52,12 +54,22 @@ namespace Simulation.Traffic.AI.Navigation
 
         private IEnumerable<IAIPath> GetAllNeighbors(IAIPath t)
         {
+           foreach(var n in getLeftRight(t))
+                yield return n;
+            foreach (var n in t.NextPaths)
+            {
+                yield return n;
+                foreach (var n2 in getLeftRight(n))
+                    yield return n2;
+            }
+        }
+
+        private IEnumerable<IAIPath> getLeftRight(IAIPath t)
+        {
             if (t.LeftParralel != null)
                 yield return t.LeftParralel;
             if (t.RightParralel != null)
                 yield return t.RightParralel;
-            foreach (var n in t.NextPaths)
-                yield return n;
         }
     }
 }

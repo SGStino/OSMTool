@@ -218,7 +218,18 @@ namespace Simulation.Traffic.Test
                 if (right != null)
                     pathsGraph.Connect(path.GetName(), right.GetName());
                 foreach (TestPath next in path.NextPaths)
-                    pathsGraph.Connect(path.GetName(), next.GetName());
+                {
+                    pathsGraph.Connect(path.GetName(), next.GetName(), new Dictionary<string, string>() { { "style", "bold" } });
+
+                    left = next.LeftParralel as TestPath;
+                    if (left != null)
+                        pathsGraph.Connect(path.GetName(), left.GetName(), new Dictionary<string, string>() { { "style", "dotted" } }, overwrite: false);
+                    right = next.RightParralel as TestPath;
+                    if (right != null)
+                        pathsGraph.Connect(path.GetName(), right.GetName(), new Dictionary<string, string>() { { "style", "dotted" } }, overwrite: false);
+
+                }
+
             }
         }
 
@@ -256,9 +267,9 @@ namespace Simulation.Traffic.Test
         {
             var colorDict = new Dictionary<string, string> { { "color", "green" } };
 
-            foreach(var path in solution)
+            foreach (var path in solution)
             {
-                pathsGraph.Add(path.GetName(), colorDict); 
+                pathsGraph.Add(path.GetName(), colorDict);
             }
         }
     }
@@ -266,30 +277,22 @@ namespace Simulation.Traffic.Test
     [TestClass]
     public class AgentTests
     {
+        [TestInitialize]
+        public void Start()
+        {
+            r = new RouteData();
+        }
 
-        private RouteData r = new RouteData();
-
-
+        private RouteData r;
 
         [TestMethod]
         public void TestRouteSolverToFarLeft()
         {
             var from = r.mR0;
             var to = r.flR5;
-
-            var solver = new RouteSolver(new[] { from }, new[] { to });
-
-            while (solver.Iterate())
-            { }
-
-            Assert.IsTrue(solver.IsComplete);
-            Assert.IsTrue(solver.IsSuccess);
-
             var array = r.sequenceFarLeft;
 
-            r.HighlightRoute(array);
-            CollectionAssert.AreEqual(array, solver.Solution.ToArray());
-            r.HighlightRoute(array);
+            TestRoute(from, to, array);
         }
 
         [TestMethod]
@@ -297,38 +300,18 @@ namespace Simulation.Traffic.Test
         {
             var from = r.mR0;
             var to = r.frR5;
-
-            var solver = new RouteSolver(new[] { from }, new[] { to });
-
-            while (solver.Iterate())
-            { }
-
-            Assert.IsTrue(solver.IsComplete);
-            Assert.IsTrue(solver.IsSuccess);
-
             var array = r.sequenceFarRight;
 
-            CollectionAssert.AreEqual(array, solver.Solution.ToArray());
-            r.HighlightRoute(array);
+            TestRoute(from, to, array);
         }
         [TestMethod]
         public void TestRouteSolverToLeft()
         {
             var from = r.mR0;
             var to = r.lR5;
-
-            var solver = new RouteSolver(new[] { from }, new[] { to });
-
-            while (solver.Iterate())
-            { }
-
-            Assert.IsTrue(solver.IsComplete);
-            Assert.IsTrue(solver.IsSuccess);
-
             var array = r.sequenceLeft;
 
-            CollectionAssert.AreEqual(array, solver.Solution.ToArray());
-            r.HighlightRoute(array);
+            TestRoute(from, to, array);
         }
 
         [TestMethod]
@@ -336,25 +319,22 @@ namespace Simulation.Traffic.Test
         {
             var from = r.mR0;
             var to = r.rR5;
-
-            var solver = new RouteSolver(new[] { from }, new[] { to });
-
-            while (solver.Iterate())
-            { }
-
-            Assert.IsTrue(solver.IsComplete);
-            Assert.IsTrue(solver.IsSuccess);
-
             var array = r.sequenceRight;
-            CollectionAssert.AreEqual(array, solver.Solution.ToArray());
-            r.HighlightRoute(array);
+
+            TestRoute(from, to, array);
         }
         [TestMethod]
         public void TestRouteSolverToMiddle()
         {
             var from = r.mR0;
             var to = r.mR5;
+            var array = r.sequenceMiddle;
 
+            TestRoute(from, to, array);
+        }
+
+        private void TestRoute(TestRoute from, TestRoute to, TestRoute[] array)
+        {
             var solver = new RouteSolver(new[] { from }, new[] { to });
 
             while (solver.Iterate())
@@ -363,29 +343,69 @@ namespace Simulation.Traffic.Test
             Assert.IsTrue(solver.IsComplete);
             Assert.IsTrue(solver.IsSuccess);
 
-            var array = r.sequenceMiddle;
             CollectionAssert.AreEqual(array, solver.Solution.ToArray());
             r.HighlightRoute(array);
         }
 
         [TestMethod]
-        public void TestPathSolver()
+        public void TestPathSolverRight()
         {
             var from = r.mR0.Paths;
             var to = new[] { r.rR5P0 };
 
             var route = r.sequenceRight;
+            TestPaths(from, to, route);
+        }
+        [TestMethod]
+        public void TestPathSolverLeft()
+        {
+            var from = r.mR0.Paths;
+            var to = new[] { r.lR5P1 };
+
+            var route = r.sequenceLeft;
+            TestPaths(from, to, route);
+        }
+        [TestMethod]
+        public void TestPathSolverFarRight()
+        {
+            var from = r.mR0.Paths;
+            var to = new[] { r.frR5P1 };
+
+            var route = r.sequenceFarRight;
+            TestPaths(from, to, route);
+        }
+        [TestMethod]
+        public void TestPathSolverFarLeft()
+        {
+            var from = r.mR0.Paths;
+            var to = new[] { r.flR5P0 };
+
+            var route = r.sequenceFarLeft;
+            TestPaths(from, to, route);
+        }
+        [TestMethod]
+        public void TestPathSolverFarMiddle()
+        {
+            var from = r.mR0.Paths;
+            var to = new[] { r.mR5P0 };
+
+            var route = r.sequenceMiddle;
+            TestPaths(from, to, route);
+        }
+
+        private void TestPaths(IAIPath[] from, TestPath[] to, TestRoute[] route)
+        {
             var solver = new PathSolver(from, to, route);
 
             while (solver.Iterate())
             { }
 
-            var graph = solver.GetGraph(t => (t as TestPath).GetName());
             Assert.IsTrue(solver.IsComplete);
             Assert.IsTrue(solver.IsSuccess);
             r.HighlightRoute(route);
             r.HighlightRoute(solver.Solution.OfType<TestPath>());
         }
+
 
         private string getUniqueId(IAIRoute arg)
         {

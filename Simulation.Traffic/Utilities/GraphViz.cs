@@ -32,7 +32,7 @@ namespace Simulation.Traffic.Utilities
             }
         }
 
-        public void Connect(string a, string b, IDictionary<string, string> attributes = null)
+        public void Connect(string a, string b, IDictionary<string, string> attributes = null, bool overwrite = true)
         {
             Add(a);
             Add(b);
@@ -41,7 +41,10 @@ namespace Simulation.Traffic.Utilities
             {
                 if (attributes != null)
                     foreach (var attrib in attributes)
-                        dict[attrib.Key] = attrib.Value;
+                    {
+                        if (overwrite || !dict.ContainsKey(attrib.Key))
+                            dict[attrib.Key] = attrib.Value;
+                    }
             }
             else
             {
@@ -57,7 +60,7 @@ namespace Simulation.Traffic.Utilities
 
             var nodesByGroup = nodes.GroupBy(t => groupMembers.TryGetValue(t.Key, out string group) ? group : null);
 
-            foreach (var group in nodesByGroup)
+            foreach (var group in nodesByGroup.OrderBy(t => t.Key))
             {
                 if (group.Key != null)
                 {
@@ -67,14 +70,14 @@ namespace Simulation.Traffic.Utilities
 
                     if (groups.TryGetValue(group.Key, out var groupDetails))
                     {
-                        foreach(var item in groupDetails)
+                        foreach (var item in groupDetails)
                         {
                             sb.AppendLine(getKVstring(item));
                         }
 
                     }
                 }
-                foreach (var node in group)
+                foreach (var node in group.OrderBy(t => t.Key))
                 {
                     sb.Append("\"");
                     sb.Append(node.Key.Replace("\"", "\"\""));
