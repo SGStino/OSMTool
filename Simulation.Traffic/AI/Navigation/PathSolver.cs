@@ -6,7 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Simulation.Traffic.AI.Navigation
-{
+{ 
+
     public class PathSolver : GraphSolver<IAIPath>
     {
         public HashSet<IAIPath> allowedPaths;

@@ -146,8 +146,8 @@ namespace OSMTool.Wpf.Traffic
                 {
                     var solution = solver.Solution.ToArray();
 
-                    var agent = new Agent();
-                    agent.SetRoute(solution);
+                    //var agent = new Agent();
+                    //agent.SetRoute(solution);
 
                 }
                 else

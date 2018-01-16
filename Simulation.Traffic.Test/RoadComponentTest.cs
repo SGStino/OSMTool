@@ -82,7 +82,7 @@ namespace Simulation.TrafficTest
 
             Assert.IsFalse(task.IsCanceled, "task.IsCanceled before .CompleteTest()");
             Assert.IsFalse(task.IsCompleted, "task.IsCompleted before .CompleteTest()");
-            Assert.IsFalse(task.IsCompletedSuccessfully, "task.IsCompletedSuccessfully before .CompleteTest()");
+             
 
             var result = "done";
 
