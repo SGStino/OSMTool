@@ -44,11 +44,13 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Unity\CitySim\Library\UnityAssemblies\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\Unity\Simulation\Library\UnityAssemblies\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI\Agents\Agent.cs" />
+    <Compile Include="AI\Agents\IAgentJobRunner.cs" />
+    <Compile Include="AI\Agents\IAIRouteFinder.cs" />
     <Compile Include="AI\AIPathExtensions.cs" />
     <Compile Include="AI\IAIGraphNode.cs" />
     <Compile Include="AI\IAIRoute.cs" />

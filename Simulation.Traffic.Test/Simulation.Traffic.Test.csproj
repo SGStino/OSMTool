@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Unity\CitySim\Library\UnityAssemblies\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\Unity\Simulation\Library\UnityAssemblies\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -15,6 +15,11 @@ namespace Simulation.Traffic.Lofts
             return m.MultiplyPoint3x4(input);
         }
 
+        public static Matrix4x4 GetTransform(this ILoftPath loft, float distance, Matrix4x4 baseTransform)
+        {
+            return baseTransform * loft.GetTransform(distance);
+        }
+
         public static float DistanceTo(this ILoftPath path, Vector3 point)
         {
             float distance;

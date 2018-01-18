@@ -158,10 +158,14 @@ namespace Simulation.Traffic.AI.Agents
         private Sequence<IAIPath> pathSequence;
 
         private readonly AgentJob solverJob;
+        private readonly IAIRouteFinder finder;
+        private readonly IAgentJobRunner runner;
 
-        public Agent()
+        public Agent(IAIRouteFinder finder, IAgentJobRunner runner)
         {
             solverJob = new AgentJob(pathUpdated, routeUpdated);
+            this.finder = finder;
+            this.runner = runner;
         }
 
         private void pathUpdated(Sequence<IAIPath> obj)
@@ -176,6 +180,54 @@ namespace Simulation.Traffic.AI.Agents
 
         public void Update(float dt)
         {
+             if(pathSequence != null)
+            {
+                progress += dt;
+                var pathLength = pathSequence.CurrentItem.GetLength();
+                if (progress > pathLength)
+                {
+                    isLastKnownTransformValid = false;
+                    progress -= pathLength;
+                    if (!pathSequence.Next())
+                    {
+                        DestinationReached();
+                        pathSequence = null;
+                    }
+                }
+            }
+        }
+
+        protected virtual void DestinationReached()
+        {
+
+        }
+
+        private float progress;
+
+        private Matrix4x4 lastKnownTransform;
+        private bool isLastKnownTransformValid;
+
+
+        public Matrix4x4 GetTransform => isLastKnownTransformValid ? lastKnownTransform : throw new NotImplementedException();//pathSequence?.CurrentItem.LoftPath.GetTransform(progress, getBaseTransform(progress));
+
+   
+
+        public void Teleport(Matrix4x4 start)
+        {
+            lastKnownTransform = start;
+            isLastKnownTransformValid = true;
+            var startPosition = start.GetTranslate();
+            if (finder.Find(startPosition, out var routes, out var paths))
+            {
+                solverJob.SetSource(routes, paths);
+                Activate(solverJob);
+            }
+        }
+
+        private void Activate(AgentJob solverJob)
+        {
+            solverJob.Start();
+            runner.Run(solverJob);
         }
 
         //private bool GoToNextPath()

@@ -119,7 +119,7 @@ namespace OSMTool.Wpf.Traffic
                 {
 
                     Vector3 pos = new Vector3(path.Reverse ? path.SideOffsetStart : path.SideOffsetEnd, 0, 0);
-                    var p = path.LoftPath.GetTransformedPoint(path.GetEndOffset(), pos);
+                    var p = path.LoftPath.GetTransformedPoint(path.GetEndPathOffset(), pos);
 
                     //if (path.Reverse)
                     //    drawDot(drawingContext, p, scale, height, Brushes.Cyan, connector);
