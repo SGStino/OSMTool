@@ -106,6 +106,7 @@
     <Compile Include="Utilities\LinqUtils.cs" />
     <Compile Include="Utilities\Sequence.cs" />
     <Compile Include="Utilities\ThreadSafeSet.cs" />
+    <Compile Include="Utilities\VectorExtensions.cs" />
     <Compile Include="Utilities\VectorMath2D.cs" />
     <Compile Include="Utilities\VectorMath3D.cs" />
     <Compile Include="VehicleTypes.cs" />
