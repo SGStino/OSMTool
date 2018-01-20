@@ -42,13 +42,13 @@ namespace Simulation.Traffic.Test
             var sqrt2inv = 0.70710678818f;
 
 
-            var inc = biArc.Length / 100;
-            var items = new StringBuilder();
-            for (float i = 0; i <= biArc.Length; i += inc)
-            {
-                var v = biArc.GetTransform(i).MultiplyPoint3x4(Vector3.zero);
-                items.AppendLine($"{v.x.ToString(CultureInfo.InvariantCulture)}, {v.z.ToString(CultureInfo.InvariantCulture)}");
-            }
+            //var inc = biArc.Length / 100;
+            //var items = new StringBuilder();
+            //for (float i = 0; i <= biArc.Length; i += inc)
+            //{
+            //    var v = biArc.GetTransform(i).MultiplyPoint3x4(Vector3.zero);
+            //    items.AppendLine($"{v.x.ToString(CultureInfo.InvariantCulture)}, {v.z.ToString(CultureInfo.InvariantCulture)}");
+            //}
 
 
 

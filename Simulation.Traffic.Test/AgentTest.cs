@@ -74,13 +74,13 @@ namespace Simulation.Traffic.Test
             }
             Assert.AreEqual(AgentState.DestinationReached, agent.CurrentState);
 
-            var pointsString = string.Join(Environment.NewLine, pointHistory.Select(t => $"{t.x.ToString(CultureInfo.InvariantCulture)}, {t.z.ToString(CultureInfo.InvariantCulture)}"));
+            //var pointsString = string.Join(Environment.NewLine, pointHistory.Select(t => $"{t.x.ToString(CultureInfo.InvariantCulture)}, {t.z.ToString(CultureInfo.InvariantCulture)}"));
 
-            var routePoints = string.Join(Environment.NewLine, agent.RouteSequence.SelectMany(t => new[]
-            {
-                $"{t.StartPosition.x.ToString(CultureInfo.InvariantCulture)}, {t.StartPosition.z.ToString(CultureInfo.InvariantCulture)}",
-                $"{t.EndPosition.x.ToString(CultureInfo.InvariantCulture)}, {t.EndPosition.z.ToString(CultureInfo.InvariantCulture)}"
-            }));
+            //var routePoints = string.Join(Environment.NewLine, agent.RouteSequence.SelectMany(t => new[]
+            //{
+            //    $"{t.StartPosition.x.ToString(CultureInfo.InvariantCulture)}, {t.StartPosition.z.ToString(CultureInfo.InvariantCulture)}",
+            //    $"{t.EndPosition.x.ToString(CultureInfo.InvariantCulture)}, {t.EndPosition.z.ToString(CultureInfo.InvariantCulture)}"
+            //}));
              
         }
 
