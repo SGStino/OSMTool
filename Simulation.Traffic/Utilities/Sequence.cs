@@ -124,5 +124,8 @@ namespace Simulation.Traffic.Utilities
         {
             return path.GetEnumerator();
         }
+
+        public bool IsFirst() => currentIndex == 0;
+        public bool IsLast() => currentIndex == Count - 1;
     }
 }

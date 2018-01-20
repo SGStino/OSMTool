@@ -46,6 +46,19 @@ namespace Simulation.Traffic.AI
 
         public static Matrix4x4 rotate = new Matrix4x4(new Vector4(-1, 0, 0, 0), new Vector4(0, 1, 0, 0), new Vector4(0, 0, -1, 0), new Vector4(0, 0, 0, 1));
 
+        public static float GetDistanceFromLoftPath(this IAIPath path, float loftpathDistance)
+        {
+            var nS = path.GetStartPathOffset();
+            var nE = path.GetEndPathOffset();
+
+            //n = (nE - nS) * t + nS;
+            //(nE - nS) * t = n - nS          
+            var t = (loftpathDistance - nS) / (nE - nS);
+
+
+            return t * path.GetLength();
+        }
+
         public static Matrix4x4 GetTransform(this IAIPath path, float distance)
         {
             var length = GetLength(path);
@@ -60,7 +73,7 @@ namespace Simulation.Traffic.AI
             var lerp = Mathf.Lerp(path.SideOffsetStart, path.SideOffsetEnd, progress);
 
             var m = Matrix4x4.Translate(new Vector3(lerp, 0, 0));
-         
+
             var result = m * path.LoftPath.GetTransform(distance);
 
             if (path.Reverse)

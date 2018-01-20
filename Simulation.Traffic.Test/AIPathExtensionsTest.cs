@@ -13,6 +13,51 @@ namespace Simulation.Traffic.Test
     [TestClass]
     public class AIPathExtensionsTest
     {
+        [DataTestMethod]
+        [DataRow(5, 3)]
+        [DataRow(4, 2)]
+        [DataRow(3, 1)]
+        [DataRow(2, 0)]
+        public void TestGetDistanceFromLoftForward(float distance, float expected)
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 2,
+                PathOffsetEnd = 5,
+            };
+
+            var result = aiPath.GetDistanceFromLoftPath(distance);
+
+
+            Assert.AreEqual(expected, result);
+
+        }
+        [DataTestMethod]
+        [DataRow(5, 0)]
+        [DataRow(4, 1)]
+        [DataRow(3, 2)]
+        [DataRow(2, 3)]
+        public void TestGetDistanceFromLoftBackward(float distance, float expected)
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 2,
+                PathOffsetEnd = 5,
+                Reverse = true
+            };
+
+            var result = aiPath.GetDistanceFromLoftPath(distance);
+
+
+            Assert.AreEqual(expected, result);
+
+        }
+
         [TestMethod]
         public void TestForward()
         {
@@ -37,18 +82,18 @@ namespace Simulation.Traffic.Test
             var endTransform = aiPath.GetTransform(aiPath.GetLength());
             Assert.AreEqual(new Vector3(4, 0, 8), endTransform.MultiplyPoint3x4(Vector3.zero));
 
-             startTransform = aiPath.GetStartTransform();
-            Assert.AreEqual(new Vector3(3,0,1), startTransform.MultiplyPoint3x4(Vector3.zero));
+            startTransform = aiPath.GetStartTransform();
+            Assert.AreEqual(new Vector3(3, 0, 1), startTransform.MultiplyPoint3x4(Vector3.zero));
 
-             endTransform = aiPath.GetEndTransform();
-            Assert.AreEqual(new Vector3(4,0,8), endTransform.MultiplyPoint3x4(Vector3.zero));
+            endTransform = aiPath.GetEndTransform();
+            Assert.AreEqual(new Vector3(4, 0, 8), endTransform.MultiplyPoint3x4(Vector3.zero));
 
 
             Assert.AreEqual(7, aiPath.GetLength());
 
             var halfLength = 3.5f;
 
-            var halfTransform =  aiPath.GetTransform(halfLength);
+            var halfTransform = aiPath.GetTransform(halfLength);
 
             Assert.AreEqual(new Vector3(3.5f, 0, 4.5f), halfTransform.MultiplyPoint3x4(Vector3.zero));
 

@@ -63,8 +63,7 @@ namespace Simulation.Traffic.Lofts
 
         public void SnapTo(Vector3 to, out Vector3 position, out float distance)
         {
-            position = VectorMath3D.GetPointOnSegment(start, dir, length, to);
-            distance = (position - to).magnitude;
+            position = VectorMath3D.GetPointOnSegment(start, dir, length, to, out distance); 
         }
     }
 }

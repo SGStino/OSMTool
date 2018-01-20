@@ -354,12 +354,17 @@ namespace Simulation.Traffic.Lofts
 
         public void SnapTo(Vector3 to, out Vector3 position, out float distance)
         {
+
             Vector3 p1, p2;
             float d1, d2;
+
+             
+
             arc1.SnapTo(to, out p1, out d1);
             arc2.SnapTo(to, out p2, out d2);
+            
 
-            if (d1 < d2)
+            if ((to - p1).sqrMagnitude < (to - p2).sqrMagnitude)
             {
                 position = p1;
                 distance = d1;

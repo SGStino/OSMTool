@@ -25,7 +25,7 @@ namespace Simulation.Traffic.Lofts
             float distance;
             Vector3 snap;
             path.SnapTo(point, out snap, out distance);
-            return distance;
+            return (point - snap).magnitude;
         }
     }
 }

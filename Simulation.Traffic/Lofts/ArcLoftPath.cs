@@ -207,7 +207,8 @@ namespace Simulation.Traffic.Lofts
             }
 
 
-            var clamped = Quaternion.AngleAxis(newAngle * Mathf.Rad2Deg, normal) * (startPosition);
+            var clamped = GetPosition(newAngle, normal, startPosition);// Quaternion.AngleAxis(newAngle * Mathf.Rad2Deg, normal) * (startPosition);
+
 
 
 
@@ -216,13 +217,13 @@ namespace Simulation.Traffic.Lofts
 
             if (mag1 > mag2)
             {
-                distance = Mathf.Sqrt(mag2);
+                distance = newAngle * radius * Mathf.Sign(angleDistance);//Mathf.Sqrt(mag2);
                 position = endPosition + center;
             }
             else
             {
                 position = clamped + center;
-                distance = Mathf.Sqrt(mag1);
+                distance = newAngle * radius * Mathf.Sign(angleDistance);//Mathf.Sqrt(mag1);
             }
         }
     }

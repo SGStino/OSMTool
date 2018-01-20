@@ -156,14 +156,17 @@ namespace Simulation.Traffic.Test
         private List<TestPath> paths = new List<TestPath>();
         private TestRoute route;
 
-        public TestPath(TestRoute route, TestPath source, int v)
+        public TestPath(TestRoute route, TestPath source, int index)
         {
             this.route = route;
 
+            var dir = (route.EndPosition - route.StartPosition).normalized;
+
+
             LoftPath = new LinearPath(route.StartPosition, route.EndPosition);
-            SideOffsetStart = source == null ? v * 2 : source.SideOffsetEnd;
-            SideOffsetEnd = v * 2;
-            Index = v;
+            SideOffsetStart = source == null ? index * 2 : source.SideOffsetEnd;
+            SideOffsetEnd = index * 2;
+            Index = index;
         }
         public int Index { get; }
         public ILoftPath LoftPath { get; }
@@ -209,17 +212,17 @@ namespace Simulation.Traffic.Test
     {
         public TestRoute(int level, TestRouteColumn col)
         {
-            StartPosition = new Vector3(level * 10, (int)col * 10);
-            EndPosition = new Vector3(level * 10 + 10, (int)col * 10);
+            StartPosition = new Vector3(level * 10, 0, (int)col * 10);
+            EndPosition = new Vector3(level * 10 + 10, 0, (int)col * 10);
             Level = level;
             Col = col;
         }
         private List<TestPath> paths = new List<TestPath>();
         private List<TestRoute> routes = new List<TestRoute>();
 
-        public Vector3 StartPosition { get; }
+        public Vector3 StartPosition { get; private set; }
 
-        public Vector3 EndPosition { get; }
+        public Vector3 EndPosition { get; private set; }
 
         public float Length => 1;
 
@@ -243,6 +246,7 @@ namespace Simulation.Traffic.Test
 
         internal void Connect(TestRoute route)
         {
+            route.StartPosition = EndPosition;
             routes.Add(route);
         }
 

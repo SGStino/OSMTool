@@ -3,6 +3,7 @@ using Simulation.Traffic.Lofts;
 using Simulation.Traffic.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,300 @@ namespace Simulation.Traffic.Test
     [TestClass]
     public class LoftPathTests
     {
+        [TestMethod]
+        public void TestSnapLinear()
+        {
+            var line = new LinearPath(Vector3.zero, Vector3.forward * 10);
+
+            var point = new Vector3(15, 0, 5);
+
+            line.SnapTo(point, out var snapped, out var distance);
+
+            Assert.AreEqual(new Vector3(0, 0, 5), snapped);
+            Assert.AreEqual(5, distance);
+
+        }
+
+        [TestMethod]
+        public void TestBiArc()
+        {
+            var biArc = new BiArcLoftPath(new Vector3(-1, 0, -1), new Vector3(0, 0, -1), new Vector3(1, 0, 1), new Vector3(0, 0, -1));
+
+            var point1 = new Vector3(-1, 0, 0);
+            var point2 = new Vector3(1, 0, 0);
+
+            biArc.SnapTo(point1, out var snapped1, out float distance1);
+            biArc.SnapTo(point2, out var snapped2, out float distance2);
+
+            var sqrt2inv = 0.70710678818f;
+
+
+            var inc = biArc.Length / 100;
+            var items = new StringBuilder();
+            for (float i = 0; i <= biArc.Length; i += inc)
+            {
+                var v = biArc.GetTransform(i).MultiplyPoint3x4(Vector3.zero);
+                items.AppendLine($"{v.x.ToString(CultureInfo.InvariantCulture)}, {v.z.ToString(CultureInfo.InvariantCulture)}");
+            }
+
+
+
+            var pointExpected1 = new Vector3(-sqrt2inv, 0, sqrt2inv - 1);
+            Assert.AreEqual(pointExpected1.Round(0.0001f), snapped1.Round(0.0001f));
+            var pointExpected2 = new Vector3(sqrt2inv, 0, 1 - sqrt2inv);
+            Assert.AreEqual(pointExpected2.Round(0.0001f), snapped2.Round(0.0001f));
+        }
+
+
+
+        [TestMethod]
+        public void TestSnapArcUndershoot()
+        {
+
+            var arc = new ArcLoftPath(Vector3.forward, Mathf.PI / 2, Vector3.zero, Vector3.up);
+
+
+            var point = new Vector3(-1, 0, 1);
+
+            arc.SnapTo(point, out var snapped, out var distance);
+
+
+            var pointExpected = new Vector3(0, 0, 1);
+
+
+            Assert.AreEqual(pointExpected.Round(0.0001f), snapped.Round(0.0001f));
+
+            var l = 0f;
+
+            Assert.AreEqual(l, distance, 0.0001f);
+        }
+
+        [TestMethod]
+        public void TestSnapArcOvershoot()
+        {
+
+            var arc = new ArcLoftPath(Vector3.forward, Mathf.PI / 2, Vector3.zero, Vector3.up);
+
+
+            var point = new Vector3(1, 0, -1);
+
+            arc.SnapTo(point, out var snapped, out var distance);
+
+
+            var pointExpected = new Vector3(1, 0, 0);
+
+
+            Assert.AreEqual(pointExpected.Round(0.0001f), snapped.Round(0.0001f));
+
+            var l = Mathf.PI / 2;
+
+            Assert.AreEqual(l, distance, 0.0001f);
+        }
+
+        [TestMethod]
+        public void TestSnapArcQ0()
+        {
+
+            var arc = new ArcLoftPath(Vector3.forward, Mathf.PI / 2, Vector3.zero, Vector3.up);
+
+            var point = new Vector3(1, 0, 1);
+
+            arc.SnapTo(point, out var snapped, out var distance);
+
+            var sqrt2inv = 0.70710678818f;
+
+            var pointExpected = new Vector3(sqrt2inv, 0, sqrt2inv);
+
+
+            Assert.AreEqual(pointExpected.Round(0.0001f), snapped.Round(0.0001f));
+
+            var l = 0.785398f;
+
+            Assert.AreEqual(l, distance, 0.0001f);
+
+        }
+
+
+        [TestMethod]
+        public void TestSnapArcQ1()
+        {
+
+            var arc = new ArcLoftPath(Vector3.left, Mathf.PI / 2, Vector3.zero, Vector3.up);
+
+            var point = new Vector3(-1, 0, 1);
+
+            arc.SnapTo(point, out var snapped, out var distance);
+
+            var sqrt2inv = 0.70710678818f;
+
+            var pointExpected = new Vector3(-sqrt2inv, 0, sqrt2inv);
+
+
+            Assert.AreEqual(pointExpected.Round(0.0001f), snapped.Round(0.0001f));
+
+            var l = 0.785398f;
+
+            Assert.AreEqual(l, distance, 0.0001f);
+
+        }
+        [TestMethod]
+        public void TestSnapArcQ3()
+        {
+
+            var arc = new ArcLoftPath(Vector3.back, Mathf.PI / 2, Vector3.zero, Vector3.up);
+
+            var point = new Vector3(-1, 0, -1);
+
+            arc.SnapTo(point, out var snapped, out var distance);
+
+            var sqrt2inv = 0.70710678818f;
+
+            var pointExpected = new Vector3(-sqrt2inv, 0, -sqrt2inv);
+
+
+            Assert.AreEqual(pointExpected.Round(0.0001f), snapped.Round(0.0001f));
+
+            var l = 0.785398f;
+
+            Assert.AreEqual(l, distance, 0.0001f);
+
+        }
+        [TestMethod]
+        public void TestSnapArcQ4()
+        {
+
+            var arc = new ArcLoftPath(Vector3.right, Mathf.PI / 2, Vector3.zero, Vector3.up);
+
+            var point = new Vector3(1, 0, -1);
+
+            arc.SnapTo(point, out var snapped, out var distance);
+
+            var sqrt2inv = 0.70710678818f;
+
+            var pointExpected = new Vector3(sqrt2inv, 0, -sqrt2inv);
+
+
+            Assert.AreEqual(pointExpected.Round(0.0001f), snapped.Round(0.0001f));
+
+            var l = 0.785398f;
+
+            Assert.AreEqual(l, distance, 0.0001f);
+
+        }
+
+        [TestMethod]
+        public void TestSnapArc180Forward()
+        {
+
+            var arc = new ArcLoftPath(Vector3.right, Mathf.PI, Vector3.zero, Vector3.up);
+
+            var point = new Vector3(0, 0, -2);
+
+            arc.SnapTo(point, out var snapped, out var distance);
+
+
+            var pointExpected = new Vector3(0, 0, -1);
+
+
+            Assert.AreEqual(pointExpected.Round(0.0001f), snapped.Round(0.0001f));
+
+            var l = Mathf.PI / 2;
+
+            Assert.AreEqual(l, distance, 0.0001f);
+
+        }
+        [TestMethod]
+        public void TestSnapArc180Backward()
+        {
+
+            var arc = new ArcLoftPath(Vector3.right, -Mathf.PI, Vector3.zero, Vector3.up);
+
+            var point = new Vector3(0, 0, 2);
+
+            arc.SnapTo(point, out var snapped, out var distance);
+
+
+            var pointExpected = new Vector3(0, 0, 1);
+
+
+            Assert.AreEqual(pointExpected.Round(0.0001f), snapped.Round(0.0001f));
+
+            var l = Mathf.PI / 2;
+
+            Assert.AreEqual(l, distance, 0.0001f);
+
+        }
+
+        [TestMethod]
+        public void TestSnapSweepForward()
+        {
+            var arc = new ArcLoftPath(Vector3.right, Mathf.PI, Vector3.zero, Vector3.up);
+
+            int count = 18;
+            float increment = Mathf.PI / count;
+
+            for (float i = 0; i <= Mathf.PI; i += increment)
+            {
+                var x = Mathf.Cos(i);
+                var z = -Mathf.Sin(i);
+
+                var theoreticalPoint = arc.GetTransformedPoint(i, Vector3.zero);
+
+                var pointInside = new Vector3(x, 0, z) * 0.5f;
+                var pointAt = new Vector3(x, 0, z);
+                var pointOutside = new Vector3(x, 0, z) * 1.5f;
+
+                Assert.AreEqual(theoreticalPoint.Round(0.0001f), pointAt.Round(0.0001f));
+
+                arc.SnapTo(pointInside, out var snapped1, out float distance1);
+                arc.SnapTo(pointAt, out var snapped2, out float distance2);
+                arc.SnapTo(pointOutside, out var snapped3, out float distance3);
+
+                Assert.AreEqual(pointAt.Round(0.001f), snapped1.Round(0.001f));
+                Assert.AreEqual(pointAt.Round(0.001f), snapped2.Round(0.001f));
+                Assert.AreEqual(pointAt.Round(0.001f), snapped3.Round(0.001f));
+                Assert.AreEqual(i, distance1, 0.001f);
+                Assert.AreEqual(i, distance2, 0.001f);
+                Assert.AreEqual(i, distance3, 0.001f);
+            }
+        }
+        [TestMethod]
+        public void TestSnapSweepBack()
+        {
+            var arc = new ArcLoftPath(Vector3.right, -Mathf.PI, Vector3.zero, Vector3.up);
+
+            int count = 18;
+            float increment = Mathf.PI / count;
+
+            for (float i = 0; i <= Mathf.PI; i += increment)
+            {
+                var x = Mathf.Cos(-i);
+                var z = -Mathf.Sin(-i);
+
+                var theoreticalPoint = arc.GetTransformedPoint(i, Vector3.zero);
+
+                var pointInside = new Vector3(x, 0, z) * 0.5f;
+                var pointAt = new Vector3(x, 0, z);
+                var pointOutside = new Vector3(x, 0, z) * 1.5f;
+
+                Assert.AreEqual(theoreticalPoint.Round(0.0001f), pointAt.Round(0.0001f));
+
+                arc.SnapTo(pointInside, out var snapped1, out float distance1);
+                arc.SnapTo(pointAt, out var snapped2, out float distance2);
+                arc.SnapTo(pointOutside, out var snapped3, out float distance3);
+
+                Assert.AreEqual(pointAt.Round(0.001f), snapped1.Round(0.001f));
+                Assert.AreEqual(pointAt.Round(0.001f), snapped2.Round(0.001f));
+                Assert.AreEqual(pointAt.Round(0.001f), snapped3.Round(0.001f));
+                Assert.AreEqual(i, distance1, 0.001f);
+                Assert.AreEqual(i, distance2, 0.001f);
+                Assert.AreEqual(i, distance3, 0.001f);
+            }
+        }
+
+
+
+
         [TestMethod]
         public void TestPositiveArc()
         {

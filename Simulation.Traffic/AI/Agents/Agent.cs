@@ -1,4 +1,5 @@
 ﻿using Simulation.Traffic.AI.Navigation;
+using Simulation.Traffic.Lofts;
 using Simulation.Traffic.Utilities;
 using System;
 using System.Collections.Generic;
@@ -25,15 +26,21 @@ namespace Simulation.Traffic.AI.Agents
 
 
 
-    public enum AgentState
+    [Flags]
+    public enum AgentJobState
     {
-        FindingRoute = 1,
-        FindingPath = 2,
+        FindingRoute = 1 | Running,
+        FindingPath = 2 | Running,
         Completed = 4,
-        Error = 8,
-        RouteNotFound = 16 | Error,
-        PathNotFound = 32 | Error,
-        Cancelled = 64 | Error
+        Running = 8,
+        Error = 16,
+        RouteNotFound = 32 | Error,
+        PathNotFound = 64 | Error,
+        Cancelled = 128 | Error
+    }
+
+    public static class AgentStateExtensions
+    {
     }
 
     public class AgentJob : IDisposable // push into agent manager
@@ -55,7 +62,7 @@ namespace Simulation.Traffic.AI.Agents
         private readonly Action<Sequence<IAIPath>> pathCallback;
         private readonly Action<Sequence<IAIRoute>> routeCallback;
 
-        private AgentState currentState;
+        private AgentJobState currentState;
 
         public void Start()
         {
@@ -66,25 +73,25 @@ namespace Simulation.Traffic.AI.Agents
         private Sequence<IAIPath> pathSequence;
         private Sequence<IAIRoute> routeSequence;
 
-        public event Action<AgentJob, AgentState> StateChanged;
+        public event Action<AgentJob, AgentJobState> StateChanged;
 
-        private void SetState(AgentState state)
+        private void SetState(AgentJobState state)
         {
             currentState = state;
             StateChanged?.Invoke(this, state);
         }
 
-        public AgentState CurrentState => currentState;
+        public AgentJobState CurrentState => currentState;
 
         public void Iterate()
         {
             switch (currentState)
             {
-                case AgentState.FindingRoute:
+                case AgentJobState.FindingRoute:
                     if (!routeSolver.Iterate())
                         CompleteRouteFinding();
                     break;
-                case AgentState.FindingPath:
+                case AgentJobState.FindingPath:
                     if (!pathSolver.Iterate())
                         CompletePathFinding();
                     break;
@@ -96,11 +103,11 @@ namespace Simulation.Traffic.AI.Agents
             if (pathSolver.IsSuccess)
             {
                 pathCallback(pathSequence = new Sequence<IAIPath>(new List<IAIPath>(pathSolver.Solution)));
-                SetState(AgentState.Completed);
+                SetState(AgentJobState.Completed);
             }
             else
             {
-                SetState(AgentState.PathNotFound);
+                SetState(AgentJobState.PathNotFound);
             }
         }
 
@@ -113,49 +120,86 @@ namespace Simulation.Traffic.AI.Agents
             }
             else
             {
-                SetState(AgentState.RouteNotFound);
+                SetState(AgentJobState.RouteNotFound);
             }
             routeSolver = null;
         }
 
         private void StartRouteFinding()
         {
-            routeSolver = new RouteSolver(startCriteria.Routes, endCriteria.Routes);
-            SetState(AgentState.FindingRoute);
+            if (endCriteria.Routes?.Any() ?? false)
+            {
+                routeSolver = new RouteSolver(startCriteria.Routes, endCriteria.Routes);
+                SetState(AgentJobState.FindingRoute);
+            }
+            else
+            {
+                SetState(AgentJobState.RouteNotFound);
+            }
         }
         private void StartPathFinding()
         {
             var sourcePaths = GetSourcePaths();
             var destinationPaths = GetDestinationPaths();
 
-            pathSolver = new PathSolver(sourcePaths, destinationPaths, routeSequence);
+            if (destinationPaths?.Any() ?? false)
+            {
+                pathSolver = new PathSolver(sourcePaths, destinationPaths, routeSequence);
 
-            SetState(AgentState.FindingPath);
+                SetState(AgentJobState.FindingPath);
+            }
+            else
+            {
+                SetState(AgentJobState.PathNotFound);
+            }
         }
 
         protected virtual IEnumerable<IAIPath> GetDestinationPaths() =>
-            endCriteria.Paths != null
+            routeSequence?.Any() ?? false
+            ? endCriteria.Paths != null
                 ? endCriteria.Paths.Intersect(routeSequence.Last().Paths)
-                : routeSequence.Last().Paths;
+                : routeSequence.LastOrDefault()?.Paths
+            : null;
+
 
         protected virtual IEnumerable<IAIPath> GetSourcePaths() =>
-            startCriteria?.Paths != null
-                ? routeSequence.CurrentItem.Paths.Intersect(startCriteria.Paths)
-                : routeSequence.CurrentItem.Paths;
+            routeSequence?.Any() ?? false
+            ? startCriteria?.Paths != null
+                    ? routeSequence.CurrentItem.Paths.Intersect(startCriteria.Paths)
+                    : routeSequence.CurrentItem.Paths
+            : null;
 
         public void Dispose()
         {
-            SetState(AgentState.Cancelled);
+            SetState(AgentJobState.Cancelled);
         }
     }
-
-
+    [Flags]
+    public enum AgentState
+    {
+        Initializing = 1,
+        WaitingForRoute = 2,
+        NoRouteFound = 4,
+        GoingToRoute = 8,
+        FollowingRoute = 16,
+        GoingToDestination = 32,
+        DestinationReached = 64,
+    }
 
     public class Agent
     {
-
+        private AgentState state = AgentState.Initializing;
         private Sequence<IAIRoute> routeSequence;
         private Sequence<IAIPath> pathSequence;
+
+        // going from source to first path
+        private IAIPath approachPath;
+        // point to arrive at on the first path
+        private float approachProgress;
+        // going from last path to destination
+        private IAIPath departPath;
+        // point to depart from the last path
+        private float departProgress;
 
         private readonly AgentJob solverJob;
         private readonly IAIRouteFinder finder;
@@ -177,40 +221,157 @@ namespace Simulation.Traffic.AI.Agents
         {
             routeSequence = obj;
         }
-
+        public IEnumerable<IAIRoute> RouteSequence => routeSequence;
+        public IEnumerable<IAIPath> PathSequence => pathSequence;
+        public IAIRoute CurrentRoute => routeSequence?.CurrentItem;
+        public IAIPath CurrentPath => pathSequence?.CurrentItem;
+        public AgentState CurrentState => state;
         public void Update(float dt)
         {
-             if(pathSequence != null)
+            switch (state)
             {
-                progress += dt;
-                var pathLength = pathSequence.CurrentItem.GetLength();
-                if (progress > pathLength)
-                {
-                    isLastKnownTransformValid = false;
-                    progress -= pathLength;
-                    if (!pathSequence.Next())
+                case AgentState.WaitingForRoute:
                     {
-                        DestinationReached();
-                        pathSequence = null;
+                        if (solverJob.CurrentState.HasFlag(AgentJobState.Running))
+                            return; // still waiting, agent is done for this cyclus
+                        if (solverJob.CurrentState.HasFlag(AgentJobState.Completed))
+                        {
+                            updateApproachRoute();
+                            updateDepartRoute();
+                            state = AgentState.GoingToRoute;
+                            goto case AgentState.GoingToRoute;
+                        }
+                        if (solverJob.CurrentState.HasFlag(AgentJobState.Error))
+                        {
+                            state = AgentState.NoRouteFound;
+                            goto case AgentState.NoRouteFound;
+                        }
                     }
-                }
+                    break;
+                case AgentState.GoingToRoute:
+                    {
+                        progress += dt;
+                        isLastKnownTransformValid = false;
+                        var pathLength = approachPath.GetLength();
+                        if (progress > pathLength)
+                        {
+                            progress -= pathLength;
+                            progress += approachProgress;
+                            state = AgentState.FollowingRoute;
+                        }
+                    }
+                    break;
+                case AgentState.FollowingRoute:
+                    {
+                        progress += dt;
+                        isLastKnownTransformValid = false;
+                        var pathLength = pathSequence.IsLast() ? departProgress : pathSequence.CurrentItem.GetLength();
+                        if (progress > pathLength)
+                        {
+                            progress -= pathLength;
+                            if (!pathSequence.Next())
+                            {
+                                state = AgentState.GoingToDestination;
+                                pathSequence = null;
+                            }
+                        }
+                    }
+                    break;
+                case AgentState.GoingToDestination:
+                    {
+                        progress += dt;
+                        isLastKnownTransformValid = false;
+                        var pathLength = departPath.GetLength();
+                        if (progress > pathLength)
+                        {
+                            progress -= pathLength;
+                            state = AgentState.DestinationReached;
+                            DestinationReached();
+                        }
+                    }
+                    break;
+                case AgentState.NoRouteFound:
+                    {
+                        // agent is lost! find a way to get out of this situation.
+                    }
+                    break;
             }
+        }
+
+        // todo: make smarter, should use driveways of buildings instead of void paths
+        private void updateDepartRoute()
+        {
+            Vector3 start, startTangent, end, endTangent;
+
+            var path = pathSequence[pathSequence.Count - 1];
+
+            path.LoftPath.SnapTo(destination, out start, out var distance);
+
+            departProgress = path.GetDistanceFromLoftPath(distance);
+            end = destination;
+
+            startTangent = -path.GetTransform(departProgress).MultiplyVector(Vector3.forward);
+
+            endTangent = (start - end).normalized;
+
+            var loft = new BiArcLoftPath(start, startTangent, end, endTangent);
+
+            departPath = new AgentAIPath(loft);
+        }
+        // todo: make smarter, should use driveways of buildings of void paths
+        private void updateApproachRoute()
+        {
+            Vector3 start, startTangent, end, endTangent;
+
+            var startTransform = CurrentTransform;
+
+            start = startTransform.MultiplyPoint3x4(Vector3.zero);
+            startTangent = startTransform.MultiplyVector(Vector3.forward);
+
+            var path = pathSequence[0];
+
+            path.LoftPath.SnapTo(start, out end, out var distance); 
+            this.approachProgress = path.GetDistanceFromLoftPath(distance);
+
+
+            var transform = path.GetTransform(approachProgress);
+
+            endTangent = -transform.MultiplyVector(Vector3.forward);
+
+
+            var loft = new BiArcLoftPath(start, startTangent, end, endTangent);
+
+            approachPath = new AgentAIPath(loft);
         }
 
         protected virtual void DestinationReached()
         {
-
+            state = AgentState.DestinationReached;
         }
 
         private float progress;
 
         private Matrix4x4 lastKnownTransform;
         private bool isLastKnownTransformValid;
+        private Vector3 destination;
 
+        public Matrix4x4 CurrentTransform => isLastKnownTransformValid ? lastKnownTransform : (lastKnownTransform = getTransform());//pathSequence?.CurrentItem.LoftPath.GetTransform(progress, getBaseTransform(progress));
 
-        public Matrix4x4 GetTransform => isLastKnownTransformValid ? lastKnownTransform : throw new NotImplementedException();//pathSequence?.CurrentItem.LoftPath.GetTransform(progress, getBaseTransform(progress));
-
-   
+        private Matrix4x4 getTransform()
+        {
+            switch (state)
+            {
+                case AgentState.FollowingRoute:
+                    return CurrentPath.GetTransform(progress);
+                case AgentState.GoingToRoute:
+                    return approachPath.GetTransform(progress);
+                case AgentState.GoingToDestination:
+                    return departPath.GetTransform(progress);
+                case AgentState.DestinationReached:
+                    return departPath.GetEndTransform();
+            }
+            return Matrix4x4.zero;
+        }
 
         public void Teleport(Matrix4x4 start)
         {
@@ -220,14 +381,33 @@ namespace Simulation.Traffic.AI.Agents
             if (finder.Find(startPosition, out var routes, out var paths))
             {
                 solverJob.SetSource(routes, paths);
-                Activate(solverJob);
+                ActivateJob();
+            }
+            else
+            {
+                state = AgentState.NoRouteFound;
             }
         }
 
-        private void Activate(AgentJob solverJob)
+        private void ActivateJob()
         {
             solverJob.Start();
             runner.Run(solverJob);
+            state = AgentState.WaitingForRoute;
+        }
+
+        public void SetDestination(Vector3 position)
+        {
+            destination = position;
+            if (finder.Find(position, out var routes, out var paths))
+            {
+                solverJob.SetDestination(routes, paths);
+                ActivateJob();
+            }
+            else
+            {
+                state = AgentState.NoRouteFound;
+            }
         }
 
         //private bool GoToNextPath()
@@ -248,5 +428,42 @@ namespace Simulation.Traffic.AI.Agents
 
 
 
+    }
+
+    internal class AgentAIPath : IAIPath
+    { 
+
+        public AgentAIPath(BiArcLoftPath loft)
+        {
+            this.LoftPath = loft;
+        }
+
+        public ILoftPath LoftPath { get; }
+
+        public float SideOffsetStart =>0;
+
+        public float SideOffsetEnd => 0;
+
+        public float PathOffsetStart => 0;
+
+        public float PathOffsetEnd => 0;
+
+        public IAIPath LeftParralel => null;
+
+        public IAIPath RightParralel => null;
+
+        public bool Reverse => false;
+
+        public float MaxSpeed => 1; // TODO max speed
+
+        public float AverageSpeed => MaxSpeed;
+
+        public IEnumerable<IAIPath> NextPaths => Enumerable.Empty<IAIPath>(); // not used
+
+        public LaneType LaneType => LaneType.DirtTrack;
+
+        public VehicleTypes VehicleTypes => VehicleTypes.Vehicle;
+
+        public IEnumerable<IAIGraphNode> NextNodes => NextPaths;
     }
 }
