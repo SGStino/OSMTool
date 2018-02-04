@@ -20,11 +20,18 @@ namespace Simulation.Traffic
         {
             return new AISegment(description, this);
         }
+
+        protected override SegmentNodeConnection createConnection(Segment segment, Node start)
+        { 
+            return new AISegmentNodeConnection(segment as AISegment, start as AINode, this);
+        }
+
+        public new AINode CreateNodeAt(float x, float y) => base.CreateNodeAt(x, y) as AINode;
+        public new AISegment CreateSegment(Node start, Node end, SegmentDescription description) => base.CreateSegment(start, end, description) as AISegment;
     }
 
     public class RoadManager
     {
-
 
 
         private QuadTree<Node> nodes = new QuadTree<Node>(new Rect(0, 0, 1000, 1000));
