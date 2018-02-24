@@ -141,6 +141,95 @@ namespace Simulation.Traffic.Test
 
             Assert.AreEqual(new Vector3(0, 0, -1), halfTransform.MultiplyVector(Vector3.forward));
         }
+        [TestMethod]
+        public void TestStartTransformReverse()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = true
+            };
+
+
+            var start = aiPath.GetStartTransform().MultiplyPoint3x4(Vector3.zero);
+            var zero = aiPath.GetTransform(0).MultiplyPoint3x4(Vector3.zero);
+            var expected = new Vector3(4,0,8);
+
+            Assert.AreEqual(expected, zero);
+            Assert.AreEqual(expected, start);
+        }
+        [TestMethod]
+        public void TestStartTransform()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = false
+            };
+
+
+            var start = aiPath.GetStartTransform().MultiplyPoint3x4(Vector3.zero);
+            var zero = aiPath.GetTransform(0).MultiplyPoint3x4(Vector3.zero);
+            var expected = new Vector3(3, 0, 1);
+
+            Assert.AreEqual(expected, zero);
+            Assert.AreEqual(expected, start);
+        }
+
+        [TestMethod]
+        public void TestEndTransformReverse()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = true
+            };
+
+
+            var end = aiPath.GetEndTransform().MultiplyPoint3x4(Vector3.zero);
+            var zero = aiPath.GetTransform(aiPath.GetLength()).MultiplyPoint3x4(Vector3.zero);
+            var expected = new Vector3(3, 0, 1);
+
+            Assert.AreEqual(expected, zero);
+            Assert.AreEqual(expected, end);
+        }
+        [TestMethod]
+        public void TestEndTransform()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = false
+            };
+
+
+            var end = aiPath.GetEndTransform().MultiplyPoint3x4(Vector3.zero);
+            var zero = aiPath.GetTransform(aiPath.GetLength()).MultiplyPoint3x4(Vector3.zero);
+            var expected = new Vector3(4, 0, 8);
+
+            Assert.AreEqual(expected, zero);
+            Assert.AreEqual(expected, end);
+        }
     }
 
     internal class DummyAIPath : IAIPath

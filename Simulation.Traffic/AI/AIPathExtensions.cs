@@ -41,8 +41,8 @@ namespace Simulation.Traffic.AI
         public static AISegmentNodeConnection GetStart(this SegmentAIPath path) => path.Reverse ? path.Segment.End : path.Segment.Start;
         public static AISegmentNodeConnection GetEnd(this SegmentAIPath path) => path.Reverse ? path.Segment.Start : path.Segment.End;
 
-        public static Matrix4x4 GetStartTransform(this IAIPath path) => Matrix4x4.Translate(new Vector3(path.GetStartSideOffset(), 0, 0)) * path.LoftPath?.GetTransform(path.GetStartPathOffset()) ?? Matrix4x4.identity;
-        public static Matrix4x4 GetEndTransform(this IAIPath path) => Matrix4x4.Translate(new Vector3(path.GetEndSideOffset(), 0, 0)) * path.LoftPath?.GetTransform(path.GetEndPathOffset()) ?? Matrix4x4.identity;
+        public static Matrix4x4 GetStartTransform(this IAIPath path) => path.GetTransform(0);
+        public static Matrix4x4 GetEndTransform(this IAIPath path) => path.GetTransform(path.GetLength());
 
         public static Matrix4x4 rotate = new Matrix4x4(new Vector4(-1, 0, 0, 0), new Vector4(0, 1, 0, 0), new Vector4(0, 0, -1, 0), new Vector4(0, 0, 0, 1));
 
@@ -70,11 +70,13 @@ namespace Simulation.Traffic.AI
             distance = path.PathOffsetStart + progress * length;
 
             var maxDistance = path.LoftPath?.Length ?? 1;
-            var lerp = Mathf.Lerp(path.SideOffsetStart, path.SideOffsetEnd, progress);
+
+            var t = progress;
+            var lerp = Mathf.Lerp(path.SideOffsetStart, path.SideOffsetEnd, t * t * t * (t * (6f * t - 15f) + 10f));
 
             var m = Matrix4x4.Translate(new Vector3(lerp, 0, 0));
 
-            var result = m * path.LoftPath.GetTransform(distance);
+            var result = path.LoftPath.GetTransform(distance) * m;
 
             if (path.Reverse)
                 return result * rotate;

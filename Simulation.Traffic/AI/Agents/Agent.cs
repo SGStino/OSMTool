@@ -224,7 +224,7 @@ namespace Simulation.Traffic.AI.Agents
         public IEnumerable<IAIRoute> RouteSequence => routeSequence;
         public IEnumerable<IAIPath> PathSequence => pathSequence;
         public IAIRoute CurrentRoute => routeSequence?.CurrentItem;
-        public IAIPath CurrentPath => pathSequence?.CurrentItem;
+        public IAIPath CurrentPath => state == AgentState.GoingToRoute ?  approachPath : (state == AgentState.GoingToDestination) ? departPath : pathSequence?.CurrentItem;
         public AgentState CurrentState => state;
         public void Update(float dt)
         {
@@ -250,7 +250,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentState.GoingToRoute:
                     {
-                        progress += dt;
+                        progress += dt * (CurrentPath?.AverageSpeed ?? 1);
                         isLastKnownTransformValid = false;
                         var pathLength = approachPath.GetLength();
                         if (progress > pathLength)
@@ -263,7 +263,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentState.FollowingRoute:
                     {
-                        progress += dt;
+                        progress += dt * (CurrentPath?.AverageSpeed ?? 1);
                         isLastKnownTransformValid = false;
                         var pathLength = pathSequence.IsLast() ? departProgress : pathSequence.CurrentItem.GetLength();
                         if (progress > pathLength)
@@ -279,7 +279,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentState.GoingToDestination:
                     {
-                        progress += dt;
+                        progress += dt * (CurrentPath?.AverageSpeed ?? 1);
                         isLastKnownTransformValid = false;
                         var pathLength = departPath.GetLength();
                         if (progress > pathLength)
@@ -330,7 +330,7 @@ namespace Simulation.Traffic.AI.Agents
 
             var path = pathSequence[0];
 
-            path.LoftPath.SnapTo(start, out end, out var distance); 
+            path.LoftPath.SnapTo(start, out end, out var distance);
             this.approachProgress = path.GetDistanceFromLoftPath(distance);
 
 
@@ -431,7 +431,7 @@ namespace Simulation.Traffic.AI.Agents
     }
 
     internal class AgentAIPath : IAIPath
-    { 
+    {
 
         public AgentAIPath(BiArcLoftPath loft)
         {
@@ -440,7 +440,7 @@ namespace Simulation.Traffic.AI.Agents
 
         public ILoftPath LoftPath { get; }
 
-        public float SideOffsetStart =>0;
+        public float SideOffsetStart => 0;
 
         public float SideOffsetEnd => 0;
 
@@ -454,7 +454,7 @@ namespace Simulation.Traffic.AI.Agents
 
         public bool Reverse => false;
 
-        public float MaxSpeed => 1; // TODO max speed
+        public float MaxSpeed => 50; // TODO max speed
 
         public float AverageSpeed => MaxSpeed;
 

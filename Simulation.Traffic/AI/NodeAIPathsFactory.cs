@@ -81,13 +81,16 @@ namespace Simulation.Traffic.AI
             var from = incoming.GetEnd();
             var to = outgoing.GetStart();
 
+            var inPaths = incoming.Paths.OrderBy(t => Mathf.Abs( t.SideOffsetStart)).ToArray();
+            var outPaths = outgoing.Paths.OrderBy(t => Mathf.Abs(t.SideOffsetStart)).ToArray();
 
-            if (incoming.Paths.Length == outgoing.Paths.Length)
+
+            if (inPaths.Length == outPaths.Length)
             {
-                for (int i = 0; i < incoming.Paths.Length; i++)
+                for (int i = 0; i < inPaths.Length; i++)
                 {
-                    var iPath = incoming.Paths[i];
-                    var oPath = outgoing.Paths[i];
+                    var iPath = inPaths[i];
+                    var oPath = outPaths[i];
                     yield return new NodeAIPath(iPath, oPath, createLineLoft(iPath, from, oPath, to));
                 }
             }
