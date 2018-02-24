@@ -224,7 +224,7 @@ namespace Simulation.Traffic.AI.Agents
         public IEnumerable<IAIRoute> RouteSequence => routeSequence;
         public IEnumerable<IAIPath> PathSequence => pathSequence;
         public IAIRoute CurrentRoute => routeSequence?.CurrentItem;
-        public IAIPath CurrentPath => state == AgentState.GoingToRoute ?  approachPath : (state == AgentState.GoingToDestination) ? departPath : pathSequence?.CurrentItem;
+        public IAIPath CurrentPath => state == AgentState.GoingToRoute ? approachPath : (state == AgentState.GoingToDestination) ? departPath : pathSequence?.CurrentItem;
         public AgentState CurrentState => state;
         public void Update(float dt)
         {
@@ -250,7 +250,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentState.GoingToRoute:
                     {
-                        progress += dt * (CurrentPath?.AverageSpeed ?? 1);
+                        progress += dt * getSpeed(CurrentPath?.AverageSpeed ?? 1);
                         isLastKnownTransformValid = false;
                         var pathLength = approachPath.GetLength();
                         if (progress > pathLength)
@@ -263,7 +263,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentState.FollowingRoute:
                     {
-                        progress += dt * (CurrentPath?.AverageSpeed ?? 1);
+                        progress += dt * getSpeed(CurrentPath?.AverageSpeed ?? 1);
                         isLastKnownTransformValid = false;
                         var pathLength = pathSequence.IsLast() ? departProgress : pathSequence.CurrentItem.GetLength();
                         if (progress > pathLength)
@@ -279,7 +279,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentState.GoingToDestination:
                     {
-                        progress += dt * (CurrentPath?.AverageSpeed ?? 1);
+                        progress += dt * getSpeed(CurrentPath?.AverageSpeed ?? 1);
                         isLastKnownTransformValid = false;
                         var pathLength = departPath.GetLength();
                         if (progress > pathLength)
@@ -296,6 +296,13 @@ namespace Simulation.Traffic.AI.Agents
                     }
                     break;
             }
+        }
+
+        public float MaxSpeed { get; set; } = float.PositiveInfinity;
+
+        private float getSpeed(float v)
+        {
+            return Math.Min(MaxSpeed, v);
         }
 
         // todo: make smarter, should use driveways of buildings instead of void paths

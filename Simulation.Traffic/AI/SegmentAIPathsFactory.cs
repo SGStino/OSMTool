@@ -20,7 +20,10 @@ namespace Simulation.Traffic.AI
             {
                 var path = Create(segment, lanes[i], ref offset, i);
                 if (i > 0)
-                    SegmentAIPath.ConnectParralel(paths[i - 1], path);
+                {
+                    if (paths[i - 1].Reverse == path.Reverse)
+                        SegmentAIPath.ConnectParralel(paths[i - 1], path);
+                }
                 paths[i] = path;
             }
 

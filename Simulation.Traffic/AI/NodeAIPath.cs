@@ -21,9 +21,9 @@ namespace Simulation.Traffic.AI
 
         public ILoftPath LoftPath => Path;
 
-        public float SideOffsetStart => source.Reverse ? -source.SideOffsetStart : source.SideOffsetEnd;
+        public float SideOffsetStart => 0;
 
-        public float SideOffsetEnd => destination.Reverse ? -destination.SideOffsetEnd : destination.SideOffsetStart;
+        public float SideOffsetEnd => 0;
 
         public IAIPath LeftParralel { get; private set; }
 

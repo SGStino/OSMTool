@@ -15,7 +15,6 @@ namespace Simulation.Traffic.Lofts
         {
             return new Vector3(input.x, 0, input.y);
         }
-
         public BiArcLoftPath(Vector3 start, Vector3 tangentStart, Vector3 end, Vector3 tangentEnd)
         {
 #if DEBUG
@@ -31,6 +30,9 @@ namespace Simulation.Traffic.Lofts
             if (float.IsNaN(tangentEnd.x)) throw new InvalidOperationException("tangentEnd.x is not a number");
             if (float.IsNaN(tangentEnd.y)) throw new InvalidOperationException("tangentEnd.y is not a number");
             if (float.IsNaN(tangentEnd.z)) throw new InvalidOperationException("tangentEnd.z is not a number");
+
+            if ((start - end).sqrMagnitude < 0.001)
+                throw new InvalidOperationException("Zero Length");
 #endif
 
             tangentStart.Normalize();
@@ -63,18 +65,42 @@ namespace Simulation.Traffic.Lofts
             {
                 //Debug.DrawLine(r12.origin, r12.GetPoint(10), Color.blue);
 
-                var center1 = r12.GetPoint(Vector3.Dot(start - r12.origin, r12.direction));
+                var r = Vector3.Dot(start - r12.origin, r12.direction);
+
+                var center1 = r12.GetPoint(r);
                 //Debug.DrawLine(center1, start, Color.yellow);
                 //Debug.DrawLine(center1, end, Color.yellow);
+#if DEBUG
+                if (float.IsNaN(center1.x)) throw new InvalidOperationException("center1.x is not a number");
+                if (float.IsNaN(center1.y)) throw new InvalidOperationException("center1.y is not a number");
+                if (float.IsNaN(center1.z)) throw new InvalidOperationException("center1.z is not a number");
+#endif
 
                 var rH = (center1 - start).magnitude;
                 var rC = (center1 - c1).magnitude;
+#if DEBUG
+                if (float.IsNaN(rH)) throw new InvalidOperationException("rH is not a number");
+                if (float.IsNaN(rC)) throw new InvalidOperationException("rC is not a number");
+#endif
 
-                var lCH = (c1 - center1) / rC * rH;
-                //DebugUtils.DrawCircle(center1, rH, r12.direction, Color.yellow);
-
-                var pointH2 = center1 + lCH;
-                var pointH1 = center1 - lCH;
+                Vector3 pointH1, pointH2;
+                if (Mathf.Abs(rC) > Mathf.Epsilon)
+                {
+                    var lCH = (c1 - center1) / rC * rH;
+                    //DebugUtils.DrawCircle(center1, rH, r12.direction, Color.yellow);
+#if DEBUG
+                    if (float.IsNaN(lCH.x)) throw new InvalidOperationException("lCH.x is not a number");
+                    if (float.IsNaN(lCH.y)) throw new InvalidOperationException("lCH.y is not a number");
+                    if (float.IsNaN(lCH.z)) throw new InvalidOperationException("lCH.z is not a number");
+#endif
+                    pointH2 = center1 + lCH;
+                    pointH1 = center1 - lCH;
+                }
+                else
+                {
+                    pointH1 = pointH2 = center1;
+                    tangentStart = -tangentStart;
+                }
                 //Debug.DrawLine(pointH1, pointH2, Color.green);
 
                 //arc1 = getArc(start, tangentStart, pointH1, true);
@@ -96,19 +122,42 @@ namespace Simulation.Traffic.Lofts
                     arc1 = arc2start;
                     arc2 = arc2end;
                 }
+                return;
             }
-            else
-            {
-                // TODO: possible anomaly: both tangents are identical: perpendicular planes are parallel
-                var center = (start + end) / 2;
-                arc1 = getArc(start, tangentStart, center, true);
-                arc2 = getArc(end, tangentEnd, center, false);
-            }
+            throw new NotImplementedException("Can't handle this yet: couldn't figure out the normal from parallel lines");
+            // TODO: possible anomaly: both tangents are identical: perpendicular planes are parallel
+            var d = (start - end).magnitude / 2;
 
+            var center = (start + tangentStart * d + end + tangentEnd * d) / 2;
+            arc1 = getArc(start, tangentStart, center, true);
+            arc2 = getArc(end, tangentEnd, center, false);
+
+        }
+
+        private string asBin(Vector3 start)
+        {
+            return asBin(start.x) + " " + asBin(start.y) + " " + asBin(start.z);
+        }
+
+        private string asBin(float z)
+        {
+            return Convert.ToBase64String(BitConverter.GetBytes(z));
         }
 
         private ILoftPath getArc(Vector3 point, Vector3 tangent, Vector3 pointH, bool reverse)
         {
+#if DEBUG
+            if (float.IsNaN(point.x)) throw new InvalidOperationException("point.x is not a number");
+            if (float.IsNaN(point.y)) throw new InvalidOperationException("point.y is not a number");
+            if (float.IsNaN(point.z)) throw new InvalidOperationException("point.z is not a number");
+            if (float.IsNaN(tangent.x)) throw new InvalidOperationException("tangent.x is not a number");
+            if (float.IsNaN(tangent.y)) throw new InvalidOperationException("tangent.y is not a number");
+            if (float.IsNaN(tangent.z)) throw new InvalidOperationException("tangent.z is not a number");
+            if (float.IsNaN(pointH.x)) throw new InvalidOperationException("pointH.x is not a number");
+            if (float.IsNaN(pointH.y)) throw new InvalidOperationException("pointH.y is not a number");
+            if (float.IsNaN(pointH.z)) throw new InvalidOperationException("pointH.z is not a number");
+#endif
+
             //Debug.DrawLine(point, point + tangent * 10);
             var lHP = pointH - point;
 
@@ -358,11 +407,11 @@ namespace Simulation.Traffic.Lofts
             Vector3 p1, p2;
             float d1, d2;
 
-             
+
 
             arc1.SnapTo(to, out p1, out d1);
             arc2.SnapTo(to, out p2, out d2);
-            
+
 
             if ((to - p1).sqrMagnitude < (to - p2).sqrMagnitude)
             {

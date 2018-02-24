@@ -81,7 +81,7 @@ namespace Simulation.Traffic.AI
             var from = incoming.GetEnd();
             var to = outgoing.GetStart();
 
-            var inPaths = incoming.Paths.OrderBy(t => Mathf.Abs( t.SideOffsetStart)).ToArray();
+            var inPaths = incoming.Paths.OrderBy(t => Mathf.Abs(t.SideOffsetStart)).ToArray();
             var outPaths = outgoing.Paths.OrderBy(t => Mathf.Abs(t.SideOffsetStart)).ToArray();
 
 
@@ -91,6 +91,9 @@ namespace Simulation.Traffic.AI
                 {
                     var iPath = inPaths[i];
                     var oPath = outPaths[i];
+
+
+
                     yield return new NodeAIPath(iPath, oPath, createLineLoft(iPath, from, oPath, to));
                 }
             }
@@ -164,9 +167,19 @@ namespace Simulation.Traffic.AI
 
         private ILoftPath createLineLoft(SegmentAIPath iPath, AISegmentNodeConnection from, SegmentAIPath oPath, AISegmentNodeConnection to)
         {
-            var point1 = from.GetPosition();
-            var point2 = to.GetPosition();
-            return new BiArcLoftPath(point1, from.Tangent, point2, -to.Tangent);
+            var t1 = iPath.GetEndTransform();
+            var t2 = oPath.GetStartTransform();
+
+            var point1 = t1.MultiplyPoint3x4(Vector3.zero);
+            var point2 = t2.MultiplyPoint3x4(Vector3.zero);
+
+            var f1 = t1.MultiplyVector(Vector3.forward).normalized;
+            var f2 = t2.MultiplyVector(Vector3.forward).normalized;
+
+          //  var l = (point2 - point1).magnitude;
+
+            //return new LinearPath(point2, point2 + f2 * l);
+            return new BiArcLoftPath(point1, -f1, point2, -f2);
         }
 
         private static Vector3 GetPoint(SegmentAIPath iPath, bool end)

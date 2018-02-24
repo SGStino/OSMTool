@@ -60,8 +60,8 @@ namespace Simulation.Traffic.AI.Navigation
             foreach (var n in t.NextPaths)
             {
                 yield return n;
-                foreach (var n2 in getLeftRight(n))
-                    yield return n2;
+                //foreach (var n2 in getLeftRight(n))
+                //    yield return n2;
             }
         }
 
