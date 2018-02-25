@@ -153,8 +153,7 @@ namespace Simulation.Traffic.Lofts
                 normal = -normal;
 
 
-            var angle = VectorMath3D.GetAngle(startVector, endVector, normal);
-
+            var angle = VectorMath3D.GetAngle(startVector, endVector, normal); 
             if (angle < 0)
                 angle = Mathf.PI * 2 + angle;
 

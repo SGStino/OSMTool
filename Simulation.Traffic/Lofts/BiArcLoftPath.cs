@@ -31,7 +31,8 @@ namespace Simulation.Traffic.Lofts
             if (float.IsNaN(tangentEnd.y)) throw new InvalidOperationException("tangentEnd.y is not a number");
             if (float.IsNaN(tangentEnd.z)) throw new InvalidOperationException("tangentEnd.z is not a number");
 
-            if ((start - end).sqrMagnitude < 0.001)
+            var distSqr = (start - end).sqrMagnitude;
+            if (distSqr < 0.001)
                 throw new InvalidOperationException("Zero Length");
 #endif
 
@@ -68,6 +69,7 @@ namespace Simulation.Traffic.Lofts
                 var r = Vector3.Dot(start - r12.origin, r12.direction);
 
                 var center1 = r12.GetPoint(r);
+
                 //Debug.DrawLine(center1, start, Color.yellow);
                 //Debug.DrawLine(center1, end, Color.yellow);
 #if DEBUG
@@ -84,7 +86,7 @@ namespace Simulation.Traffic.Lofts
 #endif
 
                 Vector3 pointH1, pointH2;
-                if (Mathf.Abs(rC) > Mathf.Epsilon)
+                if (Mathf.Abs(rC) > 0.00001f)
                 {
                     var lCH = (c1 - center1) / rC * rH;
                     //DebugUtils.DrawCircle(center1, rH, r12.direction, Color.yellow);
@@ -98,8 +100,7 @@ namespace Simulation.Traffic.Lofts
                 }
                 else
                 {
-                    pointH1 = pointH2 = center1;
-                    tangentStart = -tangentStart;
+                    pointH1 = pointH2 = center1 - tangentStart * (start - end).magnitude / 2;
                 }
                 //Debug.DrawLine(pointH1, pointH2, Color.green);
 
@@ -124,14 +125,11 @@ namespace Simulation.Traffic.Lofts
                 }
                 return;
             }
-            throw new NotImplementedException("Can't handle this yet: couldn't figure out the normal from parallel lines");
-            // TODO: possible anomaly: both tangents are identical: perpendicular planes are parallel
-            var d = (start - end).magnitude / 2;
 
-            var center = (start + tangentStart * d + end + tangentEnd * d) / 2;
+            // TODO: possible anomaly: both tangents are identical: perpendicular planes are parallel
+            var center = (start + end) / 2;
             arc1 = getArc(start, tangentStart, center, true);
             arc2 = getArc(end, tangentEnd, center, false);
-
         }
 
         private string asBin(Vector3 start)
@@ -219,6 +217,7 @@ namespace Simulation.Traffic.Lofts
                 ray = new Ray(p3, p3n);
                 return true;
             }
+
             ray = default(Ray);
             return false;
         }

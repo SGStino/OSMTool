@@ -14,6 +14,7 @@ namespace Simulation.Traffic.Test
     [TestClass]
     public class LoftPathTests
     {
+        private float precision = 0.001f;
         public Vector3 fromString3(string bytes)
         {
             var b = bytes.Split(' ');
@@ -45,32 +46,6 @@ namespace Simulation.Traffic.Test
         public void TestReverseCShape()
         {
             // data from actual bogus case:
-            var tangentStart = new Vector3(-1, 0, 0);
-            var tangentEnd = new Vector3(-1, 0, 0);
-
-            var start = new Vector3(0, 0, 2);
-            var end = new Vector3(0, 0, -2);
-
-            var a = new BiArcLoftPath(start, tangentStart, end, tangentEnd);
-
-            var p1 = a.GetTransformedPoint(a.Length / 4, Vector3.zero);
-            var p2 = a.GetTransformedPoint(a.Length / 2, Vector3.zero);
-            var p3 = a.GetTransformedPoint(a.Length / 4 * 3, Vector3.zero);
-
-            var points = string.Join(" ", Enumerable.Range(0, 100).Select(i => i / 100.0f).Select(i => a.GetTransformedPoint(i * a.Length, Vector3.zero))
-                .Select(t => "(" + t.x.ToString(CultureInfo.InvariantCulture) + "," + t.z.ToString(CultureInfo.InvariantCulture) + ")"));
-
-            var s2 = Mathf.Sqrt(2) / 2;
-
-            Assert.AreEqual(new Vector3(s2, 0, 2 - s2), p1.Round(0.01f));
-            Assert.AreEqual(new Vector3(2, 0, 0), p2.Round(0.01f));
-            Assert.AreEqual(new Vector3(s2, 0, -2 + s2), p3.Round(0.01f));
-        }
-
-        [TestMethod]
-        public void TestReverseSShape()
-        {
-            // data from actual bogus case:
             var tangentStart = new Vector3(1, 0, 0);
             var tangentEnd = new Vector3(-1, 0, 0);
 
@@ -86,20 +61,22 @@ namespace Simulation.Traffic.Test
             var points = string.Join(" ", Enumerable.Range(0, 100).Select(i => i / 100.0f).Select(i => a.GetTransformedPoint(i * a.Length, Vector3.zero))
                 .Select(t => "(" + t.x.ToString(CultureInfo.InvariantCulture) + "," + t.z.ToString(CultureInfo.InvariantCulture) + ")"));
 
-            Assert.AreEqual(new Vector3(1, 0, 1), p1.Round(0.01f));
-            Assert.AreEqual(new Vector3(0, 0, 0), p2.Round(0.01f));
-            Assert.AreEqual(new Vector3(-1, 0, -1), p3.Round(0.01f));
+            var s2 = Mathf.Sqrt(2);
+
+            Assert.AreEqual(new Vector3(-s2, 0, s2).Round(precision), p1.Round(precision));
+            Assert.AreEqual(new Vector3(-2, 0, 0).Round(precision), p2.Round(precision));
+            Assert.AreEqual(new Vector3(-s2, 0, -s2).Round(precision), p3.Round(precision));
         }
 
         [TestMethod]
-        public void TestSShape()
+        public void TestReverseSShape()
         {
             // data from actual bogus case:
-            var tangentStart = new Vector3(-1, 0, 0);// fromString3("AACAvw== AAAAgA== AAAAgA==");
-            var tangentEnd = new Vector3(1, 0, 0);// fromString3("AACAPw== AAAAgA== AAAAgA==");
+            var tangentStart = new Vector3(-1, 0, 0);
+            var tangentEnd = new Vector3(-1, 0, 0);
 
-            var start = new Vector3(0, 0, 2);// fromString3("AMAuRA== AAAAAA== VVXtQg==") - new Vector3(699,0,116.6667f);
-            var end = new Vector3(0, 0, -2);// fromString3("AMAuRA== AAAAAA== VVXlQg==") - new Vector3(699, 0, 116.6667f);
+            var start = new Vector3(0, 0, 2);
+            var end = new Vector3(0, 0, -2);
 
             var a = new BiArcLoftPath(start, tangentStart, end, tangentEnd);
 
@@ -110,12 +87,13 @@ namespace Simulation.Traffic.Test
             var points = string.Join(" ", Enumerable.Range(0, 100).Select(i => i / 100.0f).Select(i => a.GetTransformedPoint(i * a.Length, Vector3.zero))
                 .Select(t => "(" + t.x.ToString(CultureInfo.InvariantCulture) + "," + t.z.ToString(CultureInfo.InvariantCulture) + ")"));
 
-            Assert.AreEqual(new Vector3(-1, 0, 1), p1.Round(0.01f));
-            Assert.AreEqual(new Vector3(0, 0, 0), p2.Round(0.01f));
-            Assert.AreEqual(new Vector3(1, 0, -1), p3.Round(0.01f));
+            Assert.AreEqual(new Vector3(1, 0, 1), p1.Round(precision));
+            Assert.AreEqual(new Vector3(0, 0, 0), p2.Round(precision));
+            Assert.AreEqual(new Vector3(-1, 0, -1), p3.Round(precision));
         }
+
         [TestMethod]
-        public void TestCShape()
+        public void TestSShape()
         {
             // data from actual bogus case:
             var tangentStart = new Vector3(1, 0, 0);// fromString3("AACAvw== AAAAgA== AAAAgA==");
@@ -132,10 +110,33 @@ namespace Simulation.Traffic.Test
 
             var points = string.Join(" ", Enumerable.Range(0, 100).Select(i => i / 100.0f).Select(i => a.GetTransformedPoint(i * a.Length, Vector3.zero))
                 .Select(t => "(" + t.x.ToString(CultureInfo.InvariantCulture) + "," + t.z.ToString(CultureInfo.InvariantCulture) + ")"));
-            var s2 = Mathf.Sqrt(2) / 2;
-            Assert.AreEqual(new Vector3(s2, 0, 2 - s2), p1.Round(0.01f));
-            Assert.AreEqual(new Vector3(2, 0, 0), p2.Round(0.01f));
-            Assert.AreEqual(new Vector3(s2, 0, -2 + 1), p3.Round(0.01f));
+
+            Assert.AreEqual(new Vector3(-1, 0, 1).Round(precision), p1.Round(precision));
+            Assert.AreEqual(new Vector3(0, 0, 0).Round(precision), p2.Round(precision));
+            Assert.AreEqual(new Vector3(1, 0, -1).Round(precision), p3.Round(precision));
+        }
+        [TestMethod]
+        public void TestCShape()
+        {
+            // data from actual bogus case:
+            var tangentStart = new Vector3(-1, 0, 0);// fromString3("AACAvw== AAAAgA== AAAAgA==");
+            var tangentEnd = new Vector3(1, 0, 0);// fromString3("AACAPw== AAAAgA== AAAAgA==");
+
+            var start = new Vector3(0, 0, 2);// fromString3("AMAuRA== AAAAAA== VVXtQg==") - new Vector3(699,0,116.6667f);
+            var end = new Vector3(0, 0, -2);// fromString3("AMAuRA== AAAAAA== VVXlQg==") - new Vector3(699, 0, 116.6667f);
+
+            var a = new BiArcLoftPath(start, tangentStart, end, tangentEnd);
+
+            var p1 = a.GetTransformedPoint(a.Length / 4, Vector3.zero);
+            var p2 = a.GetTransformedPoint(a.Length / 2, Vector3.zero);
+            var p3 = a.GetTransformedPoint(a.Length / 4 * 3, Vector3.zero);
+
+            var points = string.Join(" ", Enumerable.Range(0, 100).Select(i => i / 100.0f).Select(i => a.GetTransformedPoint(i * a.Length, Vector3.zero))
+                .Select(t => "(" + t.x.ToString(CultureInfo.InvariantCulture) + "," + t.z.ToString(CultureInfo.InvariantCulture) + ")"));
+            var s2 = Mathf.Sqrt(2) ;
+            Assert.AreEqual(new Vector3(s2, 0, s2).Round(precision), p1.Round(precision));
+            Assert.AreEqual(new Vector3(2, 0, 0).Round(precision), p2.Round(precision));
+            Assert.AreEqual(new Vector3(s2, 0, -s2).Round(precision), p3.Round(precision));
         }
 
         [TestMethod]
