@@ -14,6 +14,7 @@ namespace Simulation.Traffic.Utilities
         public static float GetAngle(Vector3 start, Vector3 end, Vector3 normal)
         {
             var dot = Vector3.Dot(start.normalized, end.normalized);
+            dot = Mathf.Clamp(dot, -1, 1);// clean up edge cases with floating point precision
             var angle = Mathf.Acos(dot);
             var cross = Vector3.Cross(start, end);
 
