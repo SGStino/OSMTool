@@ -40,41 +40,33 @@ namespace Simulation.Traffic.Test
         public void AgentJobTestFindRoute()
         {
 
-            Action<Sequence<IAIPath>> pathCallback = path => { };
-            Action<Sequence<IAIRoute>> routeCallback = route => { };
-             
 
             var startRoute = new[] { routeMap.mR0 };
             var endRoute = new[] { routeMap.mR5 };
- 
+
             var start = new[] { routeMap.mR0P0 };
             var end = new[] { routeMap.mR5P1 };
 
 
-            var job = new AgentJob(pathCallback, routeCallback);
+            var job = new AgentJob();
 
             job.SetSource(startRoute, start);
             job.SetDestination(endRoute, end);
 
             job.Start();
 
-            while (!job.CurrentState.HasFlag(AgentJobState.Error) && !job.CurrentState.HasFlag(AgentJobState.Completed))
+            while (!job.CurrentState.HasFlag(AgentJobStatus.Error) && !job.CurrentState.HasFlag(AgentJobStatus.Completed))
             {
                 job.Iterate();
             }
 
-            Assert.IsFalse(job.CurrentState.HasFlag(AgentJobState.Error), "ErrorState: "+job.CurrentState);
-            Assert.IsTrue(job.CurrentState.HasFlag(AgentJobState.Completed), "Completed");
+            Assert.IsFalse(job.CurrentState.HasFlag(AgentJobStatus.Error), "ErrorState: " + job.CurrentState);
+            Assert.IsTrue(job.CurrentState.HasFlag(AgentJobStatus.Completed), "Completed");
         }
 
         [TestMethod]
         public void AgentJobTestFindNoPath()
         {
-
-            Action<Sequence<IAIPath>> pathCallback = path => { };
-            Action<Sequence<IAIRoute>> routeCallback = route => { };
-
-
             var startRoute = new[] { routeMap.mR0 };
             var endRoute = new[] { routeMap.mR5 };
 
@@ -82,29 +74,25 @@ namespace Simulation.Traffic.Test
             var end = new[] { routeMap.mR5P1 };
 
 
-            var job = new AgentJob(pathCallback, routeCallback);
+            var job = new AgentJob();
 
             job.SetSource(startRoute, start);
             job.SetDestination(endRoute, end);
 
             job.Start();
 
-            while (!job.CurrentState.HasFlag(AgentJobState.Error) && !job.CurrentState.HasFlag(AgentJobState.Completed))
+            while (!job.CurrentState.HasFlag(AgentJobStatus.Error) && !job.CurrentState.HasFlag(AgentJobStatus.Completed))
             {
                 job.Iterate();
             }
 
-            Assert.IsTrue(job.CurrentState.HasFlag(AgentJobState.Error), "ErrorState: " + job.CurrentState);
-            Assert.IsFalse(job.CurrentState.HasFlag(AgentJobState.Completed), "Completed");
-            Assert.AreEqual(AgentJobState.PathNotFound, job.CurrentState);
+            Assert.IsTrue(job.CurrentState.HasFlag(AgentJobStatus.Error), "ErrorState: " + job.CurrentState);
+            Assert.IsFalse(job.CurrentState.HasFlag(AgentJobStatus.Completed), "Completed");
+            Assert.AreEqual(AgentJobStatus.PathNotFound, job.CurrentState);
         }
         [TestMethod]
         public void AgentJobTestFindNoRoute()
-        { 
-            Action<Sequence<IAIPath>> pathCallback = path => { };
-            Action<Sequence<IAIRoute>> routeCallback = route => { };
-
-
+        {
             var startRoute = new[] { routeMap.rR5 };
             var endRoute = new[] { routeMap.mR5 };
 
@@ -112,21 +100,21 @@ namespace Simulation.Traffic.Test
             var end = new[] { routeMap.mR5P1 };
 
 
-            var job = new AgentJob(pathCallback, routeCallback);
+            var job = new AgentJob();
 
             job.SetSource(startRoute, start);
             job.SetDestination(endRoute, end);
 
             job.Start();
 
-            while (!job.CurrentState.HasFlag(AgentJobState.Error) && !job.CurrentState.HasFlag(AgentJobState.Completed))
+            while (!job.CurrentState.HasFlag(AgentJobStatus.Error) && !job.CurrentState.HasFlag(AgentJobStatus.Completed))
             {
                 job.Iterate();
             }
 
-            Assert.IsTrue(job.CurrentState.HasFlag(AgentJobState.Error), "ErrorState: " + job.CurrentState);
-            Assert.IsFalse(job.CurrentState.HasFlag(AgentJobState.Completed), "Completed");
-            Assert.AreEqual(AgentJobState.RouteNotFound, job.CurrentState);
+            Assert.IsTrue(job.CurrentState.HasFlag(AgentJobStatus.Error), "ErrorState: " + job.CurrentState);
+            Assert.IsFalse(job.CurrentState.HasFlag(AgentJobStatus.Completed), "Completed");
+            Assert.AreEqual(AgentJobStatus.RouteNotFound, job.CurrentState);
         }
         //[TestMethod]
         //public void AgentTestWalkRoute()

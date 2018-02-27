@@ -2,20 +2,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Simulation.Traffic.AI.Agents;
 namespace Simulation.Traffic.AI
 {
-    public class SegmentAIPath : IAIPath, IDisposable
+    public class SegmentAIPath : IAgentChainAIPath, IDisposable
     {
         public byte ID { get; }
         private readonly AISegment segment;
         private readonly LaneDescription laneDescription;
-        private readonly float offset; 
+        private readonly float offset;
+        private readonly LinkedAgentChain agents;
+
         public SegmentAIPath( AISegment segment, LaneDescription laneDescription, float offset, byte id)
         { 
             this.segment = segment;
             this.laneDescription = laneDescription;
             this.offset = offset;
+
+            this.agents = new LinkedAgentChain();
         }
 
 
@@ -55,6 +59,8 @@ namespace Simulation.Traffic.AI
 
          IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextPaths;
 
+        public IAgentChain Agents => agents;
+
         public static void ConnectParralel(SegmentAIPath left, SegmentAIPath right)
         {
             left.RightParralel = right;
@@ -62,7 +68,9 @@ namespace Simulation.Traffic.AI
         }
 
         public void Dispose()
-        { 
+        {
+            // TODO: notify agents of path removal
+            agents.Clear();
         }
     }
 }

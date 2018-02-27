@@ -48,10 +48,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AI\Agents\AgentCriteria.cs" />
+    <Compile Include="AI\Agents\AgentJob.cs" />
+    <Compile Include="AI\Agents\AgentJobStatus.cs" />
+    <Compile Include="AI\Agents\AgentState.cs" />
+    <Compile Include="AI\Agents\AgentStatus.cs" />
+    <Compile Include="AI\Agents\IAgentChain.cs" />
     <Compile Include="AI\Agents\Agent.cs" />
     <Compile Include="AI\Agents\IAgentJobRunner.cs" />
     <Compile Include="AI\Agents\IAIRouteFinder.cs" />
+    <Compile Include="AI\Agents\PathDescription.cs" />
     <Compile Include="AI\AIPathExtensions.cs" />
+    <Compile Include="AI\Agents\IAgent.cs" />
     <Compile Include="AI\IAIGraphNode.cs" />
     <Compile Include="AI\IAIRoute.cs" />
     <Compile Include="AI\Navigation\GraphSolver.cs" />

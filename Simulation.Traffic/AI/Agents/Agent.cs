@@ -1,5 +1,4 @@
-﻿using Simulation.Traffic.AI.Navigation;
-using Simulation.Traffic.Lofts;
+﻿using Simulation.Traffic.Lofts;
 using Simulation.Traffic.Utilities;
 using System;
 using System.Collections.Generic;
@@ -10,311 +9,164 @@ using UnityEngine;
 
 namespace Simulation.Traffic.AI.Agents
 {
-    internal class AgentCriteria
+
+    public class Agent : IAgent
     {
-        public List<IAIRoute> Routes { get; } = new List<IAIRoute>();
-        public List<IAIPath> Paths { get; } = new List<IAIPath>();
-
-        public void Set(IAIRoute[] route, IAIPath[] path)
-        {
-            Routes.Clear();
-            Paths.Clear();
-            Routes.AddRange(route);
-            Paths.AddRange(path);
-        }
-    }
+        public float SpeedVariance { get; set; } = 1.0f;
+        private AgentStatus status = AgentStatus.Initializing;
+        private Sequence<PathDescription> pathSequence;
+        private AgentState currentState;
+        private AgentState previousState;
 
 
-
-    [Flags]
-    public enum AgentJobState
-    {
-        FindingRoute = 1 | Running,
-        FindingPath = 2 | Running,
-        Completed = 4,
-        Running = 8,
-        Error = 16,
-        RouteNotFound = 32 | Error,
-        PathNotFound = 64 | Error,
-        Cancelled = 128 | Error
-    }
-
-    public static class AgentStateExtensions
-    {
-    }
-
-    public class AgentJob : IDisposable // push into agent manager
-    {
-        public void SetSource(IAIRoute[] route, IAIPath[] path) => startCriteria.Set(route, path);
-        public void SetDestination(IAIRoute[] route, IAIPath[] path) => endCriteria.Set(route, path);
-
-        public AgentJob(Action<Sequence<IAIPath>> pathCallback, Action<Sequence<IAIRoute>> routeCallback)
-        {
-            this.pathCallback = pathCallback;
-            this.routeCallback = routeCallback;
-        }
-
-        private readonly AgentCriteria startCriteria = new AgentCriteria();
-        private readonly AgentCriteria endCriteria = new AgentCriteria();
-
-        private RouteSolver routeSolver;
-        private PathSolver pathSolver;
-        private readonly Action<Sequence<IAIPath>> pathCallback;
-        private readonly Action<Sequence<IAIRoute>> routeCallback;
-
-        private AgentJobState currentState;
-
-        public void Start()
-        {
-            StartRouteFinding();
-        }
-
-
-        private Sequence<IAIPath> pathSequence;
-        private Sequence<IAIRoute> routeSequence;
-
-        public event Action<AgentJob, AgentJobState> StateChanged;
-
-        private void SetState(AgentJobState state)
-        {
-            currentState = state;
-            StateChanged?.Invoke(this, state);
-        }
-
-        public AgentJobState CurrentState => currentState;
-
-        public void Iterate()
-        {
-            switch (currentState)
-            {
-                case AgentJobState.FindingRoute:
-                    if (!routeSolver.Iterate())
-                        CompleteRouteFinding();
-                    break;
-                case AgentJobState.FindingPath:
-                    if (!pathSolver.Iterate())
-                        CompletePathFinding();
-                    break;
-            }
-        }
-
-        private void CompletePathFinding()
-        {
-            if (pathSolver.IsSuccess)
-            {
-                pathCallback(pathSequence = new Sequence<IAIPath>(new List<IAIPath>(pathSolver.Solution)));
-                SetState(AgentJobState.Completed);
-            }
-            else
-            {
-                SetState(AgentJobState.PathNotFound);
-            }
-        }
-
-        private void CompleteRouteFinding()
-        {
-            if (routeSolver.IsSuccess)
-            {
-                routeCallback(routeSequence = new Sequence<IAIRoute>(new List<IAIRoute>(routeSolver.Solution)));
-                StartPathFinding();
-            }
-            else
-            {
-                SetState(AgentJobState.RouteNotFound);
-            }
-            routeSolver = null;
-        }
-
-        private void StartRouteFinding()
-        {
-            if (endCriteria.Routes?.Any() ?? false)
-            {
-                routeSolver = new RouteSolver(startCriteria.Routes, endCriteria.Routes);
-                SetState(AgentJobState.FindingRoute);
-            }
-            else
-            {
-                SetState(AgentJobState.RouteNotFound);
-            }
-        }
-        private void StartPathFinding()
-        {
-            var sourcePaths = GetSourcePaths();
-            var destinationPaths = GetDestinationPaths();
-
-            if (destinationPaths?.Any() ?? false)
-            {
-                pathSolver = new PathSolver(sourcePaths, destinationPaths, routeSequence);
-
-                SetState(AgentJobState.FindingPath);
-            }
-            else
-            {
-                SetState(AgentJobState.PathNotFound);
-            }
-        }
-
-        protected virtual IEnumerable<IAIPath> GetDestinationPaths() =>
-            routeSequence?.Any() ?? false
-            ? endCriteria.Paths != null
-                ? endCriteria.Paths.Intersect(routeSequence.Last().Paths)
-                : routeSequence.LastOrDefault()?.Paths
-            : null;
-
-
-        protected virtual IEnumerable<IAIPath> GetSourcePaths() =>
-            routeSequence?.Any() ?? false
-            ? startCriteria?.Paths != null
-                    ? routeSequence.CurrentItem.Paths.Intersect(startCriteria.Paths)
-                    : routeSequence.CurrentItem.Paths
-            : null;
-
-        public void Dispose()
-        {
-            SetState(AgentJobState.Cancelled);
-        }
-    }
-    [Flags]
-    public enum AgentState
-    {
-        Initializing = 1,
-        WaitingForRoute = 2,
-        NoRouteFound = 4,
-        GoingToRoute = 8,
-        FollowingRoute = 16,
-        GoingToDestination = 32,
-        DestinationReached = 64,
-    }
-
-    public class Agent
-    {
-        private AgentState state = AgentState.Initializing;
-        private Sequence<IAIRoute> routeSequence;
-        private Sequence<IAIPath> pathSequence;
-
-        // going from source to first path
-        private IAIPath approachPath;
-        // point to arrive at on the first path
-        private float approachProgress;
-        // going from last path to destination
-        private IAIPath departPath;
-        // point to depart from the last path
-        private float departProgress;
 
         private readonly AgentJob solverJob;
         private readonly IAIRouteFinder finder;
         private readonly IAgentJobRunner runner;
 
+
         public Agent(IAIRouteFinder finder, IAgentJobRunner runner)
         {
-            solverJob = new AgentJob(pathUpdated, routeUpdated);
+            solverJob = new AgentJob();
             this.finder = finder;
             this.runner = runner;
         }
 
-        private void pathUpdated(Sequence<IAIPath> obj)
-        {
-            pathSequence = obj;
-        }
 
-        private void routeUpdated(Sequence<IAIRoute> obj)
-        {
-            routeSequence = obj;
-        }
-        public IEnumerable<IAIRoute> RouteSequence => routeSequence;
-        public IEnumerable<IAIPath> PathSequence => pathSequence;
-        public IAIRoute CurrentRoute => routeSequence?.CurrentItem;
-        public IAIPath CurrentPath => state == AgentState.GoingToRoute ? approachPath : (state == AgentState.GoingToDestination) ? departPath : pathSequence?.CurrentItem;
-        public AgentState CurrentState => state;
+        public IAIPath CurrentPath => currentState.Path.Path;
+        public AgentStatus CurrentStatus => status;
+
+        public IEnumerable<PathDescription> CurrentSequence => pathSequence;
+        public AgentState CurrentState => currentState;
+        public AgentState PreviousState => previousState;
+        private float getSpeed(AgentState state) => getSpeed(state, MaxSpeed);
+
         public void Update(float dt)
         {
-            switch (state)
+            AgentState newState = currentState;
+            switch (status)
             {
-                case AgentState.WaitingForRoute:
+                case AgentStatus.WaitingForRoute:
                     {
-                        if (solverJob.CurrentState.HasFlag(AgentJobState.Running))
+                        if (solverJob.CurrentState.HasFlag(AgentJobStatus.Running))
                             return; // still waiting, agent is done for this cyclus
-                        if (solverJob.CurrentState.HasFlag(AgentJobState.Completed))
+                        if (solverJob.CurrentState.HasFlag(AgentJobStatus.Completed))
                         {
-                            updateApproachRoute();
-                            updateDepartRoute();
-                            state = AgentState.GoingToRoute;
-                            goto case AgentState.GoingToRoute;
+                            var path = new Sequence<PathDescription>(solverJob.PathSequence.Select(t => new PathDescription(t, 0, 1)).ToList());
+
+                            updateApproachRoute(path);
+                            updateDepartRoute(path);
+
+                            this.pathSequence = path;
+
+                            currentState = createInitialState(path.CurrentItem);
+                            status = AgentStatus.GoingToRoute;
+                            goto case AgentStatus.GoingToRoute;
                         }
-                        if (solverJob.CurrentState.HasFlag(AgentJobState.Error))
+                        if (solverJob.CurrentState.HasFlag(AgentJobStatus.Error))
                         {
-                            state = AgentState.NoRouteFound;
-                            goto case AgentState.NoRouteFound;
+                            status = AgentStatus.NoRouteFound;
+                            goto case AgentStatus.NoRouteFound;
                         }
                     }
                     break;
-                case AgentState.GoingToRoute:
+                case AgentStatus.GoingToRoute:
                     {
-                        progress += dt * getSpeed(CurrentPath?.AverageSpeed ?? 1);
-                        isLastKnownTransformValid = false;
-                        var pathLength = approachPath.GetLength();
-                        if (progress > pathLength)
-                        {
-                            progress -= pathLength;
-                            progress += approachProgress;
-                            state = AgentState.FollowingRoute;
-                        }
+                        var result = currentState.Update(this, dt, getSpeed, getNextPath, out newState);
+                        if (result.HasFlag(AgentStateResult.ChangedPath))
+                            status = AgentStatus.FollowingRoute;
                     }
                     break;
-                case AgentState.FollowingRoute:
+                case AgentStatus.FollowingRoute:
                     {
-                        progress += dt * getSpeed(CurrentPath?.AverageSpeed ?? 1);
-                        isLastKnownTransformValid = false;
-                        var pathLength = pathSequence.IsLast() ? departProgress : pathSequence.CurrentItem.GetLength();
-                        if (progress > pathLength)
+                        var result = currentState.Update(this, dt, getSpeed, getNextPath, out newState);
+                        if (result.HasFlag(AgentStateResult.ChangedPath))
                         {
-                            progress -= pathLength;
-                            if (!pathSequence.Next())
-                            {
-                                state = AgentState.GoingToDestination;
-                                pathSequence = null;
-                            }
+                            if (newState.Path.Path == pathSequence.Last().Path)
+                                status = AgentStatus.GoingToDestination;
                         }
                     }
                     break;
-                case AgentState.GoingToDestination:
+                case AgentStatus.GoingToDestination:
                     {
-                        progress += dt * getSpeed(CurrentPath?.AverageSpeed ?? 1);
-                        isLastKnownTransformValid = false;
-                        var pathLength = departPath.GetLength();
-                        if (progress > pathLength)
-                        {
-                            progress -= pathLength;
-                            state = AgentState.DestinationReached;
-                            DestinationReached();
-                        }
+                        var result = currentState.Update(this, dt, getSpeed, getNextPath, out newState);
+                        if (result.HasFlag(AgentStateResult.ChangedPath))
+                            status = AgentStatus.DestinationReached;
                     }
                     break;
-                case AgentState.NoRouteFound:
+                case AgentStatus.NoRouteFound:
                     {
                         // agent is lost! find a way to get out of this situation.
                     }
                     break;
             }
+            previousState = currentState;
+            currentState = newState;
         }
+
+        private AgentState createInitialState(PathDescription path) => new AgentState(path, 0, (path.Path as IAgentChainAIPath)?.Connect(this));
+
+
+        private bool getNextPath(AgentState state, out PathDescription path)
+        {
+            if (pathSequence.Next())
+            {
+                path = pathSequence.CurrentItem;
+                return true;
+            }
+            path = default(PathDescription);
+            return false;
+        }
+
+
+
+
 
         public float MaxSpeed { get; set; } = float.PositiveInfinity;
 
-        private float getSpeed(float v)
+        private float safetyDistance = 10;
+        private float speedDistanceFactor = 20;
+        private float getSpeed(AgentState state, float maxSpeed)
         {
-            return Math.Min(MaxSpeed, v);
+            var desiredSpeed = state.Path.Path.MaxSpeed;
+
+            var agentPointer = state.Pointer;
+            maxSpeed = Math.Min(desiredSpeed, maxSpeed);
+            var next = agentPointer?.Next;
+            if (next != null)
+            {
+                var dist = next.Agent.Progress - this.Progress;
+
+                var p = (dist - safetyDistance) / speedDistanceFactor;
+                if (p < 0) // stand still, will you
+                    return 0;
+                if (p < 1)
+                    return Mathf.Sqrt(p) * maxSpeed;
+                return maxSpeed * SpeedVariance;
+            }
+            return maxSpeed * SpeedVariance;
         }
 
+        public float CurrentSpeed { get; private set; }
+
         // todo: make smarter, should use driveways of buildings instead of void paths
-        private void updateDepartRoute()
+        private void updateDepartRoute(Sequence<PathDescription> pathSequence)
         {
             Vector3 start, startTangent, end, endTangent;
 
-            var path = pathSequence[pathSequence.Count - 1];
+
+            var index = pathSequence.Count - 1;
+            var pathDesc = pathSequence[index];
+            var path = pathDesc.Path;
 
             path.LoftPath.SnapTo(destination, out start, out var distance);
 
-            departProgress = path.GetDistanceFromLoftPath(distance);
+            var departProgress = path.GetDistanceFromLoftPath(distance);
+
+            var endProgress = departProgress / path.GetLength();
+
+            pathSequence[index] = new PathDescription(path, 0, endProgress);
+
             end = destination;
 
             startTangent = -path.GetTransform(departProgress).MultiplyVector(Vector3.forward);
@@ -323,10 +175,13 @@ namespace Simulation.Traffic.AI.Agents
 
             var loft = new BiArcLoftPath(start, startTangent, end, endTangent);
 
-            departPath = new AgentAIPath(loft);
+            var departPath = new AgentAIPath(loft);
+
+            var desc = new PathDescription(departPath, 0, 1);
+            pathSequence.Add(desc);
         }
         // todo: make smarter, should use driveways of buildings of void paths
-        private void updateApproachRoute()
+        private void updateApproachRoute(Sequence<PathDescription> pathSequence)
         {
             Vector3 start, startTangent, end, endTangent;
 
@@ -335,50 +190,45 @@ namespace Simulation.Traffic.AI.Agents
             start = startTransform.MultiplyPoint3x4(Vector3.zero);
             startTangent = startTransform.MultiplyVector(Vector3.forward);
 
-            var path = pathSequence[0];
+            var pathDesc = pathSequence[0];
+            var path = pathDesc.Path;
 
             path.LoftPath.SnapTo(start, out end, out var distance);
-            this.approachProgress = path.GetDistanceFromLoftPath(distance);
+            var approachProgress = path.GetDistanceFromLoftPath(distance);
 
 
             var transform = path.GetTransform(approachProgress);
+
+            pathSequence[0] = new PathDescription(path, approachProgress / path.GetLength(), 1);
 
             endTangent = -transform.MultiplyVector(Vector3.forward);
 
 
             var loft = new BiArcLoftPath(start, startTangent, end, endTangent);
 
-            approachPath = new AgentAIPath(loft);
+            var approachPath = new AgentAIPath(loft);
+
+            var descr = new PathDescription(Path: approachPath, Start: 0, End: 1);
+
+            pathSequence.Insert(0, descr);
         }
 
         protected virtual void DestinationReached()
         {
-            state = AgentState.DestinationReached;
+            status = AgentStatus.DestinationReached;
         }
 
-        private float progress;
 
         private Matrix4x4 lastKnownTransform;
         private bool isLastKnownTransformValid;
         private Vector3 destination;
 
-        public Matrix4x4 CurrentTransform => isLastKnownTransformValid ? lastKnownTransform : (lastKnownTransform = getTransform());//pathSequence?.CurrentItem.LoftPath.GetTransform(progress, getBaseTransform(progress));
 
-        private Matrix4x4 getTransform()
-        {
-            switch (state)
-            {
-                case AgentState.FollowingRoute:
-                    return CurrentPath.GetTransform(progress);
-                case AgentState.GoingToRoute:
-                    return approachPath.GetTransform(progress);
-                case AgentState.GoingToDestination:
-                    return departPath.GetTransform(progress);
-                case AgentState.DestinationReached:
-                    return departPath.GetEndTransform();
-            }
-            return Matrix4x4.zero;
-        }
+        public Matrix4x4 CurrentTransform => isLastKnownTransformValid ? lastKnownTransform : (lastKnownTransform = getTransform(currentState));//pathSequence?.CurrentItem.LoftPath.GetTransform(progress, getBaseTransform(progress));
+
+        public float Progress => currentState.Progress;
+
+        private Matrix4x4 getTransform(AgentState currentState) => currentState.Path.Path?.GetTransform(currentState.Progress) ?? Matrix4x4.zero;
 
         public void Teleport(Matrix4x4 start)
         {
@@ -392,7 +242,7 @@ namespace Simulation.Traffic.AI.Agents
             }
             else
             {
-                state = AgentState.NoRouteFound;
+                status = AgentStatus.NoRouteFound;
             }
         }
 
@@ -400,7 +250,7 @@ namespace Simulation.Traffic.AI.Agents
         {
             solverJob.Start();
             runner.Run(solverJob);
-            state = AgentState.WaitingForRoute;
+            status = AgentStatus.WaitingForRoute;
         }
 
         public void SetDestination(Vector3 position)
@@ -413,7 +263,7 @@ namespace Simulation.Traffic.AI.Agents
             }
             else
             {
-                state = AgentState.NoRouteFound;
+                status = AgentStatus.NoRouteFound;
             }
         }
 

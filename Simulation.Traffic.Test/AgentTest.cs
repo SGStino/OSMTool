@@ -24,55 +24,55 @@ namespace Simulation.Traffic.Test
             var runner = new DummyJobRunner();
             var agent = new Agent(finder, runner);
 
-            Assert.AreEqual(AgentState.Initializing, agent.CurrentState);
+            Assert.AreEqual(AgentStatus.Initializing, agent.CurrentStatus);
             agent.Teleport(Matrix4x4.Translate(start));
-            Assert.AreEqual(AgentState.WaitingForRoute, agent.CurrentState);
+            Assert.AreEqual(AgentStatus.WaitingForRoute, agent.CurrentStatus);
 
             Assert.IsNotNull(runner.Job);
 
             agent.Update(1 / 60.0f);
-            Assert.AreEqual(AgentJobState.RouteNotFound, runner.Job.CurrentState);
+            Assert.AreEqual(AgentJobStatus.RouteNotFound, runner.Job.CurrentState);
 
 
 
             agent.SetDestination(end);
-            Assert.AreEqual(AgentState.WaitingForRoute, agent.CurrentState);
+            Assert.AreEqual(AgentStatus.WaitingForRoute, agent.CurrentStatus);
 
-            Assert.AreEqual(AgentJobState.FindingRoute, runner.Job.CurrentState);
-            while (runner.Job.CurrentState == AgentJobState.FindingRoute)
+            Assert.AreEqual(AgentJobStatus.FindingRoute, runner.Job.CurrentState);
+            while (runner.Job.CurrentState == AgentJobStatus.FindingRoute)
                 runner.Job.Iterate();
-            Assert.AreEqual(AgentJobState.FindingPath, runner.Job.CurrentState);
-            while (runner.Job.CurrentState == AgentJobState.FindingPath)
+            Assert.AreEqual(AgentJobStatus.FindingPath, runner.Job.CurrentState);
+            while (runner.Job.CurrentState == AgentJobStatus.FindingPath)
                 runner.Job.Iterate();
-            Assert.AreEqual(AgentJobState.Completed, runner.Job.CurrentState);
-            Assert.AreEqual(AgentState.WaitingForRoute, agent.CurrentState);
+            Assert.AreEqual(AgentJobStatus.Completed, runner.Job.CurrentState);
+            Assert.AreEqual(AgentStatus.WaitingForRoute, agent.CurrentStatus);
             agent.Update(1 / 60.0f);
 
 
 
 
             var pointHistory = new List<Vector3>();
-            Assert.AreEqual(AgentState.GoingToRoute, agent.CurrentState);
-            while (agent.CurrentState == AgentState.GoingToRoute)
+            Assert.AreEqual(AgentStatus.GoingToRoute, agent.CurrentStatus);
+            while (agent.CurrentStatus == AgentStatus.GoingToRoute)
             {
                 pointHistory.Add(agent.CurrentTransform.MultiplyPoint3x4(Vector3.zero));
                 agent.Update(1 / 60.0f);
             }
 
-            Assert.AreEqual(AgentState.FollowingRoute, agent.CurrentState);
-            while (agent.CurrentState == AgentState.FollowingRoute)
+            Assert.AreEqual(AgentStatus.FollowingRoute, agent.CurrentStatus);
+            while (agent.CurrentStatus == AgentStatus.FollowingRoute)
             {
                 pointHistory.Add(agent.CurrentTransform.MultiplyPoint3x4(Vector3.zero));
                 agent.Update(1 / 60.0f);
             }
 
-            Assert.AreEqual(AgentState.GoingToDestination, agent.CurrentState);
-            while (agent.CurrentState == AgentState.GoingToDestination)
+            Assert.AreEqual(AgentStatus.GoingToDestination, agent.CurrentStatus);
+            while (agent.CurrentStatus == AgentStatus.GoingToDestination)
             {
                 pointHistory.Add(agent.CurrentTransform.MultiplyPoint3x4(Vector3.zero));
                 agent.Update(1 / 60.0f);
             }
-            Assert.AreEqual(AgentState.DestinationReached, agent.CurrentState);
+            Assert.AreEqual(AgentStatus.DestinationReached, agent.CurrentStatus);
 
             //var pointsString = string.Join(Environment.NewLine, pointHistory.Select(t => $"{t.x.ToString(CultureInfo.InvariantCulture)}, {t.z.ToString(CultureInfo.InvariantCulture)}"));
 

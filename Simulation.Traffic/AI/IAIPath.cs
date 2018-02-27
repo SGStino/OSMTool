@@ -1,4 +1,5 @@
-﻿using Simulation.Traffic.Lofts;
+﻿using Simulation.Traffic.AI.Agents;
+using Simulation.Traffic.Lofts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,4 +30,9 @@ namespace Simulation.Traffic.AI
         VehicleTypes VehicleTypes { get; }
     }
 
+
+    public interface IAgentChainAIPath : IAIPath
+    {
+        IAgentChain Agents { get; }
+    }
 }

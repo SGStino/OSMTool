@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using Simulation.Traffic.AI.Agents;
 using Simulation.Traffic.Lofts;
 
 namespace Simulation.Traffic.AI
 {
-    public class NodeAIPath : IAIPath, IDisposable
+    public class NodeAIPath : IAgentChainAIPath, IDisposable
     {
         private readonly SegmentAIPath source;
         private readonly SegmentAIPath destination;
         private readonly ILoftPath path;
+        private readonly LinkedAgentChain agents;
 
         public NodeAIPath(SegmentAIPath source, SegmentAIPath destination, ILoftPath path)
         {
             this.source = source;
             this.destination = destination;
             this.path = path;
+            this.agents = new LinkedAgentChain();
         }
 
 
@@ -49,10 +52,14 @@ namespace Simulation.Traffic.AI
 
         public SegmentAIPath Source => source;
 
-          IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextPaths;
+        public IAgentChain Agents => agents;
+
+        IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextPaths;
 
         public void Dispose()
         {
+            // TODO: notify agents of path removal
+            agents.Clear();
         }
     }
 }
