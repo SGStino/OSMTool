@@ -10,7 +10,7 @@ using UnityEngine;
 namespace Simulation.Traffic.AI.Agents
 {
 
-    public class Agent : IAgent
+    public class Agent : IAgent, IDisposable
     {
         public float SpeedVariance { get; set; } = 1.0f;
         private AgentStatus status = AgentStatus.Initializing;
@@ -75,6 +75,8 @@ namespace Simulation.Traffic.AI.Agents
                         var result = currentState.Update(this, dt, getSpeed, getNextPath, out newState);
                         if (result.HasFlag(AgentStateResult.ChangedPath))
                             status = AgentStatus.FollowingRoute;
+                        if (result.HasFlag(AgentStateResult.Moved))
+                            isLastKnownTransformValid = false;
                     }
                     break;
                 case AgentStatus.FollowingRoute:
@@ -85,13 +87,17 @@ namespace Simulation.Traffic.AI.Agents
                             if (newState.Path.Path == pathSequence.Last().Path)
                                 status = AgentStatus.GoingToDestination;
                         }
+                        if (result.HasFlag(AgentStateResult.Moved))
+                            isLastKnownTransformValid = false;
                     }
                     break;
                 case AgentStatus.GoingToDestination:
                     {
                         var result = currentState.Update(this, dt, getSpeed, getNextPath, out newState);
                         if (result.HasFlag(AgentStateResult.ChangedPath))
-                            status = AgentStatus.DestinationReached;
+                            DestinationReached();
+                        if (result.HasFlag(AgentStateResult.Moved))
+                            isLastKnownTransformValid = false;
                     }
                     break;
                 case AgentStatus.NoRouteFound:
@@ -215,6 +221,7 @@ namespace Simulation.Traffic.AI.Agents
 
         protected virtual void DestinationReached()
         {
+            currentState.Pointer?.Disconnect();
             status = AgentStatus.DestinationReached;
         }
 
@@ -265,6 +272,11 @@ namespace Simulation.Traffic.AI.Agents
             {
                 status = AgentStatus.NoRouteFound;
             }
+        }
+
+        public void Dispose()
+        { 
+            DestinationReached();
         }
 
         //private bool GoToNextPath()

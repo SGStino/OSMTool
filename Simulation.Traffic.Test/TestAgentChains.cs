@@ -123,7 +123,7 @@ namespace Simulation.Traffic.Test
 
             var middleAgent = new DummyAgent() { Progress = 1 };
             var middlePointer = chain.Enter(middleAgent);
-            
+
             chain.Exit(middlePointer);
 
             Assert.AreSame(firstPointer, chain.First);
@@ -134,7 +134,7 @@ namespace Simulation.Traffic.Test
 
             Assert.IsNull(lastPointer.Previous);
             Assert.IsNull(firstPointer.Next);
-            
+
             Assert.IsNull(middlePointer.Chain);
         }
 
@@ -148,13 +148,13 @@ namespace Simulation.Traffic.Test
 
             var lastAgent = new DummyAgent() { Progress = 0 };
             var lastPointer = chain.Enter(lastAgent);
-             
+
 
             chain.Exit(firstPointer);
 
             Assert.AreSame(lastPointer, chain.First);
             Assert.AreSame(lastPointer, chain.Last);
-            
+
 
             Assert.IsNull(lastPointer.Previous);
             Assert.IsNull(lastPointer.Next);
@@ -203,6 +203,66 @@ namespace Simulation.Traffic.Test
             Assert.IsNull(pointer.Previous);
             Assert.IsNull(chain.First);
             Assert.IsNull(chain.Last);
+        }
+
+
+        [TestMethod]
+        public void TestFull()
+        {
+            var chain = new LinkedAgentChain();
+
+            var agents = new List<DummyAgent>();
+            var pointers = new List<LinkedAgentPointer>();
+            for (int i = 0; i < 10; i++)
+            {
+                foreach (var agent in agents)
+                    agent.Progress++;
+
+                var newAgent = new DummyAgent() { Progress = 0 };
+                agents.Add(newAgent);
+                pointers.Add(chain.Enter(newAgent));
+
+                if (i == 0)
+                {
+                    Assert.AreEqual(pointers[i], chain.First);
+                    Assert.AreEqual(pointers[i], chain.Last);
+                    Assert.IsNull(pointers[i].Next);
+                    Assert.IsNull(pointers[i].Previous);
+                }
+                else
+                {
+                    Assert.AreEqual(pointers[i], chain.Last);
+                    Assert.AreEqual(pointers[0], chain.First);
+
+                    Assert.AreEqual(pointers[i - 1], pointers[i].Next);
+                    Assert.AreEqual(pointers[i], pointers[i - 1].Previous);
+                    Assert.IsNull(pointers[i].Previous);
+                    for (int j = 1; j < i; j++)
+                    {
+                        Assert.AreEqual(pointers[j - 1], pointers[j].Next);
+                        Assert.AreEqual(pointers[j], pointers[j - 1].Previous);
+                    }
+                }
+            }
+            for (int i = 0; i < 10; i++)
+            {
+                Assert.AreEqual(pointers[i], chain.First);
+                chain.Exit(pointers[i]);
+
+                Assert.IsNull(pointers[i].Chain);
+                Assert.IsNull(pointers[i].Next);
+                Assert.IsNull(pointers[i].Previous);
+
+                if (i == 9)
+                {
+                    Assert.IsNull(chain.First);
+                    Assert.IsNull(chain.Last);
+                }
+                else if (i == 8)
+                {
+                    Assert.AreEqual(chain.First, chain.Last);
+                }
+            }
         }
     }
 

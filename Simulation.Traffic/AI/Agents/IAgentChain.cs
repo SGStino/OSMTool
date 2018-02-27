@@ -77,38 +77,24 @@ namespace Simulation.Traffic.AI.Agents
 
         public void Exit(LinkedAgentPointer pointer)
         {
-            if (pointer == Last && pointer == First)
-            {
-                Last = First = null;
-            }
-            else
-            {
-                if (pointer == Last)
-                {
-                    Last = pointer.Next;
-                    pointer.Next = null;
+            var isFirst = pointer == First;
+            var isLast = pointer == Last;
 
-                    if (Last == First)
-                        First.Previous = null;
-                }
-                else if (pointer == First)
-                {
-                    First = pointer.Previous;
-                    pointer.Previous = null;
+            var next = pointer.Next;
+            var previous = pointer.Previous;
 
-                    if (Last == First)
-                        First.Next = null;
-                }
-                else
-                {
-                    var prv = pointer.Previous;
-                    var nxt = pointer.Next;
-                    prv.Next = nxt;
-                    nxt.Previous = prv;
-                    pointer.Previous = pointer.Next = null;
-                }
-            }
+            if (previous != null)
+                previous.Next = next;
+            if (next != null)
+                next.Previous = previous;
+
+            pointer.Next = pointer.Previous = null; 
             pointer.Chain = null;
+
+            if (isFirst)
+                First = previous;
+            if (isLast)
+                Last = next;
         }
 
         internal void Clear()
