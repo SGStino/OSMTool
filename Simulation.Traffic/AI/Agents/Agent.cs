@@ -14,7 +14,7 @@ namespace Simulation.Traffic.AI.Agents
     {
         public float SpeedVariance { get; set; } = 1.0f;
         private AgentStatus status = AgentStatus.Initializing;
-        private Sequence<PathDescription> pathSequence;
+        private IList<PathDescription> pathSequence;
         private AgentState currentState;
         private AgentState previousState;
 
@@ -33,10 +33,11 @@ namespace Simulation.Traffic.AI.Agents
         }
 
 
-        public IAIPath CurrentPath => currentState.Path.Path;
+        private IAIPath getPath(AgentState state) => state.PathIndex >= 0 && state.PathIndex < pathSequence.Count ? pathSequence[state.PathIndex].Path : null;
+        public IAIPath CurrentPath => getPath(currentState);
         public AgentStatus CurrentStatus => status;
 
-        public IEnumerable<PathDescription> CurrentSequence => pathSequence;
+        public IList<PathDescription> CurrentSequence => pathSequence;
         public AgentState CurrentState => currentState;
         public AgentState PreviousState => previousState;
         private float getSpeed(AgentState state) => getSpeed(state, MaxSpeed);
@@ -56,10 +57,10 @@ namespace Simulation.Traffic.AI.Agents
 
                             updateApproachRoute(path);
                             updateDepartRoute(path);
-
+                            throw new InvalidOperationException("Something goes wrong here, approach and end routes should be somewhere halfway the segments they are attached to");
                             this.pathSequence = path;
 
-                            currentState = createInitialState(path.CurrentItem);
+                            currentState = createInitialState(0);
                             status = AgentStatus.GoingToRoute;
                             goto case AgentStatus.GoingToRoute;
                         }
@@ -72,7 +73,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentStatus.GoingToRoute:
                     {
-                        var result = currentState.Update(this, dt, getSpeed, getNextPath, out newState);
+                        var result = currentState.Update(this, dt, getSpeed, pathSequence, out newState);
                         if (result.HasFlag(AgentStateResult.ChangedPath))
                             status = AgentStatus.FollowingRoute;
                         if (result.HasFlag(AgentStateResult.Moved))
@@ -81,10 +82,10 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentStatus.FollowingRoute:
                     {
-                        var result = currentState.Update(this, dt, getSpeed, getNextPath, out newState);
+                        var result = currentState.Update(this, dt, getSpeed, pathSequence, out newState);
                         if (result.HasFlag(AgentStateResult.ChangedPath))
                         {
-                            if (newState.Path.Path == pathSequence.Last().Path)
+                            if (newState.PathIndex == pathSequence.Count - 1)
                                 status = AgentStatus.GoingToDestination;
                         }
                         if (result.HasFlag(AgentStateResult.Moved))
@@ -93,7 +94,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentStatus.GoingToDestination:
                     {
-                        var result = currentState.Update(this, dt, getSpeed, getNextPath, out newState);
+                        var result = currentState.Update(this, dt, getSpeed, pathSequence, out newState);
                         if (result.HasFlag(AgentStateResult.ChangedPath))
                             DestinationReached();
                         if (result.HasFlag(AgentStateResult.Moved))
@@ -110,14 +111,14 @@ namespace Simulation.Traffic.AI.Agents
             currentState = newState;
         }
 
-        private AgentState createInitialState(PathDescription path) => new AgentState(path, 0, (path.Path as IAgentChainAIPath)?.Connect(this));
+        private AgentState createInitialState(int index) => new AgentState(index, 0, (pathSequence[index].Path as IAgentChainAIPath)?.Connect(this));
 
 
-        private bool getNextPath(AgentState state, out PathDescription path)
+        private bool getNextPath(AgentState state, int index, out PathDescription path)
         {
-            if (pathSequence.Next())
+            if (index < pathSequence.Count)
             {
-                path = pathSequence.CurrentItem;
+                path = pathSequence[index];
                 return true;
             }
             path = default(PathDescription);
@@ -134,7 +135,7 @@ namespace Simulation.Traffic.AI.Agents
         private float speedDistanceFactor = 20;
         private float getSpeed(AgentState state, float maxSpeed)
         {
-            var desiredSpeed = state.Path.Path.MaxSpeed;
+            var desiredSpeed = pathSequence[state.PathIndex].Path.MaxSpeed;
 
             var agentPointer = state.Pointer;
             maxSpeed = Math.Min(desiredSpeed, maxSpeed);
@@ -165,7 +166,7 @@ namespace Simulation.Traffic.AI.Agents
             var pathDesc = pathSequence[index];
             var path = pathDesc.Path;
 
-            path.LoftPath.SnapTo(destination, out start, out var distance);
+            path.LoftPath.SnapTo(Destination, out start, out var distance);
 
             var departProgress = path.GetDistanceFromLoftPath(distance);
 
@@ -173,7 +174,7 @@ namespace Simulation.Traffic.AI.Agents
 
             pathSequence[index] = new PathDescription(path, 0, endProgress);
 
-            end = destination;
+            end = Destination;
 
             startTangent = -path.GetTransform(departProgress).MultiplyVector(Vector3.forward);
 
@@ -228,6 +229,7 @@ namespace Simulation.Traffic.AI.Agents
 
         private Matrix4x4 lastKnownTransform;
         private bool isLastKnownTransformValid;
+        private Vector3 startPosition;
         private Vector3 destination;
 
 
@@ -235,14 +237,19 @@ namespace Simulation.Traffic.AI.Agents
 
         public float Progress => currentState.Progress;
 
-        private Matrix4x4 getTransform(AgentState currentState) => currentState.Path.Path?.GetTransform(currentState.Progress) ?? Matrix4x4.zero;
+        public Vector3 StartPosition { get => startPosition; }
+        public Vector3 Destination { get => destination; }
+
+        private Matrix4x4 getTransform(AgentState state) => getPath(state)?.GetTransform(state.Progress) ?? Matrix4x4.zero;
+
+
 
         public void Teleport(Matrix4x4 start)
         {
             lastKnownTransform = start;
             isLastKnownTransformValid = true;
-            var startPosition = start.GetTranslate();
-            if (finder.Find(startPosition, out var routes, out var paths))
+            startPosition = start.GetTranslate();
+            if (finder.Find(StartPosition, out var routes, out var paths))
             {
                 solverJob.SetSource(routes, paths);
                 ActivateJob();
@@ -275,7 +282,7 @@ namespace Simulation.Traffic.AI.Agents
         }
 
         public void Dispose()
-        { 
+        {
             DestinationReached();
         }
 

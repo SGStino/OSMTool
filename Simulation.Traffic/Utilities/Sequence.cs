@@ -29,6 +29,7 @@ namespace Simulation.Traffic.Utilities
         }
 
         public T CurrentItem => currentItem;
+        public int CurrentIndex => currentIndex;
 
         public int Count => path.Count;
 

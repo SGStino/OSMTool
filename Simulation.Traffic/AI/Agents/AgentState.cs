@@ -9,19 +9,19 @@ namespace Simulation.Traffic.AI.Agents
 {
     public struct AgentState
     {
-        public AgentState(PathDescription currentPath, float progress, IAgentPointer pointer) : this()
+        public AgentState(int pathIndex, float progress, IAgentPointer pointer) : this()
         {
-            Path = currentPath;
+            PathIndex = pathIndex;
             Progress = progress;
             Pointer = pointer;
         }
         public IAgentPointer Pointer { get; }
-        public PathDescription Path { get; }
+        public int PathIndex { get; }
         public float Progress { get; }
     }
 
 
-    public delegate bool GetNextPathDelegate(AgentState state, out PathDescription path);
+    public delegate bool GetNextPathDelegate(AgentState state, int index, out PathDescription path);
     public delegate float GetSpeedDelegate(AgentState state);
 
     public enum AgentStateResult
@@ -34,8 +34,8 @@ namespace Simulation.Traffic.AI.Agents
 
     public static class AgentStateExtensions
     {
-        public static AgentStateResult Update(this AgentState currentState, IAgent agent, float dt, GetSpeedDelegate getSpeed, GetNextPathDelegate nextPath, out AgentState newState)
-        {
+        public static AgentStateResult Update(this AgentState currentState, IAgent agent, float dt, GetSpeedDelegate getSpeed, IList<PathDescription> paths, out AgentState newState)
+        { 
             var result = AgentStateResult.None;
             var speed = getSpeed(currentState);
 
@@ -47,32 +47,36 @@ namespace Simulation.Traffic.AI.Agents
             if (Mathf.Abs(increment) > 0.000001)
                 result |= AgentStateResult.Moved;
 
+            var currentIndex = currentState.PathIndex;
 
-            var currentPath = currentState.Path;
+            var currentPath = paths[currentIndex];
 
             var length = currentPath.Path.GetLength() * currentPath.End;
 
             var pointer = currentState.Pointer;
 
-            if (progress> length)
+            if (progress >= length)
             {
                 do
-                {
+                { 
                     progress -= length;
                     result |= AgentStateResult.ChangedPath;
-                    if (!nextPath(currentState, out currentPath))
+                    currentIndex++;
+                    if (currentIndex >= paths.Count)
                     {
-                        newState = new AgentState(currentPath, progress, null);
+                        newState = new AgentState(currentIndex, progress, null);
                         return result | AgentStateResult.ReachedEnd;
                     }
+                    currentPath = paths[currentIndex];
                     progress += currentPath.Start * currentPath.Path.GetLength(); // move to path start according to description
+                    length = currentPath.Path.GetLength() * currentPath.End;
                     currentState.Pointer?.Disconnect();
                 }
-                while (progress > length);
+                while (progress >= length);
                 pointer = (currentPath.Path as IAgentChainAIPath)?.Connect(agent);
             }
 
-            newState = new AgentState(currentPath, progress, pointer);
+            newState = new AgentState(currentIndex, progress, pointer);
             return result;
         }
     }
