@@ -68,6 +68,7 @@
     <Compile Include="AI\NodeAIPath.cs" />
     <Compile Include="AI\NodeAIPathsFactory.cs" />
     <Compile Include="AI\NodeAIRoute.cs" />
+    <Compile Include="AI\RouteExtender.cs" />
     <Compile Include="AI\SegmentAIPath.cs" />
     <Compile Include="AI\SegmentAIPathsFactory.cs" />
     <Compile Include="AI\IAIPath.cs" />

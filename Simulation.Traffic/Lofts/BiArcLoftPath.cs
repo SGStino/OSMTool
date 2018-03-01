@@ -423,5 +423,28 @@ namespace Simulation.Traffic.Lofts
                 distance = d2;
             }
         }
+
+        public bool Intersects(Plane plane, out float[] loftDistances)
+        {
+            loftDistances = new float[0];
+            bool intersect = false;
+            if(arc1.Intersects(plane, out float[] distancesA))
+            {
+                var start = loftDistances.Length;
+                Array.Resize(ref loftDistances, start + distancesA.Length);
+                for (int i = 0; i < distancesA.Length; i++)
+                    loftDistances[start + i] = distancesA[i];
+                intersect = true;
+            }
+            if (arc2.Intersects(plane, out float[] distancesB))
+            {
+                var start = loftDistances.Length;
+                Array.Resize(ref loftDistances, start + distancesB.Length);
+                for (int i = 0; i < distancesB.Length; i++)
+                    loftDistances[start + i] = distancesB[i] + arc1.Length;
+                intersect = true;
+            }
+            return intersect;
+        }
     }
 }

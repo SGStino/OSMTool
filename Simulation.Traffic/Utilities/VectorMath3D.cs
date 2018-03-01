@@ -10,6 +10,10 @@ namespace Simulation.Traffic.Utilities
     {
         public static Vector2 GetXZ(this Vector3 input) => new Vector2(input.x, input.z);
         public static Vector3 GetTranslate(this Matrix4x4 input) => input.MultiplyPoint3x4(Vector3.zero);
+        public static Vector3 GetForward(this Matrix4x4 input) => input.MultiplyVector(Vector3.forward);
+        public static Vector3 GetRight(this Matrix4x4 input) => input.MultiplyVector(Vector3.right);
+        public static Vector3 GetUp(this Matrix4x4 input) => input.MultiplyVector(Vector3.up);
+
 
         public static float GetAngle(Vector3 start, Vector3 end, Vector3 normal)
         {
@@ -49,6 +53,29 @@ namespace Simulation.Traffic.Utilities
             dir /= len;
 
             return dir * radius;
+        }
+
+        public static Ray Intersect(Plane plane1, Plane plane2)
+        {
+            var dir = Vector3.Cross(plane1.normal, plane2.normal);
+
+            var p1 = plane2.ClosestPointOnPlane(plane1.normal * plane1.distance);
+            return new Ray(p1, dir);
+        }
+
+        public static bool IntersectCircle(Plane plane, Vector3 center, Vector3 normal, Vector3 forward, out float[] angles)
+        {
+            var circlePlane = new Plane(normal, center);
+
+            var ray = Intersect(plane, circlePlane);
+
+
+            var matrix = Matrix4x4.LookAt(center, center + forward, normal).inverse;
+
+            var o = matrix.MultiplyPoint3x4(ray.origin);
+            var d = matrix.MultiplyVector(ray.direction);
+
+            throw new NotImplementedException("Intersect ray-circle in 3D without y => 2D (XZ)");
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Simulation.Traffic.Utilities;
+﻿using System;
+using Simulation.Traffic.Utilities;
 using UnityEngine;
 
 namespace Simulation.Traffic.Lofts
@@ -153,7 +154,7 @@ namespace Simulation.Traffic.Lofts
                 normal = -normal;
 
 
-            var angle = VectorMath3D.GetAngle(startVector, endVector, normal); 
+            var angle = VectorMath3D.GetAngle(startVector, endVector, normal);
             if (angle < 0)
                 angle = Mathf.PI * 2 + angle;
 
@@ -225,5 +226,15 @@ namespace Simulation.Traffic.Lofts
                 distance = newAngle * radius * Mathf.Sign(angleDistance);//Mathf.Sqrt(mag1);
             }
         }
+
+        public bool Intersects(Plane plane, out float[] loftDistances)
+        {
+            if(VectorMath3D.Intersect(plane, center, normal, startPosition, out float[] angles))
+            {
+
+            }
+        }
+
+     
     }
 }
