@@ -18,12 +18,12 @@ namespace Simulation.Traffic.Test
             var roads = new TestRoads();
 
 
-            Assert.AreEqual(1, roads.seg_0_0_10_0.AIRoutes.Length);
-            Assert.AreEqual(1, roads.seg_40_0_50_0.AIRoutes.Length);
-            Assert.AreEqual(3, roads.seg_0_0_10_0.AIRoutes[0].Paths.Length);
-            Assert.AreEqual(3, roads.seg_40_0_50_0.AIRoutes[0].Paths.Length);
+            Assert.AreEqual(1, roads.seg_0_0_20_0.AIRoutes.Length);
+            Assert.AreEqual(1, roads.seg_80_0_100_0.AIRoutes.Length);
+            Assert.AreEqual(3, roads.seg_0_0_20_0.AIRoutes[0].Paths.Length);
+            Assert.AreEqual(3, roads.seg_80_0_100_0.AIRoutes[0].Paths.Length);
 
-            var routeSolver = new RouteSolver(roads.seg_0_0_10_0.AIRoutes, roads.seg_40_0_50_0.AIRoutes);
+            var routeSolver = new RouteSolver(roads.seg_0_0_20_0.AIRoutes, roads.seg_80_0_100_0.AIRoutes);
 
             while (!routeSolver.IsComplete)
                 routeSolver.Iterate();            
@@ -31,7 +31,7 @@ namespace Simulation.Traffic.Test
 
             var route = routeSolver.Solution;
 
-            var pathSolver = new PathSolver(roads.seg_0_0_10_0.AIRoutes[0].Paths, roads.seg_40_0_50_0.AIRoutes[0].Paths, route);
+            var pathSolver = new PathSolver(roads.seg_0_0_20_0.AIRoutes[0].Paths, roads.seg_80_0_100_0.AIRoutes[0].Paths, route);
 
             while (!pathSolver.IsComplete)
                 pathSolver.Iterate();
@@ -79,44 +79,44 @@ namespace Simulation.Traffic.Test
         };
         public readonly AIRoadManager aiRoadManager;
         public readonly AINode n_0_0;
-        public readonly AINode n_10_0;
         public readonly AINode n_20_0;
-        public readonly AINode n_20_10;
-        public readonly AINode n_30_0;
-        public readonly AINode n_30_10;
         public readonly AINode n_40_0;
-        public readonly AINode n_50_0;
-        public readonly AISegment seg_0_0_10_0;
-        public readonly AISegment seg_10_0_20_10;
-        public readonly AISegment seg_10_0_20_0;
-        public readonly AISegment seg_20_10_30_10;
-        public readonly AISegment seg_20_0_30_0;
-        public readonly AISegment seg_30_10_40_0;
-        public readonly AISegment seg_30_0_40_0;
-        public readonly AISegment seg_40_0_50_0;
+        public readonly AINode n_40_20;
+        public readonly AINode n_60_0;
+        public readonly AINode n_60_20;
+        public readonly AINode n_80_0;
+        public readonly AINode n_100_0;
+        public readonly AISegment seg_0_0_20_0;
+        public readonly AISegment seg_20_0_40_20;
+        public readonly AISegment seg_20_0_40_0;
+        public readonly AISegment seg_40_20_60_20;
+        public readonly AISegment seg_40_0_60_0;
+        public readonly AISegment seg_60_20_80_0;
+        public readonly AISegment seg_60_0_80_0;
+        public readonly AISegment seg_80_0_100_0;
 
         public TestRoads()
         {
             this.aiRoadManager = new AIRoadManager();
 
             this.n_0_0 = aiRoadManager.CreateNodeAt(0, 0);
-            this.n_10_0 = aiRoadManager.CreateNodeAt(10, 0);
             this.n_20_0 = aiRoadManager.CreateNodeAt(20, 0);
-            this.n_20_10 = aiRoadManager.CreateNodeAt(20, 10);
-            this.n_30_0 = aiRoadManager.CreateNodeAt(30, 0);
-            this.n_30_10 = aiRoadManager.CreateNodeAt(30, 10);
             this.n_40_0 = aiRoadManager.CreateNodeAt(40, 0);
-            this.n_50_0 = aiRoadManager.CreateNodeAt(50, 0);
+            this.n_40_20 = aiRoadManager.CreateNodeAt(40, 20);
+            this.n_60_0 = aiRoadManager.CreateNodeAt(60, 0);
+            this.n_60_20 = aiRoadManager.CreateNodeAt(60, 20);
+            this.n_80_0 = aiRoadManager.CreateNodeAt(80, 0);
+            this.n_100_0 = aiRoadManager.CreateNodeAt(100, 0);
 
-            this.seg_0_0_10_0 = aiRoadManager.CreateSegment(n_0_0, n_10_0, highway3Lanes);
-            this.seg_10_0_20_10 = aiRoadManager.CreateSegment(n_10_0, n_20_10, highway3Lanes);
-            this.seg_10_0_20_0 = aiRoadManager.CreateSegment(n_10_0, n_20_0, singleDirtTrack);
+            this.seg_0_0_20_0 = aiRoadManager.CreateSegment(n_0_0, n_20_0, highway3Lanes);
+            this.seg_20_0_40_20 = aiRoadManager.CreateSegment(n_20_0, n_40_20, highway3Lanes);
+            this.seg_20_0_40_0 = aiRoadManager.CreateSegment(n_20_0, n_40_0, singleDirtTrack);
 
-            this.seg_20_10_30_10 = aiRoadManager.CreateSegment(n_20_10, n_30_10, highway3Lanes);
-            this.seg_20_0_30_0 = aiRoadManager.CreateSegment(n_10_0, n_20_0, singleDirtTrack);
-            this.seg_30_10_40_0 = aiRoadManager.CreateSegment(n_30_10, n_40_0, highway3Lanes);
-            this.seg_30_0_40_0 = aiRoadManager.CreateSegment(n_10_0, n_20_0, singleDirtTrack);
-            this.seg_40_0_50_0 = aiRoadManager.CreateSegment(n_30_10, n_40_0, highway3Lanes);
+            this.seg_40_20_60_20 = aiRoadManager.CreateSegment(n_40_20, n_60_20, highway3Lanes);
+            this.seg_40_0_60_0 = aiRoadManager.CreateSegment(n_20_0, n_40_0, singleDirtTrack);
+            this.seg_60_20_80_0 = aiRoadManager.CreateSegment(n_60_20, n_80_0, highway3Lanes);
+            this.seg_60_0_80_0 = aiRoadManager.CreateSegment(n_20_0, n_40_0, singleDirtTrack);
+            this.seg_80_0_100_0 = aiRoadManager.CreateSegment(n_60_20, n_80_0, highway3Lanes); 
         }
     }
 

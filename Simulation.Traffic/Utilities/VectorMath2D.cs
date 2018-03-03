@@ -37,8 +37,8 @@ namespace Simulation.Traffic.Utilities
             var signA = Mathf.Sign(dotA);
             var signB = Mathf.Sign(dotB);
 
-            tA *= signA;
-            tB *= signB;
+            tA *= -signA;
+            tB *= -signB;
 
             IntersectsLineLine(a + tA * widthA * 0.5f, dA, b + tB * widthB * 0.5f, dB, out distB, out distA);
             return true;
@@ -86,6 +86,17 @@ namespace Simulation.Traffic.Utilities
                 farDistance = distanceB;//Mathf.Max(distanceA, distanceB);
                 return true;
             }
+        }
+
+        internal static float GetAngle(Vector2 start, Vector2 end)
+        {
+            var dot = Vector2.Dot(start.normalized, end.normalized);
+            dot = Mathf.Clamp(dot, -1, 1);// clean up edge cases with floating point precision
+            var angle = Mathf.Acos(dot);
+            var d = end.x * start.y - end.y * start.x; 
+            if (d < 0)
+                return -angle;
+            return angle;
         }
     }
 }

@@ -52,7 +52,7 @@ namespace Simulation.Traffic.Test
         [DataRow(-1, 1, 1, 1)]
         [DataRow(1, -1, 1, 1)]
         [DataRow(-1, -1, 1, 1)]
-        public void TestIntersectLineLineDoubleEndWithWith(float tB, float tC, float eAL, float eBL)
+        public void TestIntersectLineLineDoubleEndWithWidth(float tB, float tC, float eAL, float eBL)
         {
             var a = Vector2.one;
             var b = Vector2.right * tB;

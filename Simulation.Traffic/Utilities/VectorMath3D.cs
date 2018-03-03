@@ -55,27 +55,56 @@ namespace Simulation.Traffic.Utilities
             return dir * radius;
         }
 
-        public static Ray Intersect(Plane plane1, Plane plane2)
+        public static bool Intersect(Plane plane1, Plane plane2, out Ray intersection)
         {
             var dir = Vector3.Cross(plane1.normal, plane2.normal);
+            var det = dir.sqrMagnitude;
 
-            var p1 = plane2.ClosestPointOnPlane(plane1.normal * plane1.distance);
-            return new Ray(p1, dir);
+            if (Mathf.Abs(det) >= 0.000001f)
+            {
+                var p = (Vector3.Cross(dir, plane2.normal) * plane1.distance + Vector3.Cross(plane1.normal, dir) * plane2.distance) / det;
+
+                intersection = new Ray(p, dir);
+                return true;
+            }
+
+            intersection = default(Ray);
+            return false;
         }
 
-        public static bool IntersectCircle(Plane plane, Vector3 center, Vector3 normal, Vector3 forward, out float[] angles)
+        public static bool IntersectCircle(Plane plane, Vector3 center, Vector3 normal, Vector3 forward, float radius, out float angle1, out float angle2)
         {
             var circlePlane = new Plane(normal, center);
 
-            var ray = Intersect(plane, circlePlane);
+            if (Intersect(plane, circlePlane, out var ray))
+            {
 
+                var matrix = Matrix4x4.LookAt(center, center + forward, normal).inverse;
 
-            var matrix = Matrix4x4.LookAt(center, center + forward, normal).inverse;
+                var o = matrix.MultiplyPoint3x4(ray.origin);
+                var d = matrix.MultiplyVector(ray.direction);
 
-            var o = matrix.MultiplyPoint3x4(ray.origin);
-            var d = matrix.MultiplyVector(ray.direction);
+                var f = matrix.MultiplyVector(forward);
 
-            throw new NotImplementedException("Intersect ray-circle in 3D without y => 2D (XZ)");
+                float near, far;
+                if (VectorMath2D.IntersectsLineCircle(o.GetXZ(), d.GetXZ(), Vector2.zero, radius, out near, out far))
+                {
+                    if (near == far)
+                    { 
+                        angle1 = angle2 = VectorMath3D.GetAngle(o + d * near, Vector3.forward, Vector3.up);
+                        return true;
+                    }
+                    // TODO: Solve with VectorMath2D for performance gain
+                    angle1 = VectorMath2D.GetAngle(Vector2.up, o.GetXZ() + d.GetXZ() * near);
+                    angle2 = VectorMath2D.GetAngle(Vector3.up, o.GetXZ() + d.GetXZ() * far);
+                    return true;
+                }
+
+                angle1 = angle2 = float.NaN;
+                return false;
+            }
+            angle1 = angle2 = float.NaN;
+            return false;
         }
     }
 }

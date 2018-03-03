@@ -67,6 +67,9 @@ namespace Simulation.Traffic
 
         public Segment CreateSegment(Node start, Node end, SegmentDescription description)
         {
+            if(start.Position == end.Position)
+                throw new InvalidOperationException("Both start and end are at position "+start.Position);
+
             var segment = createSegment(start, end, description);
 
             var dir = start.Position - end.Position;

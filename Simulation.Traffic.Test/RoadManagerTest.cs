@@ -56,9 +56,9 @@ namespace Simulation.Traffic.Test
 
             var n1 = roads.CreateNodeAt(1, 0);
 
-            var n2 = roads.CreateNodeAt(0, 1);
+            var n2 = roads.CreateNodeAt(2, 1);
 
-            var n3 = roads.CreateNodeAt(0, -1);
+            var n3 = roads.CreateNodeAt(3, -1);
 
 
             var s12 = roads.CreateSegment(n1, n2, dummyRoad);
@@ -86,11 +86,11 @@ namespace Simulation.Traffic.Test
         {
             var roads = new RoadManager();
 
-            var n1 = roads.CreateNodeAt(0, 0);
+            var n1 = roads.CreateNodeAt(1, 0);
 
-            var n2 = roads.CreateNodeAt(0, 1);
+            var n2 = roads.CreateNodeAt(2, 1);
 
-            var n3 = roads.CreateNodeAt(0, -1);
+            var n3 = roads.CreateNodeAt(3, -1);
 
 
             var s12 = roads.CreateSegment(n1, n2, dummyRoad);
@@ -110,11 +110,11 @@ namespace Simulation.Traffic.Test
         {
             var roads = new RoadManager();
 
-            var n1 = roads.CreateNodeAt(0, 0);
+            var n1 = roads.CreateNodeAt(1, 0);
 
-            var n2 = roads.CreateNodeAt(0, 1);
+            var n2 = roads.CreateNodeAt(2, 1);
 
-            var n3 = roads.CreateNodeAt(0, -1);
+            var n3 = roads.CreateNodeAt(3, -1);
 
 
             var s12 = roads.CreateSegment(n1, n2, dummyRoad);

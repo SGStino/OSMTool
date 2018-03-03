@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Simulation.Traffic.Utilities;
 using UnityEngine;
 
@@ -229,12 +231,40 @@ namespace Simulation.Traffic.Lofts
 
         public bool Intersects(Plane plane, out float[] loftDistances)
         {
-            if(VectorMath3D.Intersect(plane, center, normal, startPosition, out float[] angles))
+            if (VectorMath3D.IntersectCircle(plane, center, normal, startPosition, radius, out float a1, out float a2))
             {
+                var dists = new List<float>(2);
+                var s = Mathf.Sign(Angle);
+                a1 *= s;
+                a2 *= s;
 
+                if (a1 < 0)
+                    a1 += Mathf.PI * 2;
+
+                if (a2 < 0)
+                    a2 += Mathf.PI * 2;
+
+                var range = s * Angle;
+                if (a1 == a2)
+                {
+                    if (a1 >= 0 && a1 <= range)
+                        dists.Add(a1 * radius);
+                }
+                else
+                {
+                    if (a1 >= 0 && a1 <= range)
+                        dists.Add(a1 * radius);
+                    if (a2 >= 0 && a2 <= range)
+                        dists.Add(a2 * radius); 
+
+                }
+                loftDistances = dists.ToArray();
+                return dists.Any();
             }
+            loftDistances = new float[0];
+            return false;
         }
 
-     
+
     }
 }
