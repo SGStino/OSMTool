@@ -28,21 +28,21 @@ namespace Simulation.Traffic.Utilities
                 return -angle;
             return angle;
         }
-        public static Vector3 GetPointOnSegment(Vector3 start, Vector3 end, Vector3 point, out float distance)
+        public static void GetPointOnSegment(Vector3 start, Vector3 end, Vector3 point, out float distance)
         {
             var dir = end - start;
             var len = dir.magnitude;
             dir /= len;
-            return GetPointOnSegment(start, dir, len, point, out distance);
+              GetPointOnSegment(start, dir, len, point, out distance);
         }
 
-        public static Vector3 GetPointOnSegment(Vector3 start, Vector3 dir, float length, Vector3 point, out float distance)
+        public static void GetPointOnSegment(Vector3 start, Vector3 dir, float length, Vector3 point, out float distance)
         {
             var offset = point - start;
             var dot = Vector3.Dot(offset, dir) / length;
 
             distance = Mathf.Clamp01(dot) * length;
-            return distance * dir + start;
+            ///*return*/ distance * dir + start;
         }
 
         public static Vector3 GetPointOnCircle(Vector3 normal, float radius, Vector3 vector)

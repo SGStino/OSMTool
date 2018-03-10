@@ -183,7 +183,7 @@ namespace Simulation.Traffic.Lofts
                 return new ArcLoftPath(startVector, angle, center, normal, endVector);
         }
 
-        public void SnapTo(Vector3 to, out Vector3 position, out float distance)
+        public void SnapTo(Vector3 to, /*out Vector3 center,*/  out float distance)
         {
 
             // TODO: not completly accurate
@@ -220,11 +220,11 @@ namespace Simulation.Traffic.Lofts
             if (mag1 > mag2)
             {
                 distance = newAngle * radius * Mathf.Sign(angleDistance);//Mathf.Sqrt(mag2);
-                position = endPosition + center;
+                //position = endPosition + center;
             }
             else
             {
-                position = clamped + center;
+                //position = clamped + center;
                 distance = newAngle * radius * Mathf.Sign(angleDistance);//Mathf.Sqrt(mag1);
             }
         }

@@ -34,8 +34,9 @@ namespace Simulation.Traffic.AI.Agents
 
     public static class AgentStateExtensions
     {
+        // TODO: disconnnect agent from it's state update
         public static AgentStateResult Update(this AgentState currentState, IAgent agent, float dt, GetSpeedDelegate getSpeed, IList<PathDescription> paths, out AgentState newState)
-        { 
+        {
             var result = AgentStateResult.None;
             var speed = getSpeed(currentState);
 
@@ -58,7 +59,7 @@ namespace Simulation.Traffic.AI.Agents
             if (progress >= length)
             {
                 do
-                { 
+                {
                     progress -= length;
                     result |= AgentStateResult.ChangedPath;
                     currentIndex++;
@@ -73,7 +74,9 @@ namespace Simulation.Traffic.AI.Agents
                     currentState.Pointer?.Disconnect();
                 }
                 while (progress >= length);
-                pointer = (currentPath.Path as IAgentChainAIPath)?.Connect(agent);
+
+                if (agent != null)
+                    pointer = (currentPath.Path as IAgentChainAIPath)?.Connect(agent);
             }
 
             newState = new AgentState(currentIndex, progress, pointer);

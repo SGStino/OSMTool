@@ -1,4 +1,5 @@
 ﻿
+using Simulation.Traffic.Utilities;
 using System;
 using UnityEngine;
 
@@ -400,27 +401,32 @@ namespace Simulation.Traffic.Lofts
             return arc1.GetTransform(distance);
         }
 
-        public void SnapTo(Vector3 to, out Vector3 position, out float distance)
+        public void SnapTo(Vector3 to, out float distance)
         {
 
-            Vector3 p1, p2;
             float d1, d2;
 
 
 
-            arc1.SnapTo(to, out p1, out d1);
-            arc2.SnapTo(to, out p2, out d2);
+            arc1.SnapTo(to, out d1);
+            arc2.SnapTo(to, out d2);
 
+            var p1 = arc1.GetTransform(d1).GetTranslate();
+            var p2 = arc2.GetTransform(d2).GetTranslate();
 
-            if ((to - p1).sqrMagnitude < (to - p2).sqrMagnitude)
+            //Debug.DrawLine(p1, to, Color.blue);
+            //Debug.DrawLine(p2, to, Color.red);
+
+            var l1 = (p1 - to).magnitude;
+            var l2 = (p2 - to).magnitude;
+
+            if (l1 < l2)
             {
-                position = p1;
                 distance = d1;
             }
             else
             {
-                position = p2;
-                distance = d2;
+                distance = d2 + arc1.Length;
             }
         }
 
@@ -428,7 +434,7 @@ namespace Simulation.Traffic.Lofts
         {
             loftDistances = new float[0];
             bool intersect = false;
-            if(arc1.Intersects(plane, out float[] distancesA))
+            if (arc1.Intersects(plane, out float[] distancesA))
             {
                 var start = loftDistances.Length;
                 Array.Resize(ref loftDistances, start + distancesA.Length);

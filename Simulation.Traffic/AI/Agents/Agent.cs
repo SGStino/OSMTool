@@ -53,12 +53,17 @@ namespace Simulation.Traffic.AI.Agents
                             return; // still waiting, agent is done for this cyclus
                         if (solverJob.CurrentState.HasFlag(AgentJobStatus.Completed))
                         {
-                            var path = new Sequence<PathDescription>(solverJob.PathSequence.Select(t => new PathDescription(t, 0, 1)).ToList());
+                            var path = solverJob.PathSequence;
 
-                            updateApproachRoute(path);
-                            updateDepartRoute(path);
-                            throw new InvalidOperationException("Something goes wrong here, approach and end routes should be somewhere halfway the segments they are attached to");
-                            this.pathSequence = path;
+                            var startTransform = CurrentTransform;
+
+
+
+                            this.pathSequence = solverJob.PathSequence.Extend(startTransform.GetTranslate(), destination);
+                             
+
+                            //                            throw new InvalidOperationException("Something goes wrong here, approach and end routes should be somewhere halfway the segments they are attached to");
+
 
                             currentState = createInitialState(0);
                             status = AgentStatus.GoingToRoute;
@@ -159,65 +164,71 @@ namespace Simulation.Traffic.AI.Agents
         // todo: make smarter, should use driveways of buildings instead of void paths
         private void updateDepartRoute(Sequence<PathDescription> pathSequence)
         {
-            Vector3 start, startTangent, end, endTangent;
+            throw new NotImplementedException();
+            //    Vector3 start, startTangent, end, endTangent;
 
 
-            var index = pathSequence.Count - 1;
-            var pathDesc = pathSequence[index];
-            var path = pathDesc.Path;
+            //    var index = pathSequence.Count - 1;
+            //    var pathDesc = pathSequence[index];
+            //    var path = pathDesc.Path;
 
-            path.LoftPath.SnapTo(Destination, out start, out var distance);
+            //    path.LoftPath.SnapTo(Destination, out var distance);
 
-            var departProgress = path.GetDistanceFromLoftPath(distance);
+            //    var start = path.
 
-            var endProgress = departProgress / path.GetLength();
+            //    var departProgress = path.GetDistanceFromLoftPath(distance);
 
-            pathSequence[index] = new PathDescription(path, 0, endProgress);
+            //    var endProgress = departProgress / path.GetLength();
 
-            end = Destination;
+            //    pathSequence[index] = new PathDescription(path, 0, endProgress);
 
-            startTangent = -path.GetTransform(departProgress).MultiplyVector(Vector3.forward);
+            //    end = Destination;
 
-            endTangent = (start - end).normalized;
+            //    startTangent = -path.GetTransform(departProgress).MultiplyVector(Vector3.forward);
 
-            var loft = new BiArcLoftPath(start, startTangent, end, endTangent);
+            //    endTangent = (start - end).normalized;
 
-            var departPath = new AgentAIPath(loft);
+            //    var loft = new BiArcLoftPath(start, startTangent, end, endTangent);
 
-            var desc = new PathDescription(departPath, 0, 1);
-            pathSequence.Add(desc);
+            //    var departPath = new AgentAIPath(loft);
+
+            //    var desc = new PathDescription(departPath, 0, 1);
+            //    pathSequence.Add(desc);
         }
         // todo: make smarter, should use driveways of buildings of void paths
         private void updateApproachRoute(Sequence<PathDescription> pathSequence)
         {
-            Vector3 start, startTangent, end, endTangent;
+            throw new NotImplementedException();
+            //Vector3 start, startTangent, end, endTangent;
 
-            var startTransform = CurrentTransform;
-
-            start = startTransform.MultiplyPoint3x4(Vector3.zero);
-            startTangent = startTransform.MultiplyVector(Vector3.forward);
-
-            var pathDesc = pathSequence[0];
-            var path = pathDesc.Path;
-
-            path.LoftPath.SnapTo(start, out end, out var distance);
-            var approachProgress = path.GetDistanceFromLoftPath(distance);
+            //var startTransform = CurrentTransform;
 
 
-            var transform = path.GetTransform(approachProgress);
 
-            pathSequence[0] = new PathDescription(path, approachProgress / path.GetLength(), 1);
+            //start = startTransform.MultiplyPoint3x4(Vector3.zero);
+            //startTangent = startTransform.MultiplyVector(Vector3.forward);
 
-            endTangent = -transform.MultiplyVector(Vector3.forward);
+            //var pathDesc = pathSequence[0];
+            //var path = pathDesc.Path;
+
+            //path.LoftPath.SnapTo(start, out end, out var distance);
+            //var approachProgress = path.GetDistanceFromLoftPath(distance);
 
 
-            var loft = new BiArcLoftPath(start, startTangent, end, endTangent);
+            //var transform = path.GetTransform(approachProgress);
 
-            var approachPath = new AgentAIPath(loft);
+            //pathSequence[0] = new PathDescription(path, approachProgress / path.GetLength(), 1);
 
-            var descr = new PathDescription(Path: approachPath, Start: 0, End: 1);
+            //endTangent = -transform.MultiplyVector(Vector3.forward);
 
-            pathSequence.Insert(0, descr);
+
+            //var loft = new BiArcLoftPath(start, startTangent, end, endTangent);
+
+            //var approachPath = new AgentAIPath(loft);
+
+            //var descr = new PathDescription(Path: approachPath, Start: 0, End: 1);
+
+            //pathSequence.Insert(0, descr);
         }
 
         protected virtual void DestinationReached()

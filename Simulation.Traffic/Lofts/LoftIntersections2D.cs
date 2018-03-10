@@ -506,8 +506,8 @@ namespace Simulation.Traffic.Lofts
                 var farPoint = startRight + bDir * distance + center;
                 if (a.GetOffsetToPoint(farPoint, out offsetA))
                 {
-                    Debug.DrawLine(farPoint, farPoint + Vector3.left * 5, Color.green);
-                    Debug.DrawLine(farPoint, farPoint + Vector3.forward * 5, Color.green);
+                    //Debug.DrawLine(farPoint, farPoint + Vector3.left * 5, Color.green);
+                    //Debug.DrawLine(farPoint, farPoint + Vector3.forward * 5, Color.green);
                     offsetB = distance * bDirLen;
 
                     if (offsetA < bestOffsetA)

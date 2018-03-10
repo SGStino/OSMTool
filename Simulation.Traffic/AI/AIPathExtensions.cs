@@ -82,6 +82,26 @@ namespace Simulation.Traffic.AI
                 return result * rotate;
             return result;
         }
+
+
+        public static void SnapTo(this IAIPath path, Vector3 point, out float distance)
+        {
+            path.LoftPath.SnapTo(point, out float loftDistance);
+
+            float min, max;
+            if (!path.Reverse)
+            {
+                min = path.PathOffsetStart;
+                max = path.LoftPath.Length - path.PathOffsetEnd;
+            }
+            else
+            {
+                loftDistance = path.LoftPath.Length - loftDistance;
+                max = path.LoftPath.Length - path.PathOffsetStart;
+                min = path.PathOffsetEnd;
+            }
+            distance = Mathf.Clamp(loftDistance, min, max) - min;
+        }
     }
 
 }

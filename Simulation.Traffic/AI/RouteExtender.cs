@@ -13,6 +13,71 @@ namespace Simulation.Traffic.AI
     public static class RouteExtender
     {
 
+        public static PathDescription[] Extend(this IEnumerable<IAIPath> paths, Vector3 from, Vector3 to)
+        {
+            var pathArray = paths.ToArray();
+            // from -> approach -> path[] -> depart -> to
+
+            var first = paths.First();
+            var end = paths.Last();
+
+            first.SnapTo(from, out var closestFromDistance);
+            end.SnapTo(to, out var closestToDistance);
+
+            if (first == end)
+            {
+                if (closestToDistance < closestFromDistance)
+                    closestToDistance = closestFromDistance = (closestFromDistance + closestToDistance) / 2;
+            }
+
+
+            var approachTransform = first.GetTransform(closestFromDistance);
+            var departTransform = end.GetTransform(closestToDistance);
+
+
+
+            var approachPoint = approachTransform.GetTranslate();
+            var approachForward = approachTransform.GetForward();
+
+
+            var departPoint = departTransform.GetTranslate();
+            var departForward = departTransform.GetForward();
+
+
+            var fromForward = (approachPoint - from).normalized;
+            var toForward = (to - departPoint).normalized;
+
+            var approachLoft = new BiArcLoftPath(from, -fromForward, approachPoint, -approachForward);
+            var departLoft = new BiArcLoftPath(departPoint, -departForward, to, -toForward);
+
+            var descriptions = new List<PathDescription>(pathArray.Length);
+
+
+            //Debug.DrawLine(approachPoint, from, Color.cyan);
+            //Debug.DrawLine(departPoint, to, Color.magenta);
+
+            descriptions.Add(new PathDescription(new AgentAIPath(approachLoft), 0, 1));
+
+            for (int i = 0; i < pathArray.Length; i++)
+            {
+                var path = pathArray[i];
+                var s = 0f;
+                var e = 1f;
+
+                if (i == 0)
+                    s = closestFromDistance / first.GetLength();
+                if (i == pathArray.Length - 1)
+                    e = closestToDistance / end.GetLength();
+
+            
+
+                descriptions.Add(new PathDescription(path, s, e));
+            }
+
+            descriptions.Add(new PathDescription(new AgentAIPath(departLoft), 0, 1));
+            return descriptions.ToArray();
+
+        }
         public static PathDescription[] Extend(this IEnumerable<IAIPath> paths, Matrix4x4 from, Matrix4x4 to)
         {
             var pointFrom = from.GetTranslate();
@@ -40,9 +105,9 @@ namespace Simulation.Traffic.AI
                 float start = 0, end = 0;
 
                 if (i == 0)
-                    start = pathPointFrom;
+                    start = pathPointFrom / path.GetLength();
                 if (i == elements.Length - 1)
-                    end = pathPointTo;
+                    end = pathPointTo / path.GetLength();
 
                 result[i + 1] = new PathDescription(path, start, end);
             }
@@ -89,8 +154,8 @@ namespace Simulation.Traffic.AI
                 }
             }
             var loft = reverse
-                ? new BiArcLoftPath(pointOnPath, directionOnPath, point, forward)
-                : new BiArcLoftPath(point, forward, pointOnPath, directionOnPath);
+                ? new BiArcLoftPath(point, forward, pointOnPath, -directionOnPath)
+                : new BiArcLoftPath(pointOnPath, -directionOnPath, point, forward);
 
             return new PathDescription(new AgentAIPath(loft), 0, 1);
         }
@@ -99,10 +164,16 @@ namespace Simulation.Traffic.AI
         {
             if (path.LoftPath.Crosses(ray, out pathDistances, out rayDistances))
             {
-                throw new NotImplementedException("Transform LoftDistances to PathDistances (reverse, offsets, ..)");
-            } 
+                for (int i = 0; i < pathDistances.Length; i++)
+                    pathDistances[i] = loftToPathDistance(path, pathDistances[i]);
+
+                return true;
+            }
             return false;
         }
+
+        private static float loftToPathDistance(IAIPath path, float v) => Mathf.Lerp(path.GetStartPathOffset(), path.GetEndPathOffset(), v / path.GetLength());
+
         public static bool Crosses(this ILoftPath loft, Ray ray, out float[] loftDistances, out float[] rayDistances)
         {
             var origin = ray.origin;
@@ -111,10 +182,17 @@ namespace Simulation.Traffic.AI
 
             var plane = new Plane(origin, up, forward);
 
-            if(loft.Intersects(plane, out loftDistances))
+            if (loft.Intersects(plane, out loftDistances))
             {
                 rayDistances = new float[loftDistances.Length];
-                throw new NotImplementedException("Transform LoftDistances to points to rayDistances");
+
+                for (int i = 0; i < loftDistances.Length; i++)
+                {
+                    var p = loft.GetTransformedPoint(loftDistances[i], Vector3.zero);
+                    rayDistances[i] = Vector3.Dot(p - ray.origin, ray.direction);
+                }
+
+                return true;
             }
             loftDistances = rayDistances = new float[0];
             return false;

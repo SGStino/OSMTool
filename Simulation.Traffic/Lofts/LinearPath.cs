@@ -61,9 +61,9 @@ namespace Simulation.Traffic.Lofts
             return matrix;
         }
 
-        public void SnapTo(Vector3 to, out Vector3 position, out float distance)
+        public void SnapTo(Vector3 to, out float distance)
         {
-            position = VectorMath3D.GetPointOnSegment(start, dir, length, to, out distance);
+            VectorMath3D.GetPointOnSegment(start, dir, length, to, out distance);
         }
 
         public bool Intersects(Plane plane, out float[] loftDistances)

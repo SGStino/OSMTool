@@ -187,6 +187,220 @@ namespace Simulation.Traffic.Test
         }
 
         [TestMethod]
+        public void TestSnapTo()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = false
+            };
+
+
+            var pointCenter = new Vector3(0, 0, 5.5f);
+            loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
+            Assert.AreEqual(5.5f, distanceLoft);
+            aiPath.SnapTo(pointCenter, out var distancePath);
+            Assert.AreEqual(4.5f, distancePath); 
+        }
+        [TestMethod]
+        public void TestSnapToLow()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = false
+            };
+
+
+            var pointCenter = new Vector3(0, 0, 0.5f);
+            loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
+            Assert.AreEqual(0.5f, distanceLoft);
+            aiPath.SnapTo(pointCenter, out var distancePath);
+            Assert.AreEqual(0, distancePath);
+        }
+        [TestMethod]
+        public void TestSnapToMin()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = false
+            };
+
+
+            var pointCenter = new Vector3(0, 0, -1f);
+            loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
+            Assert.AreEqual(0, distanceLoft);
+            aiPath.SnapTo(pointCenter, out var distancePath);
+            Assert.AreEqual(0, distancePath);
+        }
+        [TestMethod]
+        public void TestSnapToHigh()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = false
+            };
+
+
+            var pointCenter = new Vector3(0, 0, 9);
+            loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
+            Assert.AreEqual(9, distanceLoft);
+            aiPath.SnapTo(pointCenter, out var distancePath);
+            Assert.AreEqual(7, distancePath);
+        }
+        [TestMethod]
+        public void TestSnapToMax()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = false
+            };
+
+
+            var pointCenter = new Vector3(0, 0, 11);
+            loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
+            Assert.AreEqual(10, distanceLoft);
+            aiPath.SnapTo(pointCenter, out var distancePath);
+            Assert.AreEqual(7, distancePath);
+        }
+
+
+        [TestMethod]
+        public void TestSnapToReverse()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = true
+            };
+
+
+            var pointCenter = new Vector3(0, 0, 5.5f);
+            loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
+            Assert.AreEqual(5.5f, distanceLoft);
+            aiPath.SnapTo(pointCenter, out var distancePath);
+            Assert.AreEqual(2.5f, distancePath);
+        }
+        [TestMethod]
+        public void TestSnapToLowReverse()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = true
+            };
+
+
+            var pointCenter = new Vector3(0, 0, 0.5f);
+            loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
+            Assert.AreEqual(0.5f, distanceLoft);
+            aiPath.SnapTo(pointCenter, out var distancePath);
+            Assert.AreEqual(7, distancePath);
+        }
+        [TestMethod]
+        public void TestSnapToMinReverse()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = true
+            };
+
+
+            var pointCenter = new Vector3(0, 0, -1f);
+            loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
+            Assert.AreEqual(0, distanceLoft);
+            aiPath.SnapTo(pointCenter, out var distancePath);
+            Assert.AreEqual(7, distancePath);
+        }
+        [TestMethod]
+        public void TestSnapToHighReverse()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = true
+            };
+
+
+            var pointCenter = new Vector3(0, 0, 9);
+            loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
+            Assert.AreEqual(9, distanceLoft);
+            aiPath.SnapTo(pointCenter, out var distancePath);
+            Assert.AreEqual(0, distancePath);
+        }
+        [TestMethod]
+        public void TestSnapToMaxReverse()
+        {
+            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+
+            var aiPath = new DummyAIPath(loft)
+            {
+                PathOffsetStart = 1,
+                PathOffsetEnd = 2,
+                SideOffsetStart = 3,
+                SideOffsetEnd = 4,
+                Reverse = true
+            };
+
+
+            var pointCenter = new Vector3(0, 0, 11);
+            loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
+            Assert.AreEqual(10, distanceLoft);
+            aiPath.SnapTo(pointCenter, out var distancePath);
+            Assert.AreEqual(0, distancePath);
+        }
+
+
+        [TestMethod]
         public void TestEndTransformReverse()
         {
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
