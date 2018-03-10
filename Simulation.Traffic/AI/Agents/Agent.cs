@@ -12,6 +12,8 @@ namespace Simulation.Traffic.AI.Agents
 
     public class Agent : IAgent, IDisposable
     {
+        public float Length { get; set; } = 5;
+
         public float SpeedVariance { get; set; } = 1.0f;
         private AgentStatus status = AgentStatus.Initializing;
         private IList<PathDescription> pathSequence;
@@ -25,6 +27,9 @@ namespace Simulation.Traffic.AI.Agents
         private readonly IAgentJobRunner runner;
 
 
+        private IAgentPointer pointer;
+
+        public IAgentPointer Pointer => pointer;
         public Agent(IAIRouteFinder finder, IAgentJobRunner runner)
         {
             solverJob = new AgentJob();
@@ -60,7 +65,7 @@ namespace Simulation.Traffic.AI.Agents
 
 
                             this.pathSequence = solverJob.PathSequence.Extend(startTransform.GetTranslate(), destination);
-                             
+
 
                             //                            throw new InvalidOperationException("Something goes wrong here, approach and end routes should be somewhere halfway the segments they are attached to");
 
@@ -78,7 +83,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentStatus.GoingToRoute:
                     {
-                        var result = currentState.Update(this, dt, getSpeed, pathSequence, out newState);
+                        var result = update(dt, out newState);
                         if (result.HasFlag(AgentStateResult.ChangedPath))
                             status = AgentStatus.FollowingRoute;
                         if (result.HasFlag(AgentStateResult.Moved))
@@ -87,7 +92,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentStatus.FollowingRoute:
                     {
-                        var result = currentState.Update(this, dt, getSpeed, pathSequence, out newState);
+                        var result = update(dt, out newState);
                         if (result.HasFlag(AgentStateResult.ChangedPath))
                         {
                             if (newState.PathIndex == pathSequence.Count - 1)
@@ -99,7 +104,7 @@ namespace Simulation.Traffic.AI.Agents
                     break;
                 case AgentStatus.GoingToDestination:
                     {
-                        var result = currentState.Update(this, dt, getSpeed, pathSequence, out newState);
+                        var result = update(dt, out newState);
                         if (result.HasFlag(AgentStateResult.ChangedPath))
                             DestinationReached();
                         if (result.HasFlag(AgentStateResult.Moved))
@@ -116,7 +121,25 @@ namespace Simulation.Traffic.AI.Agents
             currentState = newState;
         }
 
-        private AgentState createInitialState(int index) => new AgentState(index, 0, (pathSequence[index].Path as IAgentChainAIPath)?.Connect(this));
+        private AgentStateResult update(float dt, out AgentState newState)
+        {
+            var result = currentState.Update(dt, getSpeed, pathSequence, out newState);
+
+            if (result.HasFlag(AgentStateResult.ChangedPath))
+            {
+                pointer?.Disconnect(); // disconnect existing pointer;
+                pointer = null;
+                var i = newState.PathIndex;
+                if (i < pathSequence.Count)
+                {
+                    var seg = pathSequence[newState.PathIndex];
+                    pointer = (seg.Path as IAgentChainAIPath).Connect(this); // connect new pointer
+                }
+            }
+            return result;
+        }
+
+        private AgentState createInitialState(int index) => new AgentState(index, 0);
 
 
         private bool getNextPath(AgentState state, int index, out PathDescription path)
@@ -136,19 +159,19 @@ namespace Simulation.Traffic.AI.Agents
 
         public float MaxSpeed { get; set; } = float.PositiveInfinity;
 
-        private float safetyDistance = 10;
+        private float safetyDistance = 6;
         private float speedDistanceFactor = 20;
         private float getSpeed(AgentState state, float maxSpeed)
         {
             var desiredSpeed = pathSequence[state.PathIndex].Path.MaxSpeed;
 
-            var agentPointer = state.Pointer;
+            // todo search through upcoming tracks too
+            var agentPointer = pointer;
             maxSpeed = Math.Min(desiredSpeed, maxSpeed);
-            var next = agentPointer?.Next;
-            if (next != null)
-            {
-                var dist = next.Agent.Progress - this.Progress;
 
+            var dist = state.DistanceToNextAgent(pointer, safetyDistance, pathSequence, out var nextAgent);
+            if (!float.IsInfinity(dist))
+            {
                 var p = (dist - safetyDistance) / speedDistanceFactor;
                 if (p < 0) // stand still, will you
                     return 0;
@@ -159,81 +182,18 @@ namespace Simulation.Traffic.AI.Agents
             return maxSpeed * SpeedVariance;
         }
 
+
+
+
+
         public float CurrentSpeed { get; private set; }
 
-        // todo: make smarter, should use driveways of buildings instead of void paths
-        private void updateDepartRoute(Sequence<PathDescription> pathSequence)
-        {
-            throw new NotImplementedException();
-            //    Vector3 start, startTangent, end, endTangent;
 
-
-            //    var index = pathSequence.Count - 1;
-            //    var pathDesc = pathSequence[index];
-            //    var path = pathDesc.Path;
-
-            //    path.LoftPath.SnapTo(Destination, out var distance);
-
-            //    var start = path.
-
-            //    var departProgress = path.GetDistanceFromLoftPath(distance);
-
-            //    var endProgress = departProgress / path.GetLength();
-
-            //    pathSequence[index] = new PathDescription(path, 0, endProgress);
-
-            //    end = Destination;
-
-            //    startTangent = -path.GetTransform(departProgress).MultiplyVector(Vector3.forward);
-
-            //    endTangent = (start - end).normalized;
-
-            //    var loft = new BiArcLoftPath(start, startTangent, end, endTangent);
-
-            //    var departPath = new AgentAIPath(loft);
-
-            //    var desc = new PathDescription(departPath, 0, 1);
-            //    pathSequence.Add(desc);
-        }
-        // todo: make smarter, should use driveways of buildings of void paths
-        private void updateApproachRoute(Sequence<PathDescription> pathSequence)
-        {
-            throw new NotImplementedException();
-            //Vector3 start, startTangent, end, endTangent;
-
-            //var startTransform = CurrentTransform;
-
-
-
-            //start = startTransform.MultiplyPoint3x4(Vector3.zero);
-            //startTangent = startTransform.MultiplyVector(Vector3.forward);
-
-            //var pathDesc = pathSequence[0];
-            //var path = pathDesc.Path;
-
-            //path.LoftPath.SnapTo(start, out end, out var distance);
-            //var approachProgress = path.GetDistanceFromLoftPath(distance);
-
-
-            //var transform = path.GetTransform(approachProgress);
-
-            //pathSequence[0] = new PathDescription(path, approachProgress / path.GetLength(), 1);
-
-            //endTangent = -transform.MultiplyVector(Vector3.forward);
-
-
-            //var loft = new BiArcLoftPath(start, startTangent, end, endTangent);
-
-            //var approachPath = new AgentAIPath(loft);
-
-            //var descr = new PathDescription(Path: approachPath, Start: 0, End: 1);
-
-            //pathSequence.Insert(0, descr);
-        }
 
         protected virtual void DestinationReached()
         {
-            currentState.Pointer?.Disconnect();
+            pointer?.Disconnect();
+            pointer = null;
             status = AgentStatus.DestinationReached;
         }
 
@@ -250,6 +210,7 @@ namespace Simulation.Traffic.AI.Agents
 
         public Vector3 StartPosition { get => startPosition; }
         public Vector3 Destination { get => destination; }
+         
 
         private Matrix4x4 getTransform(AgentState state) => getPath(state)?.GetTransform(state.Progress) ?? Matrix4x4.zero;
 

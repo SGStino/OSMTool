@@ -20,14 +20,13 @@ namespace Simulation.Traffic.Test
             var linearPath = new LinearPath(Vector3.zero, Vector3.forward);
             var paths = new List<PathDescription>() { new PathDescription(new DummyAIPath(linearPath), 0, 1) };
 
-            var state = new AgentState(0, 0, null);
+            var state = new AgentState(0, 0);
 
-            var agent = new DummyStateAgent(state);
 
             GetSpeedDelegate getSpeed = s => 1.0f;
 
             AgentState newState;
-            state.Update(agent, 1 / 60.0f, getSpeed, paths, out newState);
+            state.Update(1 / 60.0f, getSpeed, paths, out newState);
 
             Assert.AreEqual(1 / 60.0f, newState.Progress, 0.000001f);
         }
@@ -38,14 +37,13 @@ namespace Simulation.Traffic.Test
             var linearPath = new LinearPath(Vector3.zero, Vector3.forward);
             var paths = new List<PathDescription>() { new PathDescription(new DummyAIPath(linearPath), 0, 1) };
 
-            var state = new AgentState(0, 0, null);
+            var state = new AgentState(0, 0);
 
-            var agent = new DummyStateAgent(state);
 
             GetSpeedDelegate getSpeed = s => 1.0f;
 
             AgentState newState;
-            var result = state.Update(agent, 1 + 1 / 60.0f, getSpeed, paths, out newState);
+            var result = state.Update(1 + 1 / 60.0f, getSpeed, paths, out newState);
 
             Assert.IsTrue(result.HasFlag(AgentStateResult.Moved));
             Assert.IsTrue(result.HasFlag(AgentStateResult.ChangedPath));
@@ -57,31 +55,19 @@ namespace Simulation.Traffic.Test
             var linearPath = new LinearPath(Vector3.zero, Vector3.forward);
             var paths = new List<PathDescription>() { new PathDescription(new DummyAIPath(linearPath), 0, 1) };
 
-            var state = new AgentState(0, 0, null);
+            var state = new AgentState(0, 0);
 
-            var agent = new DummyStateAgent(state);
 
             GetSpeedDelegate getSpeed = s => 1.0f;
 
             AgentState newState;
-            var result = state.Update(agent, 1 + 1 / 60.0f, getSpeed, paths, out newState);
+            var result = state.Update(1 + 1 / 60.0f, getSpeed, paths, out newState);
 
             Assert.IsTrue(result.HasFlag(AgentStateResult.Moved));
             Assert.IsTrue(result.HasFlag(AgentStateResult.ChangedPath));
             Assert.IsTrue(result.HasFlag(AgentStateResult.ReachedEnd));
             Assert.AreEqual(1 / 60.0f, newState.Progress, 0.000001f);
         }
-         
-    }
-    public class DummyStateAgent : IAgent
-    {
-        AgentState state;
 
-        public DummyStateAgent(AgentState state)
-        {
-            this.state = state;
-        }
-
-        public float Progress => state.Progress;
     }
 }

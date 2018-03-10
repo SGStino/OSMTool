@@ -116,7 +116,10 @@ namespace Simulation.Traffic.AI.Agents
 
     public static class AgentChainsExtensions
     {
-        public static void Disconnect(this IAgentPointer currentPointer) => currentPointer?.Chain?.Exit(currentPointer);
+        public static void Disconnect(this IAgentPointer currentPointer)
+        {
+            currentPointer?.Chain?.Exit(currentPointer);
+        }
         public static IAgentPointer Connect(this IAgentChainAIPath path, IAgent agent) => path?.Agents.Enter(agent);
 
         public static IEnumerable<IAgentPointer> IterateForward(this IAgentChain chain) => IterateForward(chain.Last);

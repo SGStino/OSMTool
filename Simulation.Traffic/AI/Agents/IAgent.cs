@@ -9,5 +9,6 @@ namespace Simulation.Traffic.AI.Agents
     public interface IAgent
     {
         float Progress { get; }
+        float Length { get; }
     }
 }
