@@ -10,5 +10,6 @@ namespace Simulation.Traffic.AI.Agents
     {
         float Progress { get; }
         float Length { get; }
+        float Speed { get; }
     }
 }

@@ -275,5 +275,8 @@ namespace Simulation.Traffic.Test
         public float Progress { get; set; }
 
         public float Length => 5;
+
+        public float Speed => 100
+            ;
     }
 }

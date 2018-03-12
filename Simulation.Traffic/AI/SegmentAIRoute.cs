@@ -19,7 +19,10 @@ namespace Simulation.Traffic.AI
 
         public float Length => Segment.LoftPath?.Length ?? 0;
 
-        public float Speed => Paths.Sum(t => t.AverageSpeed / Paths.Length);
+        public float Speed => Paths
+            .Select(t => t.AverageSpeed)
+            .DefaultIfEmpty(1)
+            .Average();
 
         public float Cost => 1;
 

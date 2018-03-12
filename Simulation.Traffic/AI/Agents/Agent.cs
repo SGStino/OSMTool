@@ -210,7 +210,8 @@ namespace Simulation.Traffic.AI.Agents
 
         public Vector3 StartPosition { get => startPosition; }
         public Vector3 Destination { get => destination; }
-         
+
+        public float Speed => getSpeed(currentState);
 
         private Matrix4x4 getTransform(AgentState state) => getPath(state)?.GetTransform(state.Progress) ?? Matrix4x4.zero;
 

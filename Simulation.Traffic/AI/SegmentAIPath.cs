@@ -41,7 +41,12 @@ namespace Simulation.Traffic.AI
 
         public float MaxSpeed => laneDescription.MaxSpeed;
 
-        public float AverageSpeed => laneDescription.MaxSpeed; // TODO: make variable with vehicles
+        public float AverageSpeed => Agents // TODO: PREF: cache?
+            .IterateBackward()
+            .Take(10)
+            .Select(t => t.Agent.Speed)
+            .DefaultIfEmpty(MaxSpeed)
+            .Average();
 
         public LaneDescription Lane => laneDescription;
 
