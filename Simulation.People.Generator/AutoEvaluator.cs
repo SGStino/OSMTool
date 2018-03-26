@@ -16,7 +16,7 @@ namespace Simulation.People.Generator
         {
             (None, Soccer),
             (High, Cricket),
-            (Medium, Hockey),
+            (Medium, IceHockey),
             (High, Tennis),
             (Medium, Volleyball),
             (Low, TableTennis),

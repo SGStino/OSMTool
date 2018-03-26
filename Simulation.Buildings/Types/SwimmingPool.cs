@@ -2,7 +2,7 @@
 using Simulation.Leisure.Sports;
 using System.Collections.Generic;
 
-namespace Simulation.People.Types
+namespace Simulation.Buildings.Types
 {
     public class SwimmingPool : Building, ISportLocation
     {

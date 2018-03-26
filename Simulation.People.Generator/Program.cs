@@ -1,4 +1,8 @@
-﻿using Simulation.Leisure;
+﻿using Simulation.Buildings;
+using Simulation.Buildings.Types;
+using Simulation.Buildings.Types.Facilities;
+using Simulation.Data;
+using Simulation.Leisure;
 using Simulation.Leisure.Sports;
 using Simulation.Occupation;
 using System;
@@ -10,10 +14,46 @@ namespace Simulation.People.Generator
     class Program
     {
 
+        public static MultiDictionary<SportType, Building> sportLocations = new MultiDictionary<SportType, Building>();
+        private static void add(Building loc)
+        {
+            if (loc is ISportLocation sportLoc)
+                sportLocations.Add(sportLoc.AvailableSportTypes, loc);
+            else if (loc is IFacilityProvider facilityProvider)
+                foreach (var facility in facilityProvider.Facilities)
+                    if (facility is ISportLocation sportFacility)
+                        sportLocations.Add(sportFacility.AvailableSportTypes, loc);
+        }
         static void Main(string[] args)
         {
+            add(new WaterSportCenter());
+            add(new SwimmingPool());
+            add(new Marina());
+            add(new SportsHall());
+            add(new FitnessCenter());
+            add(new EquestrianCenter());
+            add(new IceRink());
+            add(new CommercialBuilding(new FitnessStudio()));
+            add(new CommercialBuilding(new BoxingClub()));
+            add(new SportsCenter());
+            add(new CricketField());
+            add(new GolfCourse());
             var generator = new PeopleGenerator();
-            generator.Next();
+            var profiles = new HashSet<Profile>();
+
+            //for(int i = 0; i < 30000000; i++)
+            //{
+            //    profiles.Add(generator.Current);
+            //    generator.Next();
+            //}
+            int count = 0;
+            while (generator.Iteration < 1)
+            {
+                generator.Next();
+                count++;
+            }
+
+            generator.Random();
             printNext(generator.Current);
             while (true)
             {
@@ -30,7 +70,7 @@ namespace Simulation.People.Generator
                         printNext(generator.Current);
                         break;
                     case '2':
-                        generator.Next();
+                        generator.Random();
                         printNext(generator.Current);
                         break;
                     case '3':
@@ -47,6 +87,8 @@ namespace Simulation.People.Generator
             }
         }
 
+
+
         private static void printNext(Profile current)
         {
             Console.WriteLine();
@@ -54,6 +96,10 @@ namespace Simulation.People.Generator
             var maxJobLen = PeopleGenerator.Jobs.SelectMany(t => Enumerable.Range(0, t.GetMaxLevel() + 1).Select(n => t.GetJobName(n))).Max(t => t.Length);
             var maxSportsLen = PeopleGenerator.Sports.Max(t => t.ToString().Length);
             Console.Write(current.Job.GetJobName(current.JobLevel).PadRight(maxJobLen + 2) + current.Hobby.ToString().PadRight(maxHobbyLen + 2) + current.Sport.ToString().PadRight(maxSportsLen));
+
+            var location = string.Join(", ", sportLocations[current.Sport].Select(t => t?.GetType().Name)).PadRight(50);
+
+            Console.Write(location.PadRight(50));
 
             var r = current.Evaluate();
             if (r.HasValue)
@@ -82,7 +128,7 @@ namespace Simulation.People.Generator
             }
         }
     }
-
+ 
     internal class Profile
     {
         public Profile(JobType job, int jobLevel, SportType sport, HobbyType hobby)
@@ -97,5 +143,19 @@ namespace Simulation.People.Generator
         public int JobLevel { get; }
         public SportType Sport { get; }
         public HobbyType Hobby { get; }
+
+        public override int GetHashCode()
+        {
+            return Job.GetHashCode() ^ JobLevel.GetHashCode() ^ Sport.GetHashCode() ^ Hobby.GetHashCode();
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj is Profile prof)
+            {
+                return prof.Job == Job && prof.JobLevel == JobLevel && prof.Sport == Sport && prof.Hobby == Hobby;
+            }
+
+            return base.Equals(obj);
+        }
     }
 }

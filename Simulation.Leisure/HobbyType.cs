@@ -6,10 +6,22 @@ namespace Simulation.Leisure
 {
     public enum HobbyType
     {
-        Cinama,
+        Cinema,
         Computer,
         Music,
         Nightlife,
-        Creative
+        Crafts,
+        Games,
+        Reading,
+        Musea,
+        Collecting,
+        Shopping,
+        PlaneSpotting,
+        TrainSpotting,
+        ShipSpotting,
+        Astronomy,
+        Photography,
+        Landmarks,
+        DIY
     }
 }

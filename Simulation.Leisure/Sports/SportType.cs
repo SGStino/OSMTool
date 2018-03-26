@@ -8,7 +8,7 @@ namespace Simulation.Leisure.Sports
     {
         Soccer,
         Cricket,
-        Hockey,
+        IceHockey,
         Tennis,
         Volleyball,
         TableTennis,
@@ -26,7 +26,7 @@ namespace Simulation.Leisure.Sports
         Cycling,
         Sailing,
         Archery,
-        Skating,
+        IceSkating,
         Fencing,
         Fitness,
         Yoga,
@@ -40,6 +40,7 @@ namespace Simulation.Leisure.Sports
         Gymnastics,
         Jogging,
         Running,
-        Racing
+        Racing,
+        Fishing
     }
 }

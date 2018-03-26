@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Simulation.Buildings\Simulation.Buildings.csproj" />
+    <ProjectReference Include="..\Simulation.Data\Simulation.Data.csproj" />
     <ProjectReference Include="..\Simulation.Leisure\Simulation.Leisure.csproj" />
     <ProjectReference Include="..\Simulation.Occupation\Simulation.Occupation.csproj" />
   </ItemGroup>

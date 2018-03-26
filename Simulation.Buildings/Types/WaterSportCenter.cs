@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Simulation.People.Buildings.Types
+namespace Simulation.Buildings.Types
 {
     public class WaterSportCenter : Building, ISportLocation
     {

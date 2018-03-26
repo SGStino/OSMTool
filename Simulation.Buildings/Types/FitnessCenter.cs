@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Simulation.Buildings.Types
 {
-    public class Fitness : Building, ISportLocation
+    public class FitnessCenter : Building, ISportLocation
     {
         public IEnumerable<SportType> AvailableSportTypes => new[]
         {
