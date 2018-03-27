@@ -7,10 +7,18 @@ namespace Simulation.Buildings.Types.Facilities
 {
     public class FitnessStudio : IFacility, ISportLocation
     {
-        IEnumerable<SportType> ISportLocation.AvailableSportTypes => new[] { SportType.Fitness, SportType.Yoga };
+        private SportsRegistrationCollection sports = new SportsRegistrationCollection()
+            .SetCapacity(SportType.Fitness, 64)
+            .SetCapacity(SportType.Yoga, 48);
+
+        public ISportProvider SportProvider => sports;
     }
     public class BoxingClub : IFacility, ISportLocation
     {
-        IEnumerable<SportType> ISportLocation.AvailableSportTypes => new[] { SportType.Boxing, SportType.Wrestling };
+        private SportsRegistrationCollection sports = new SportsRegistrationCollection()
+            .SetCapacity(SportType.Wrestling, 16)
+            .SetCapacity(SportType.Boxing, 16);
+
+        public ISportProvider SportProvider => sports; 
     }
 }

@@ -6,6 +6,15 @@ namespace Simulation.Leisure.Sports
 {
     public interface ISportLocation
     {
+        ISportProvider SportProvider { get; }
+    }
+
+    public interface ISportProvider
+    {
         IEnumerable<SportType> AvailableSportTypes { get; }
+        int GetOccupancy(SportType type);
+        int GetCapacity(SportType type);
+        bool Join(SportType type);
+        bool Leave(SportType type);
     }
 }

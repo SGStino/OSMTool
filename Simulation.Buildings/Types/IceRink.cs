@@ -7,6 +7,12 @@ namespace Simulation.Buildings.Types
 {
     public class IceRink : Building, ISportLocation
     {
-        IEnumerable<SportType> ISportLocation.AvailableSportTypes => new[] { SportType.IceSkating, SportType.IceHockey };
+        private SportsRegistrationCollection sports = new SportsRegistrationCollection()
+            .SetCapacity(SportType.IceSkating, 16)
+            .SetCapacity(SportType.IceHockey, 16)
+            .SetCapacity(SportType.MartialArts, 16)
+            .SetCapacity(SportType.Fitness, 32);
+
+        public ISportProvider SportProvider => sports;
     }
 }

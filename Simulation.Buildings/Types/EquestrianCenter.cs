@@ -7,6 +7,9 @@ namespace Simulation.Buildings.Types
 {
     public class EquestrianCenter : Building, ISportLocation
     {
-        public IEnumerable<SportType> AvailableSportTypes => new[] { SportType.Equestrian };
+        private SportsRegistrationCollection sports = new SportsRegistrationCollection()
+            .SetCapacity(SportType.Equestrian, 16);
+
+        public ISportProvider SportProvider => sports;
     }
 }

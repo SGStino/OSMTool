@@ -6,11 +6,11 @@ namespace Simulation.Buildings.Types
 {
     public class SwimmingPool : Building, ISportLocation
     {
-        IEnumerable<SportType> ISportLocation.AvailableSportTypes => new []
-        {
-            SportType.Swimming,
-            SportType.WaterPolo,
-            SportType.WaterAerobics
-        };
+        private SportsRegistrationCollection sports = new SportsRegistrationCollection()
+             .SetCapacity(SportType.WaterPolo, 32)
+            .SetCapacity(SportType.Swimming, 32)
+            .SetCapacity(SportType.WaterAerobics, 32);
+
+        public ISportProvider SportProvider => sports;
     }
 }

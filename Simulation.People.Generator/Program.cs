@@ -18,11 +18,11 @@ namespace Simulation.People.Generator
         private static void add(Building loc)
         {
             if (loc is ISportLocation sportLoc)
-                sportLocations.Add(sportLoc.AvailableSportTypes, loc);
+                sportLocations.Add(sportLoc.SportProvider.AvailableSportTypes, loc);
             else if (loc is IFacilityProvider facilityProvider)
                 foreach (var facility in facilityProvider.Facilities)
                     if (facility is ISportLocation sportFacility)
-                        sportLocations.Add(sportFacility.AvailableSportTypes, loc);
+                        sportLocations.Add(sportFacility.SportProvider.AvailableSportTypes, loc);
         }
         static void Main(string[] args)
         {

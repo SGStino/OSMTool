@@ -8,10 +8,10 @@ namespace Simulation.Buildings.Types
 {
     public class WaterSportCenter : Building, ISportLocation
     {
-        IEnumerable<SportType> ISportLocation.AvailableSportTypes => new[]
-        {
-            SportType.Sailing,
-            SportType.Rowing,
-        };
+        private SportsRegistrationCollection sports = new SportsRegistrationCollection()
+             .SetCapacity(SportType.Sailing, 32)
+            .SetCapacity(SportType.Rowing, 32);
+
+        public ISportProvider SportProvider => sports; 
     }
 }

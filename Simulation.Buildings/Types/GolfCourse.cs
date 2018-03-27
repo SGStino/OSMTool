@@ -7,6 +7,9 @@ namespace Simulation.Buildings.Types
 {
     public class GolfCourse : Building, ISportLocation
     {
-        IEnumerable<SportType> ISportLocation.AvailableSportTypes => new[] { SportType.Golf };
+        private SportsRegistrationCollection sports = new SportsRegistrationCollection()
+             .SetCapacity(SportType.Golf, 32);
+
+        public ISportProvider SportProvider => sports;
     }
 }
