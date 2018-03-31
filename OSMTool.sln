@@ -17,19 +17,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Traffic.Test", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Geometry", "Simulation.Geometry\Simulation.Geometry.csproj", "{3C036D3D-F405-4A15-B390-5DA571F4B799}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.People", "Simulation.People\Simulation.People.csproj", "{A3BAF46C-DA9B-4BC7-8A6C-1E3A407BF2A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.People", "Simulation.People\Simulation.People.csproj", "{A3BAF46C-DA9B-4BC7-8A6C-1E3A407BF2A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Leisure", "Simulation.Leisure\Simulation.Leisure.csproj", "{19D465D1-7792-4330-9C6E-FCF2279E8F30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Leisure", "Simulation.Leisure\Simulation.Leisure.csproj", "{19D465D1-7792-4330-9C6E-FCF2279E8F30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Buildings", "Simulation.Buildings\Simulation.Buildings.csproj", "{7FBCE503-DE4A-4168-B49F-6614B2198558}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Buildings", "Simulation.Buildings\Simulation.Buildings.csproj", "{7FBCE503-DE4A-4168-B49F-6614B2198558}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Occupation", "Simulation.Occupation\Simulation.Occupation.csproj", "{B71A1975-9003-4435-8B97-94E128A47684}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Occupation", "Simulation.Occupation\Simulation.Occupation.csproj", "{B71A1975-9003-4435-8B97-94E128A47684}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.People.Test", "Simulation.People.Test\Simulation.People.Test.csproj", "{196B4653-69E4-45C9-9E1A-6ED4F90DF166}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.People.Test", "Simulation.People.Test\Simulation.People.Test.csproj", "{196B4653-69E4-45C9-9E1A-6ED4F90DF166}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.People.Generator", "Simulation.People.Generator\Simulation.People.Generator.csproj", "{25CFB5B6-D609-4A41-BF04-6E8BE3D71C70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.People.Generator", "Simulation.People.Generator\Simulation.People.Generator.csproj", "{25CFB5B6-D609-4A41-BF04-6E8BE3D71C70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Data", "Simulation.Data\Simulation.Data.csproj", "{D94BF5BD-54D2-4179-923E-2C7FF5BEC8A0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Data", "Simulation.Data\Simulation.Data.csproj", "{D94BF5BD-54D2-4179-923E-2C7FF5BEC8A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Buildings.Test", "Simulation.Buildings.Test\Simulation.Buildings.Test.csproj", "{DC4269E8-5A5E-429E-A73C-F307BA072090}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Rendering", "Simulation.Rendering\Simulation.Rendering.csproj", "{3E052699-8A55-4DF5-8923-D818A57E32CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +97,14 @@ Global
 		{D94BF5BD-54D2-4179-923E-2C7FF5BEC8A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D94BF5BD-54D2-4179-923E-2C7FF5BEC8A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D94BF5BD-54D2-4179-923E-2C7FF5BEC8A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC4269E8-5A5E-429E-A73C-F307BA072090}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC4269E8-5A5E-429E-A73C-F307BA072090}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC4269E8-5A5E-429E-A73C-F307BA072090}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC4269E8-5A5E-429E-A73C-F307BA072090}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E052699-8A55-4DF5-8923-D818A57E32CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E052699-8A55-4DF5-8923-D818A57E32CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E052699-8A55-4DF5-8923-D818A57E32CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E052699-8A55-4DF5-8923-D818A57E32CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

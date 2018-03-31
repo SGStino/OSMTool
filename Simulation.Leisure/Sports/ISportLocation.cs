@@ -9,7 +9,7 @@ namespace Simulation.Leisure.Sports
         ISportProvider SportProvider { get; }
     }
 
-    public interface ISportProvider
+    public interface ISportProvider : IObservable<SportSubscriptionChangeEvent>
     {
         IEnumerable<SportType> AvailableSportTypes { get; }
         int GetOccupancy(SportType type);

@@ -16,7 +16,7 @@ namespace Simulation.Data
         {
             minIndex = Math.Min(min, max);
             maxIndex = Math.Max(min, max);
-            data = new int[maxIndex - minIndex];
+            data = new int[maxIndex - minIndex + 1];
             capacity = new int[data.Length];
         }
         public void SetCapacity(int index, int value)
@@ -30,20 +30,22 @@ namespace Simulation.Data
         public int GetValue(int index) => data[index - minIndex];
         public int GetCapacity(int index) => capacity[index - minIndex];
 
-        public bool Add(int index, int value)
+        public bool Add(int index, int value, out int prev, out int next, out int capacity)
         {
-            var prev = GetValue(index);
-            var capacity = GetCapacity(index);
-            var next = prev + value;
+            prev = GetValue(index);
+            capacity = GetCapacity(index);
+            next = prev + value;
             if (next < 0)
             {
                 SetValue(index, 0);
-                return false;
+                next = 0;
+                return next != prev;
             }
             if (next > capacity)
             {
                 SetValue(index, capacity);
-                return false;
+                next = capacity;
+                return next != prev;
             }
             data[index - minIndex] = next;
             return true;

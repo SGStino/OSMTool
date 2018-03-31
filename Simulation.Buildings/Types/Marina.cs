@@ -12,6 +12,7 @@ namespace Simulation.Buildings.Types
              .SetCapacity(SportType.BoatRacing, 32)
             .SetCapacity(SportType.Sailing, 50)
             .SetCapacity(SportType.Jetski, 50)
+            .SetCapacity(SportType.Fishing, 50)
             .SetCapacity(SportType.WaterSki, 15);
 
         public ISportProvider SportProvider => sports;

@@ -10,8 +10,8 @@ namespace Simulation.People
     public class PersonInfo : IPerson
     { 
 
-        public IEnumerable<SportType> Sports { get; }
-        public IEnumerable<JobType> JobTypes { get; }
-        public IEnumerable<HobbyType> HobbyTypes { get; }
+        public IReadOnlyCollection<SportType> Sports { get; }
+        public IReadOnlyCollection<JobType> JobTypes { get; }
+        public IReadOnlyCollection<HobbyType> HobbyTypes { get; }
     }
 }

@@ -4,5 +4,6 @@ namespace Simulation.People
 {
     public class PeopleRegistry
     {
+        
     }
 }

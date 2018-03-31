@@ -17,6 +17,7 @@ namespace Simulation.Buildings.Types
            .SetCapacity(SportType.IndoorSoccer, 32)
            .SetCapacity(SportType.Gymnastics, 32)
            .SetCapacity(SportType.TableTennis, 32)
+           .SetCapacity(SportType.Softball, 32)
            .SetCapacity(SportType.Squash, 32);
 
         public ISportProvider SportProvider => sports;

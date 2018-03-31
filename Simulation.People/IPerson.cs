@@ -9,8 +9,8 @@ namespace Simulation.People
 {
     public interface IPerson
     { 
-        IEnumerable<SportType> Sports { get; }
-        IEnumerable<JobType> JobTypes { get; }
-        IEnumerable<HobbyType> HobbyTypes { get; }
+        IReadOnlyCollection<SportType> Sports { get; }
+        IReadOnlyCollection<JobType> JobTypes { get; }
+        IReadOnlyCollection<HobbyType> HobbyTypes { get; }
     }
 }

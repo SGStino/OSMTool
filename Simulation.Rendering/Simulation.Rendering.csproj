@@ -5,8 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Simulation.Leisure\Simulation.Leisure.csproj" />
-    <ProjectReference Include="..\Simulation.People\Simulation.People.csproj" />
+    <PackageReference Include="System.Reactive.Linq" Version="3.1.1" />
   </ItemGroup>
 
 </Project>

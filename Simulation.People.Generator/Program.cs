@@ -7,6 +7,7 @@ using Simulation.Leisure.Sports;
 using Simulation.Occupation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Simulation.People.Generator
@@ -14,44 +15,95 @@ namespace Simulation.People.Generator
     class Program
     {
 
-        public static MultiDictionary<SportType, Building> sportLocations = new MultiDictionary<SportType, Building>();
+        //public static MultiDictionary<SportType, Building> sportLocations = new MultiDictionary<SportType, Building>();
+
+        private static SportLocationRegistry sportLocations = new SportLocationRegistry();
+        private static ResidentialBuildingRegistry residences = new ResidentialBuildingRegistry();
+
+
+
         private static void add(Building loc)
         {
             if (loc is ISportLocation sportLoc)
-                sportLocations.Add(sportLoc.SportProvider.AvailableSportTypes, loc);
+                sportLocations.Register(sportLoc);
             else if (loc is IFacilityProvider facilityProvider)
                 foreach (var facility in facilityProvider.Facilities)
                     if (facility is ISportLocation sportFacility)
-                        sportLocations.Add(sportFacility.SportProvider.AvailableSportTypes, loc);
+                        sportLocations.Register(sportFacility);
         }
         static void Main(string[] args)
         {
-            add(new WaterSportCenter());
-            add(new SwimmingPool());
-            add(new Marina());
-            add(new SportsHall());
-            add(new FitnessCenter());
-            add(new EquestrianCenter());
-            add(new IceRink());
-            add(new CommercialBuilding(new FitnessStudio()));
-            add(new CommercialBuilding(new BoxingClub()));
-            add(new SportsCenter());
-            add(new CricketField());
-            add(new GolfCourse());
+            for (int i = 0; i < 10; i++)
+            {
+                add(new Stadion());
+                add(new WaterSportCenter());
+                add(new SwimmingPool());
+                add(new Marina());
+                add(new SportsHall());
+                add(new FitnessCenter());
+                add(new EquestrianCenter());
+                add(new IceRink());
+                add(new CommercialBuilding(new FitnessStudio()));
+                add(new CommercialBuilding(new BoxingClub()));
+                add(new SportsCenter());
+                add(new CricketField());
+                add(new GolfCourse());
+            }
+
+            var random = new Random(10);
+
+            //for (int i = 0; i < 1000; i++)
+            //{
+            //    var appartmentCount = random.Next(1, 50);
+            //    var sizes = new int[appartmentCount];
+            //    Array.Fill(sizes, 6);
+            //    var b = new Appartment(sizes);
+            //    residences.Register(b);
+            //}
+
             var generator = new PeopleGenerator();
             var profiles = new HashSet<Profile>();
+
+
+
+
 
             //for(int i = 0; i < 30000000; i++)
             //{
             //    profiles.Add(generator.Current);
             //    generator.Next();
             //}
-            int count = 0;
-            while (generator.Iteration < 1)
+            generator.Next();
+            var sw = Stopwatch.StartNew();
+            while (generator.Iteration < 50)
             {
-                generator.Next();
-                count++;
+                bool foundBuilding = findBuilding(random, generator);
+                if (!foundBuilding)
+                {
+                    var appartmentCount = random.Next(1, 50);
+                    var sizes = new int[appartmentCount];
+                    Array.Fill(sizes, 6);
+                    var b = new Appartment(sizes);
+                    residences.Register(b);
+                    findBuilding(random, generator);
+                }
+                //var location = sportLocations[generator.Current.Sport];
+                //var loc = location.FirstOrDefault();
+                //if (loc != null)
+                //{
+                //    if (loc.SportProvider.Join(generator.Current.Sport))
+                //    {
+                //        Console.WriteLine("joined " + generator.Current.Sport);
+                //        continue;
+                //    }
+                //}
+                //Console.WriteLine("No location found for " + generator.Current.Sport);
             }
+
+            sw.Stop();
+            var people = residences.Buildings.Sum(t => t.Housings.Inhabitants);
+
+            Console.WriteLine("housing " + people + " persons in " + residences.Buildings.Count + " buildings took " + sw.Elapsed);
 
             generator.Random();
             printNext(generator.Current);
@@ -87,7 +139,28 @@ namespace Simulation.People.Generator
             }
         }
 
+        private static bool findBuilding(Random random, PeopleGenerator generator)
+        {
+            var vacantBuildings = residences.VacantBuildings;
+            bool foundBuilding = false; ;
+            foreach (var vacantBuilding in vacantBuildings)
+            {
+                var housing = vacantBuilding.Housings.First(t => t.IsVacant());
+                var size = random.Next(1, 5);
+                if (housing.Capacity > size)
+                {
+                    foundBuilding = true;
+                    for (int i = 0; i < size; i++)
+                    {
+                        housing.Join(new Person(generator.Current));
+                        generator.Next();
+                    }
+                    break;
+                }
+            }
 
+            return foundBuilding;
+        }
 
         private static void printNext(Profile current)
         {
@@ -128,7 +201,23 @@ namespace Simulation.People.Generator
             }
         }
     }
- 
+
+    internal class Person : IPerson
+    {
+        private Profile profile;
+
+        public Person(Profile current)
+        {
+            this.profile = current;
+        }
+
+        public IReadOnlyCollection<SportType> Sports => new[] { profile.Sport };
+
+        public IReadOnlyCollection<JobType> JobTypes => new[] { profile.Job };
+
+        public IReadOnlyCollection<HobbyType> HobbyTypes => new[] { profile.Hobby };
+    }
+
     internal class Profile
     {
         public Profile(JobType job, int jobLevel, SportType sport, HobbyType hobby)
