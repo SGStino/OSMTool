@@ -27,7 +27,7 @@ namespace Simulation.Data.Trees
 
         public Rect Bounds { get; }
     }
-
+    [Obsolete("Use Spatial Registers")]
     public class QuadTree<T> : ISet<T>, IDisposable
         where T : IBoundsObject2D
     {

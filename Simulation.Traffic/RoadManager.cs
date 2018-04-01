@@ -27,6 +27,7 @@ namespace Simulation.Traffic
         public new AISegment CreateSegment(Node start, Node end, SegmentDescription description) => base.CreateSegment(start, end, description) as AISegment;
     }
 
+    [Obsolete]
     public class RoadManager
     {
 
