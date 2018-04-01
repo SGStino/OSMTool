@@ -7,5 +7,15 @@
   <ItemGroup>
     <PackageReference Include="System.Reactive.Linq" Version="3.1.1" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\Unity\Simulation\Library\UnityAssemblies\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\Users\stijn\Documents\Unity\Simulation\Assets\References\$(ProjectName).dll&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(ProjectName).pdb&quot; &quot;C:\Users\stijn\Documents\Unity\Simulation\Assets\References\$(ProjectName).pdb&quot;" />
+  </Target>
 
 </Project>

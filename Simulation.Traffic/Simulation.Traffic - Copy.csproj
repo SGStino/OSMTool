@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D8BFFC12-1277-4D9D-BF86-6E1F407F3BC0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Simulation.Traffic</RootNamespace>
+    <AssemblyName>Simulation.Traffic</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\Unity\Simulation\Library\UnityAssemblies\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AI\Agents\AgentCriteria.cs" />
+    <Compile Include="AI\Agents\AgentJob.cs" />
+    <Compile Include="AI\Agents\AgentJobStatus.cs" />
+    <Compile Include="AI\Agents\AgentState.cs" />
+    <Compile Include="AI\Agents\AgentStatus.cs" />
+    <Compile Include="AI\Agents\IAgentChain.cs" />
+    <Compile Include="AI\Agents\Agent.cs" />
+    <Compile Include="AI\Agents\IAgentJobRunner.cs" />
+    <Compile Include="AI\Agents\IAIRouteFinder.cs" />
+    <Compile Include="AI\Agents\PathDescription.cs" />
+    <Compile Include="AI\AIPathExtensions.cs" />
+    <Compile Include="AI\Agents\IAgent.cs" />
+    <Compile Include="AI\IAIGraphNode.cs" />
+    <Compile Include="AI\IAIRoute.cs" />
+    <Compile Include="AI\Navigation\GraphSolver.cs" />
+    <Compile Include="AI\Navigation\PathSolver.cs" />
+    <Compile Include="AI\Navigation\RouteSolver.cs" />
+    <Compile Include="AI\NodeAIPath.cs" />
+    <Compile Include="AI\NodeAIPathsFactory.cs" />
+    <Compile Include="AI\NodeAIRoute.cs" />
+    <Compile Include="AI\RouteExtender.cs" />
+    <Compile Include="AI\SegmentAIPath.cs" />
+    <Compile Include="AI\SegmentAIPathsFactory.cs" />
+    <Compile Include="AI\IAIPath.cs" />
+    <Compile Include="AI\SegmentAIRoute.cs" />
+    <Compile Include="AI\SegmentAIRouteExtensions.cs" />
+    <Compile Include="INodeAIPathFactory.cs" />
+    <Compile Include="IO\Constants.cs" />
+    <Compile Include="IO\RoadsReader.cs" />
+    <Compile Include="IO\RoadsWriter.cs" />
+    <Compile Include="IO\Vector3D.cs" />
+    <Compile Include="IComponentValueFactory.cs" />
+    <Compile Include="ISegmentAIPathsFactory.cs" />
+    <Compile Include="ISegmentPathFactory.cs" />
+    <Compile Include="LaneDescription.cs" />
+    <Compile Include="LaneType.cs" />
+    <Compile Include="Lofts\ArcLoftPath.cs" />
+    <Compile Include="Lofts\ArrayLoftShape.cs" />
+    <Compile Include="Lofts\BiArcLoftPath.cs" />
+    <Compile Include="Lofts\ILoftPath.cs" />
+    <Compile Include="Lofts\ILoftShape.cs" />
+    <Compile Include="Lofts\LinearPath.cs" />
+    <Compile Include="Lofts\LoftExtensions.cs" />
+    <Compile Include="Lofts\LoftIntersections2D.cs" />
+    <Compile Include="Lofts\LoftSweep2D.cs" />
+    <Compile Include="Lofts\LoftVertex.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="IRoadComponent.cs" />
+    <Compile Include="RoadManager.cs" />
+    <Compile Include="Segment.cs" />
+    <Compile Include="SegmentDescription.cs" />
+    <Compile Include="SegmentNodeConnection.cs" />
+    <Compile Include="FactoryComponent.cs" />
+    <Compile Include="SegmentPathFactory.cs" />
+    <Compile Include="Turn.cs" />
+    <Compile Include="Utilities\Angles.cs" />
+    <Compile Include="Utilities\BiarcInterpolation.cs" />
+    <Compile Include="Utilities\CompositeDisposable.cs" />
+    <Compile Include="Utilities\GraphViz.cs" />
+    <Compile Include="Utilities\LinqUtils.cs" />
+    <Compile Include="Utilities\Sequence.cs" />
+    <Compile Include="Utilities\ThreadSafeSet.cs" />
+    <Compile Include="Utilities\VectorExtensions.cs" />
+    <Compile Include="Utilities\VectorMath2D.cs" />
+    <Compile Include="Utilities\VectorMath3D.cs" />
+    <Compile Include="VehicleTypes.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Simulation.Data\Simulation.Data.csproj">
+      <Project>{D94BF5BD-54D2-4179-923E-2C7FF5BEC8A0}</Project>
+      <Name>Simulation.Data</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "C:\Users\stijn\Documents\Unity\Simulation\Assets\References\$(ProjectName).dll"
+copy /Y "$(TargetDir)$(ProjectName).pdb" "C:\Users\stijn\Documents\Unity\Simulation\Assets\References\$(ProjectName).pdb"</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

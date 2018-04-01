@@ -1,6 +1,6 @@
 ﻿using Simulation.Traffic.AI;
 using Simulation.Traffic.Lofts;
-using Simulation.Traffic.Trees;
+using Simulation.Data.Trees;
 using System;
 using UnityEngine;
 
@@ -74,6 +74,8 @@ namespace Simulation.Traffic
     public class Segment : IBoundsObject2D
     {
         public event Action Invalidated;
+        public event Action<BoundsChangedEvent> BoundsChanged;
+
         public RoadManager Manager { get; internal set; }
 
         public SegmentDescription Description { get; }
@@ -132,6 +134,8 @@ namespace Simulation.Traffic
             OnMoved();
             Manager.BoundsChanged(this);
             Invalidate();
+
+            BoundsChanged?.Invoke(new BoundsChangedEvent(Bounds));
         }
         protected virtual void OnOffsetChanged(SegmentNodeConnection segmentNodeConnection)
         {

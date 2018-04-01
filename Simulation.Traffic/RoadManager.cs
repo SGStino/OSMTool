@@ -1,10 +1,7 @@
-﻿using Simulation.Traffic;
-using Simulation.Traffic.Trees;
+﻿using Simulation.Data.Trees;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using UnityEngine;
 
 namespace Simulation.Traffic
@@ -22,7 +19,7 @@ namespace Simulation.Traffic
         }
 
         protected override SegmentNodeConnection createConnection(Segment segment, Node start)
-        { 
+        {
             return new AISegmentNodeConnection(segment as AISegment, start as AINode, this);
         }
 
@@ -67,8 +64,8 @@ namespace Simulation.Traffic
 
         public Segment CreateSegment(Node start, Node end, SegmentDescription description)
         {
-            if(start.Position == end.Position)
-                throw new InvalidOperationException("Both start and end are at position "+start.Position);
+            if (start.Position == end.Position)
+                throw new InvalidOperationException("Both start and end are at position " + start.Position);
 
             var segment = createSegment(start, end, description);
 

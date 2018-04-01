@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Simulation.Traffic.Trees
+namespace Simulation.Data.Trees
 {
-    public class QuadTreeNode<T>
+    public class QuadTreeNode<T> : IObservable<QuadTreeEvent<T>>, IDisposable
         where T : IBoundsObject2D
     {
+        private readonly Subject<QuadTreeEvent<T>> localEvents = new Subject<QuadTreeEvent<T>>();
+
+
         private readonly Rect bounds;
         private readonly Rect maxBounds;
         private int quadrant;
@@ -30,7 +36,7 @@ namespace Simulation.Traffic.Trees
                     rect = rect.Combine(c.ActualBounds);
 
             if (items.Count > 0)
-                foreach (var item in items)
+                foreach (var item in items.Keys)
                     rect = rect.Combine(item.Bounds);
 
             return rect;
@@ -46,7 +52,9 @@ namespace Simulation.Traffic.Trees
 
 
 
-        private TinyItemCollection<T> items = new TinyItemCollection<T>();
+        //private TinyItemCollection<T> items = new TinyItemCollection<T>();
+
+        private Dictionary<T, IDisposable> items = new Dictionary<T, IDisposable>();
 
         private readonly QuadTree<T> tree;
 
@@ -60,12 +68,14 @@ namespace Simulation.Traffic.Trees
 
             var halfSize = bounds.size / 2;
             this.maxBounds = Rect.MinMaxRect(bounds.xMin - halfSize.x, bounds.yMin - halfSize.y, bounds.xMax + halfSize.x, bounds.yMax + halfSize.y);
+
+
         }
 
         public IEnumerable<T> Query(Vector2 point, float radius)
         {
             var list = new List<T>(items.Count);
-            list.AddRange(items.Where(t => t.Bounds.Overlaps(point, radius)));
+            list.AddRange(items.Keys.Where(t => t.Bounds.Overlaps(point, radius)));
 
             var children = this.children;
             if (children != null)
@@ -87,14 +97,16 @@ namespace Simulation.Traffic.Trees
 
         public bool Remove(T item)
         {
-            var result = items.Remove(item);
-
-            if (result)
+            if (items.TryGetValue(item, out var disp))
             {
+                items.Remove(item);
+                disp?.Dispose();
+                notifyEvent(QuadTreeEvent<T>.Removed(item));
                 emptyCheck();
                 InvalidateBounds();
+                return true;
             }
-            return result;
+            return false;
         }
         private bool isEmpty()
         {
@@ -133,7 +145,7 @@ namespace Simulation.Traffic.Trees
         public IEnumerable<T> Query(Rect bounds)
         {
             var list = new List<T>(items.Count);
-            list.AddRange(items.Where(t => t.Bounds.Overlaps(bounds)));
+            list.AddRange(items.Keys.Where(t => t.Bounds.Overlaps(bounds)));
 
 
             var children = this.children;
@@ -191,10 +203,27 @@ namespace Simulation.Traffic.Trees
                 if (children[index].Encapsulates(item.Bounds))
                     return children[index].Add(item);
             }
-            this.items.Add(item);
+
+            var subscription = Observable.FromEvent<BoundsChangedEvent>(h => item.BoundsChanged += h, h => item.BoundsChanged -= h).Subscribe(evt => itemMoved(evt, item));
+            this.items.Add(item, subscription);
+            notifyEvent(QuadTreeEvent<T>.Added(item));
             InvalidateBounds();
             return this;
 
+        }
+
+        private void itemMoved(BoundsChangedEvent evt, T item)
+        {
+            if (!Encapsulates(evt.Bounds))
+            {
+                var newNode = tree.UpdateInternal(item, this); // item moved to new node
+            }
+        }
+
+        private void notifyEvent(QuadTreeEvent<T> evt)
+        {
+            localEvents.OnNext(evt);
+            parent?.notifyEvent(evt);
         }
 
         internal bool Encapsulates(Rect bounds) => QuadTreeUtils.Encapsulates(maxBounds, bounds) && this.bounds.Contains(bounds.center);
@@ -204,7 +233,7 @@ namespace Simulation.Traffic.Trees
             get
             {
                 var list = new List<T>(items.Count);
-                list.AddRange(items);
+                list.AddRange(items.Keys);
 
 
                 var children = this.children;
@@ -247,10 +276,36 @@ namespace Simulation.Traffic.Trees
 
         private void Destroy()
         {
-            children = null;
-            parent = null;
-            quadrant = -1;
+            if (items != null)
+                foreach (var item in items.Keys.ToArray())
+                    Remove(item);
 
+            if (children != null)
+                foreach (var child in children)
+                    child.Destroy();
+
+            Dispose();
+        }
+        private bool isDisposed = false;
+        public void Dispose()
+        {
+            if (!isDisposed)
+            {
+                isDisposed = true;
+                foreach (var child in children)
+                    child.Dispose();
+
+                localEvents.OnCompleted();
+
+                children = null;
+                parent = null;
+                quadrant = -1;
+            }
+        }
+
+        public IDisposable Subscribe(IObserver<QuadTreeEvent<T>> observer)
+        {
+            return localEvents.Subscribe(observer);
         }
     }
 }

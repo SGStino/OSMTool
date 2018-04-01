@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Simulation.Traffic.Trees
+namespace Simulation.Data.Trees
 {
     public class TinyItemCollection<T> : IReadOnlyCollection<T>
     {

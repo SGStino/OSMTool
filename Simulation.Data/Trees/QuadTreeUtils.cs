@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Simulation.Traffic.Trees
+namespace Simulation.Data.Trees
 {
     public static class QuadTreeUtils
     {

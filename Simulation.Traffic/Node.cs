@@ -1,5 +1,5 @@
 ﻿using Simulation.Traffic.AI;
-using Simulation.Traffic.Trees;
+using Simulation.Data.Trees;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -103,6 +103,8 @@ namespace Simulation.Traffic
 
         private Vector3 position;
 
+        public event Action<BoundsChangedEvent> BoundsChanged;
+
         public Node(Vector3 position, RoadManager manager)
         {
             this.Manager = manager;
@@ -150,6 +152,8 @@ namespace Simulation.Traffic
             Manager.BoundsChanged(this);
             foreach (var con in segments)
                 con.NotifyOfMovement();
+
+            BoundsChanged?.Invoke(new BoundsChangedEvent(Bounds));
         }
 
         public virtual void Invalidate()

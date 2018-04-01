@@ -1,13 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Simulation.Traffic.Trees;
+using Simulation.Data.Trees;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Simulation.Traffic.Test
+namespace Simulation.Data.Test
 {
     [TestClass]
     public class QuadTreeTests
@@ -28,6 +26,7 @@ namespace Simulation.Traffic.Test
                 }
             }
 
+            public event Action<BoundsChangedEvent> BoundsChanged;
         }
 
         [TestMethod]

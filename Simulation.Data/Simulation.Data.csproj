@@ -8,4 +8,10 @@
     <PackageReference Include="System.Reactive" Version="3.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\Unity\Simulation\Library\UnityAssemblies\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

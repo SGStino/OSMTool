@@ -2,22 +2,36 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Simulation.Traffic.Trees
+namespace Simulation.Data.Trees
 {
     public delegate void BoundsChangedEventHandler(IBoundsObject2D item, Rect oldBounds, Rect newBounds);
     public interface IBoundsObject2D
     {
         Rect Bounds { get; }
+        event Action<BoundsChangedEvent> BoundsChanged;
     }
 
-    public class QuadTree<T> : ISet<T>
+    public struct BoundsChangedEvent
+    {
+        public BoundsChangedEvent(Rect bounds) : this()
+        {
+            Bounds = bounds;
+        }
+
+        public Rect Bounds { get; }
+    }
+
+    public class QuadTree<T> : ISet<T>, IDisposable
         where T : IBoundsObject2D
     {
+        private Subject<QuadTreeEvent<T>> localEvents = new Subject<QuadTreeEvent<T>>();
         private readonly Vector2 minSize;
 
         public QuadTreeNode<T> CurrentRoot => rootNode;
@@ -27,6 +41,11 @@ namespace Simulation.Traffic.Trees
         public bool IsReadOnly => false;
 
         public Vector2 MinSize => minSize;
+
+        // TODO: optimize by using nodes where possible
+        public IObservable<QuadTreeEvent<T>> Observe(Rect bounds) => localEvents.Where(t => t.Item.Bounds.Overlaps(bounds));
+        public IObservable<QuadTreeEvent<T>> ObserveCenter(Rect bounds) => localEvents.Where(t => bounds.Contains(t.Item.Bounds.center));
+
 
         public IEnumerable<T> Query(Vector2 point, float radius)
         {
@@ -51,6 +70,7 @@ namespace Simulation.Traffic.Trees
 
         public IEnumerable<T> Items => rootNode.Items;
 
+
         public QuadTree(Rect bounds) : this(bounds, new Vector2(0.5f, 0.5f)) { }
         public QuadTree(Rect bounds, Vector2 minSize)
         {
@@ -72,6 +92,7 @@ namespace Simulation.Traffic.Trees
                 {
                     var result = node.Remove(item);
                     containmentDictionary.Remove(item);
+                    localEvents.OnNext(QuadTreeEvent<T>.Removed(item));
                     return result;
                 }
             }
@@ -85,11 +106,20 @@ namespace Simulation.Traffic.Trees
             {
                 if (!node.Bounds.Encapsulates(item.Bounds))
                 {
-                    node.Remove(item);
-                    return AddInternal(item);
+                    return UpdateInternal(item, node);
                 }
             }
             return null;
+        }
+
+        internal QuadTreeNode<T> UpdateInternal(T item, QuadTreeNode<T> node)
+        {
+            node.Remove(item);
+            var newNode = AddInternal(item);
+
+            localEvents.OnNext(QuadTreeEvent<T>.Removed(item));
+            localEvents.OnNext(QuadTreeEvent<T>.Added(item));
+            return newNode;
         }
 
         public QuadTreeNode<T> Add(T item)
@@ -130,6 +160,8 @@ namespace Simulation.Traffic.Trees
             var containementNode = node.Add(item);
             lock (containmentDictionary)
                 containmentDictionary[item] = containementNode;
+
+            localEvents.OnNext(QuadTreeEvent<T>.Added(item));
             return containementNode;
         }
 
@@ -239,5 +271,10 @@ namespace Simulation.Traffic.Trees
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Dispose()
+        {
+            localEvents.OnCompleted();
+        }
     }
 }

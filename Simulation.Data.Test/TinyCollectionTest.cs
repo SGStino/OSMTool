@@ -1,10 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Simulation.Traffic.Trees;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Simulation.Data.Trees;
 
-namespace Simulation.Traffic.Test
+namespace Simulation.Data.Test
 {
     [TestClass]
     public class TinyCollectionTest
