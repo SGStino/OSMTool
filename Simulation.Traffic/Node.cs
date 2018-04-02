@@ -7,6 +7,9 @@ using UnityEngine;
 using System.Threading;
 using System.Threading.Tasks;
 using Simulation.Traffic.Utilities;
+using System.Reactive.Subjects;
+using System.Reactive.Linq;
+using System.Reactive;
 
 namespace Simulation.Traffic
 {
@@ -82,7 +85,7 @@ namespace Simulation.Traffic
 
     public class AINode : Node
     {
-        public AINode(Vector3 position, RoadManager manager, INodeAIPathsFactory aiFactory = null) : base(position, manager)
+        public AINode(Vector3 position, INodeAIPathsFactory aiFactory = null) : base(position)
         {
         }
 
@@ -94,151 +97,142 @@ namespace Simulation.Traffic
 
     }
 
-    public class Node : IBoundsObject2D
+    public struct NodeChangeEvent
     {
-        internal IList<SegmentNodeConnection> SegmentList => segments;
-
-        private List<SegmentNodeConnection> segments = new List<SegmentNodeConnection>();
-        public RoadManager Manager { get; internal set; }
-
-        private Vector3 position;
-
-        public event Action<BoundsChangedEvent> BoundsChanged;
-
-        public Node(Vector3 position, RoadManager manager)
+        public NodeChangeEvent(NodeChangeEventType type, Vector3 position) : this()
         {
-            this.Manager = manager;
-            this.position = position;
+            Type = type;
+            Position = position;
         }
 
+        public NodeChangeEventType Type { get; }
+        public Vector3 Position { get; }
+
+        public static NodeChangeEvent Moved(Vector3 position) => new NodeChangeEvent(NodeChangeEventType.Moved, position);
+
+        public static NodeChangeEvent Dispose(Vector3 position) => new NodeChangeEvent(NodeChangeEventType.Removed, position);
+        public static NodeChangeEvent Connect(Vector3 position) => new NodeChangeEvent(NodeChangeEventType.Connected, position);
+        public static NodeChangeEvent Disconnect(Vector3 position) => new NodeChangeEvent(NodeChangeEventType.Disconnected, position);
+    }
+
+    public enum NodeChangeEventType
+    {
+        Moved,
+        Connected,
+        Disconnected,
+        Removed
+    }
+
+    public interface INode : IObservable<NodeChangeEvent>, IDisposable
+    {
+        Vector3 Position { get; }
+    }
+
+    public class Node : IBoundsObject2D, INode
+    {
+        private readonly Subject<NodeChangeEvent> localEvents = new Subject<NodeChangeEvent>();
+        private readonly List<SegmentNodeConnection> segments = new List<SegmentNodeConnection>();
+        private readonly IConnectableObservable<Rect> _bounds;
+        private CompositeDisposable disposable = new CompositeDisposable();
+        private Vector3 position;
+
+        public IReadOnlyList<SegmentNodeConnection> SegmentList => segments;
+
+
+        public Node(Vector3 position, IObservable<Unit> sampler)
+        {
+            this.position = position;
+            var positionStream = this.Where(t => t.Type == NodeChangeEventType.Moved).Select(t => t.Position).StartWith(position);
+            if (sampler != null)
+                positionStream = positionStream.Sample(sampler);
+
+            var boundStream = positionStream.Select(t => getBounds(t)).Replay(1);
+            disposable.Add(boundStream.Connect());
+            disposable.Add(localEvents);
+            this._bounds = boundStream;
+        }
+
+        private Rect getBounds(object t)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            RaiseEvent(NodeChangeEvent.Dispose(position));
+            localEvents.OnCompleted();
+            disposable.Dispose();
+        }
+
+
+        public void Connect(SegmentNodeConnection connection)
+        {
+            segments.Add(connection);
+            updateOrder();
+            RaiseEvent(NodeChangeEvent.Connect(position));
+        }
+
+        public void Disconnect(SegmentNodeConnection connection)
+        {
+            if (segments.Remove(connection))
+                RaiseEvent(NodeChangeEvent.Disconnect(position));
+        }
+
+        private void RaiseEvent(NodeChangeEvent nodeChangeEvent) => localEvents.OnNext(nodeChangeEvent);
 
         public IEnumerable<SegmentNodeConnection> Segments => segments;
 
-        public Rect Bounds
-        {
-            get
-            {
-                float radius = 1;
-
-                Vector2 min, max;
-                min.x = Position.x - radius;
-                max.x = Position.x + radius;
-
-                min.y = Position.y - radius;
-                max.y = Position.y + radius;
-
-                return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
-            }
-        }
 
         public Vector3 Position
         {
-            get => position; set
+            get => position;
+            set
             {
                 position = value;
                 NotifyOfMovement();
             }
         }
 
-        internal void NotifyOfCreation()
-        {
-            OnCreated();
-        }
+        public IObservable<Rect> Bounds => _bounds;
 
-        internal void NotifyOfMovement()
+        private void NotifyOfMovement()
         {
-            Invalidate();
-            OnMoved();
-            Manager.BoundsChanged(this);
-            foreach (var con in segments)
-                con.NotifyOfMovement();
-
-            BoundsChanged?.Invoke(new BoundsChangedEvent(Bounds));
-        }
-
-        public virtual void Invalidate()
-        {
-        }
-
-        internal void NotifyOfOffsetChanged(SegmentNodeConnection segmentNodeConnection)
-        {
-            OnOffsetChanged(segmentNodeConnection);
-        }
-
-        protected virtual void OnOffsetChanged(SegmentNodeConnection segmentNodeConnection)
-        {
-        }
-
-        protected virtual void OnMoved()
-        {
+            RaiseEvent(NodeChangeEvent.Moved(position));
         }
 
 
-        protected virtual void OnCreated()
-        {
-        }
 
-        internal void NotifyOfTangentChanged(SegmentNodeConnection segmentNodeConnection)
-        {
-            updateOrder();
-            OnTangentChanged(segmentNodeConnection);
-            Invalidate();
-        }
-
-        protected virtual void OnTangentChanged(SegmentNodeConnection segmentNodeConnection)
-        {
-        }
 
         private void updateOrder()
         {
-            var segments = this.segments.OrderBy(getAngle).ToArray();
-            for (int i = 0; i < segments.Length; i++)
-            {
-                var current = segments[i];
-                var next = segments[(i + 1) % segments.Length];
-
-                next.Left = current;
-                current.Right = next;
-            }
+            this.segments.Sort(new AngleComparer(position));
         }
 
+
+
+        public IDisposable Subscribe(IObserver<NodeChangeEvent> observer) => localEvents.Subscribe(observer);
+    }
+
+    internal class AngleComparer : IComparer<SegmentNodeConnection>
+    {
+
+        private Vector3 position;
+
+        public AngleComparer(Vector3 position)
+        {
+            this.position = position;
+        }
+
+        public int Compare(SegmentNodeConnection x, SegmentNodeConnection y)
+        {
+            var a = getAngle(x);
+            var b = getAngle(y);
+            return Comparer<float>.Default.Compare(a, b);
+        }
         private float getAngle(SegmentNodeConnection arg)
         {
             return Mathf.Atan2(arg.Tangent.z, arg.Tangent.x);
         }
 
-        /// <summary>
-        /// Gets called by Manager
-        /// </summary>
-        internal void NotifyOfRemoval()
-        {
-            OnRemoved();
-        }
-
-        protected virtual void OnRemoved()
-        {
-        }
-
-        internal void NotifiyOfDisconnect(SegmentNodeConnection connection)
-        {
-            updateOrder();
-            OnDisconnected(connection);
-            Invalidate();
-        }
-
-        protected virtual void OnDisconnected(SegmentNodeConnection connection)
-        {
-        }
-
-        internal void NotifyOfConnection(SegmentNodeConnection connection)
-        {
-            updateOrder();
-            OnConnected(connection);
-            Invalidate();
-        }
-
-        protected virtual void OnConnected(SegmentNodeConnection connection)
-        {
-        }
     }
 }

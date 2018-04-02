@@ -51,7 +51,7 @@ namespace Simulation.Data
         public void OnCompleted()
         {
             observer.OnNext(new PreviousState<T>(currentValue, hasValue, default(T), false));
-            observer.OnCompleted();
+            observer.OnCompleted(); 
         }
 
         public void OnError(Exception error)

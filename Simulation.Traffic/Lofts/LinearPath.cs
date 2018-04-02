@@ -78,5 +78,36 @@ namespace Simulation.Traffic.Lofts
             loftDistances = new float[0];
             return false;
         }
+
+        public Rect GetBounds(float width)
+        { 
+
+            float minX = float.PositiveInfinity;
+            float maxX = float.NegativeInfinity;
+            float minZ = float.PositiveInfinity;
+            float maxZ = float.NegativeInfinity;
+
+
+            var points = new[] { 0f, 1f };
+
+
+
+            for (int i = 0; i < 2; i++)
+            {
+                var m = GetTransform(points[i] * length);
+                var offset = m.GetRight() * width;
+                var point = m.GetTranslate();
+
+                var min = point - offset;
+                var max = point + offset;
+
+                minX = Mathf.Min(minX, min.x, max.x);
+                minZ = Mathf.Min(minZ, min.z, max.z);
+                maxX = Mathf.Max(maxX, max.x, max.x);
+                maxZ = Mathf.Max(maxZ, max.z, max.z);
+            }
+
+            return Rect.MinMaxRect(minX, minZ, maxX, maxZ);
+        }
     }
 }

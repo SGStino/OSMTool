@@ -69,7 +69,11 @@ namespace Simulation.Leisure.Sports
             return this;
         }
 
-        public void Dispose() => subject.OnCompleted();
+        public void Dispose()
+        {
+            subject.OnCompleted();
+            subject.Dispose();
+        }
 
         public IDisposable Subscribe(IObserver<SportSubscriptionChangeEvent> observer) => subject.Subscribe(observer);
     }

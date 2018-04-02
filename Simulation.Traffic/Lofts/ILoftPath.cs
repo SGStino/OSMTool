@@ -12,5 +12,6 @@ namespace Simulation.Traffic.Lofts
         Matrix4x4 GetTransform(float progress);
         void SnapTo(Vector3 to, out float distance);
         bool Intersects(Plane plane, out float[] loftDistances);
+        Rect GetBounds(float width);
     } 
 }

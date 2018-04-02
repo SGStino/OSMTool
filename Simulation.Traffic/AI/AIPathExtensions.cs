@@ -38,8 +38,8 @@ namespace Simulation.Traffic.AI
         {
             return Mathf.Lerp(path.GetStartPathOffset(), path.GetEndPathOffset(), n);
         }
-        public static AISegmentNodeConnection GetStart(this SegmentAIPath path) => path.Reverse ? path.Segment.End : path.Segment.Start;
-        public static AISegmentNodeConnection GetEnd(this SegmentAIPath path) => path.Reverse ? path.Segment.Start : path.Segment.End;
+        //public static AISegmentNodeConnection GetStart(this SegmentAIPath path) => path.Reverse ? path.Segment.End : path.Segment.Start;
+        //public static AISegmentNodeConnection GetEnd(this SegmentAIPath path) => path.Reverse ? path.Segment.Start : path.Segment.End;
 
         public static Matrix4x4 GetStartTransform(this IAIPath path) => path.GetTransform(0);
         public static Matrix4x4 GetEndTransform(this IAIPath path) => path.GetTransform(path.GetLength());

@@ -452,5 +452,17 @@ namespace Simulation.Traffic.Lofts
             }
             return intersect;
         }
+
+        public Rect GetBounds(float width)
+        {
+            var b1 = arc1.GetBounds(width);
+            var b2 = arc2.GetBounds(width);
+
+            var minX = Mathf.Min(b1.xMin, b2.xMin);
+            var maxX = Mathf.Max(b1.xMax, b2.xMax);
+            var minY = Mathf.Min(b1.yMin, b2.yMin);
+            var maxY = Mathf.Max(b1.yMax, b2.yMax);
+            return Rect.MinMaxRect(minX, minY, maxX, maxY);
+        }
     }
 }
