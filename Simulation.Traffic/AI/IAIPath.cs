@@ -1,4 +1,5 @@
-﻿using Simulation.Traffic.AI.Agents;
+﻿using Simulation.Data;
+using Simulation.Traffic.AI.Agents;
 using Simulation.Traffic.Lofts;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Simulation.Traffic.AI
 {
     public interface IAIPath : IAIGraphNode
     {
-        ILoftPath LoftPath { get; }
+        IObservableValue<ILoftPath> LoftPath { get; }
         float SideOffsetStart { get; }
         float SideOffsetEnd { get; }
 
@@ -24,7 +25,7 @@ namespace Simulation.Traffic.AI
         bool Reverse { get; }
         float MaxSpeed { get; }
         float AverageSpeed { get; }
-        IEnumerable<IAIPath> NextPaths { get; }
+        IObservableValue<IEnumerable<IAIPath>> NextPaths { get; }
 
         LaneType LaneType { get; }
         VehicleTypes VehicleTypes { get; }

@@ -9,7 +9,7 @@ namespace Simulation.Traffic.AI
     {
         public static SegmentAIPathsFactory Default { get; } = new SegmentAIPathsFactory();
 
-        public SegmentAIRoute[] CreateRoutes(AISegment segment)
+        public SegmentAIRoute[] CreateRoutes(Segment segment)
         {
             var lanes = segment.Description.Lanes;
             var paths = new SegmentAIPath[lanes.Length];
@@ -31,7 +31,7 @@ namespace Simulation.Traffic.AI
         }
 
 
-        private SegmentAIPath Create(AISegment segment, LaneDescription laneDescription, ref float offset, byte id)
+        private SegmentAIPath Create(Segment segment, LaneDescription laneDescription, ref float offset, byte id)
         {
             var path = new SegmentAIPath(segment, laneDescription, offset + laneDescription.Width / 2, id);
             offset += path.Lane.Width;

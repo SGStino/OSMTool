@@ -6,18 +6,18 @@ namespace Simulation.Traffic.AI
 {
     public class SegmentAIRoute : IAIRoute
     {
-        public AISegment Segment { get; }
+        public Segment Segment { get; }
         public SegmentAIPath[] Paths { get; }
 
         public bool Reverse { get; }
 
-        IAIPath[] IAIRoute.Paths => Paths;
+        IReadOnlyList<IAIPath> IAIRoute.Paths => Paths;
 
         public IEnumerable<NodeAIRoute> NextRoutes => GetRoutes(this.GetEnd());
 
-        private IEnumerable<NodeAIRoute> GetRoutes(AISegmentNodeConnection segmentNodeConnection) => segmentNodeConnection.AIRoutes;
+        private IEnumerable<NodeAIRoute> GetRoutes(ISegmentNodeConnection segmentNodeConnection) => segmentNodeConnection.OutgoingAIRoutes.Value.OfType<NodeAIRoute>();
 
-        public float Length => Segment.LoftPath?.Length ?? 0;
+        public float Length => Segment.LoftPath.Value?.Length ?? 0;
 
         public float Speed => Paths
             .Select(t => t.AverageSpeed)
@@ -35,7 +35,7 @@ namespace Simulation.Traffic.AI
 
         IEnumerable<IAIRoute> IAIRoute.NextRoutes => NextRoutes;
 
-        public SegmentAIRoute(AISegment segment, SegmentAIPath[] segmentAIPath, bool reverse)
+        public SegmentAIRoute(Segment segment, SegmentAIPath[] segmentAIPath, bool reverse)
         {
 
             this.Segment = segment;

@@ -10,21 +10,21 @@ namespace Simulation.Traffic
     {
         protected override Node createNode(Vector3 position)
         {
-            return new AINode(position, this);
+            return new Node(position, this);
         }
 
         protected override Segment createSegment(Node start, Node end, SegmentDescription description)
         {
-            return new AISegment(description, this);
+            return new Segment(description, this);
         }
 
         protected override SegmentNodeConnection createConnection(Segment segment, Node start)
         {
-            return new AISegmentNodeConnection(segment as AISegment, start as AINode, this);
+            return new SegmentNodeConnection(segment as Segment, start as Node, this);
         }
 
-        public new AINode CreateNodeAt(float x, float y) => base.CreateNodeAt(x, y) as AINode;
-        public new AISegment CreateSegment(Node start, Node end, SegmentDescription description) => base.CreateSegment(start, end, description) as AISegment;
+        public new Node CreateNodeAt(float x, float y) => base.CreateNodeAt(x, y) as Node;
+        public new Segment CreateSegment(Node start, Node end, SegmentDescription description) => base.CreateSegment(start, end, description) as Segment;
     }
 
     [Obsolete("Use a road registry")]

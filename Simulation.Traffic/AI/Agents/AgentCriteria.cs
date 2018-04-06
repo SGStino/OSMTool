@@ -7,7 +7,7 @@ namespace Simulation.Traffic.AI.Agents
         public List<IAIRoute> Routes { get; } = new List<IAIRoute>();
         public List<IAIPath> Paths { get; } = new List<IAIPath>();
 
-        public void Set(IAIRoute[] route, IAIPath[] path)
+        public void Set(IEnumerable<IAIRoute> route, IEnumerable<IAIPath> path)
         {
             Routes.Clear();
             Paths.Clear();

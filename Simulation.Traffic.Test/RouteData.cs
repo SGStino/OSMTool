@@ -201,7 +201,7 @@ namespace Simulation.Traffic.Test
                 var right = path.RightParralel as TestPath;
                 if (right != null)
                     pathsGraph.Connect(path.GetName(), right.GetName());
-                foreach (TestPath next in path.NextPaths)
+                foreach (TestPath next in path.NextPaths.Value)
                 {
                     pathsGraph.Connect(path.GetName(), next.GetName(), new Dictionary<string, string>() { { "style", "bold" } });
 

@@ -8,7 +8,7 @@ namespace Simulation.Traffic.AI
         {
             if (path.Reverse ^ end)
             {
-                return path.LoftPath?.Length - path.PathOffsetEnd ?? 0;
+                return path.LoftPath.Value?.Length - path.PathOffsetEnd ?? 0;
             }
             else
                 return path.PathOffsetStart;
@@ -32,14 +32,14 @@ namespace Simulation.Traffic.AI
         public static float GetEndSideOffset(this IAIPath path) => GetSideOffset(path, end: true);
 
 
-        public static float GetLength(this IAIPath path) => path.LoftPath?.Length - path.PathOffsetEnd - path.PathOffsetStart ?? 0;
+        public static float GetLength(this IAIPath path) => path.LoftPath.Value?.Length - path.PathOffsetEnd - path.PathOffsetStart ?? 0;
 
         public static float GetOffsetPercentual(this IAIPath path, float n)
         {
             return Mathf.Lerp(path.GetStartPathOffset(), path.GetEndPathOffset(), n);
         }
-        //public static AISegmentNodeConnection GetStart(this SegmentAIPath path) => path.Reverse ? path.Segment.End : path.Segment.Start;
-        //public static AISegmentNodeConnection GetEnd(this SegmentAIPath path) => path.Reverse ? path.Segment.Start : path.Segment.End;
+        //public static SegmentNodeConnection GetStart(this SegmentAIPath path) => path.Reverse ? path.Segment.End : path.Segment.Start;
+        //public static SegmentNodeConnection GetEnd(this SegmentAIPath path) => path.Reverse ? path.Segment.Start : path.Segment.End;
 
         public static Matrix4x4 GetStartTransform(this IAIPath path) => path.GetTransform(0);
         public static Matrix4x4 GetEndTransform(this IAIPath path) => path.GetTransform(path.GetLength());
@@ -69,14 +69,14 @@ namespace Simulation.Traffic.AI
 
             distance = path.PathOffsetStart + progress * length;
 
-            var maxDistance = path.LoftPath?.Length ?? 1;
+            var maxDistance = path.LoftPath.Value?.Length ?? 1;
 
             var t = progress;
             var lerp = Mathf.Lerp(path.SideOffsetStart, path.SideOffsetEnd, t * t * t * (t * (6f * t - 15f) + 10f));
 
             var m = Matrix4x4.Translate(new Vector3(lerp, 0, 0));
 
-            var result = path.LoftPath.GetTransform(distance) * m;
+            var result = path.LoftPath.Value.GetTransform(distance) * m;
 
             if (path.Reverse)
                 return result * rotate;
@@ -86,18 +86,18 @@ namespace Simulation.Traffic.AI
 
         public static void SnapTo(this IAIPath path, Vector3 point, out float distance)
         {
-            path.LoftPath.SnapTo(point, out float loftDistance);
+            path.LoftPath.Value.SnapTo(point, out float loftDistance);
 
             float min, max;
             if (!path.Reverse)
             {
                 min = path.PathOffsetStart;
-                max = path.LoftPath.Length - path.PathOffsetEnd;
+                max = path.LoftPath.Value.Length - path.PathOffsetEnd;
             }
             else
             {
-                loftDistance = path.LoftPath.Length - loftDistance;
-                max = path.LoftPath.Length - path.PathOffsetStart;
+                loftDistance = path.LoftPath.Value.Length - loftDistance;
+                max = path.LoftPath.Value.Length - path.PathOffsetStart;
                 min = path.PathOffsetEnd;
             }
             distance = Mathf.Clamp(loftDistance, min, max) - min;

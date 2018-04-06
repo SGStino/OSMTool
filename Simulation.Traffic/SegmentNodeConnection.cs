@@ -1,17 +1,19 @@
-﻿using Simulation.Traffic.AI;
+﻿using Simulation.Data;
+using Simulation.Traffic.AI;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using UnityEngine;
 
 namespace Simulation.Traffic
 {
-    //public class AISegmentNodeConnection : SegmentNodeConnection
+    //public class SegmentNodeConnection : SegmentNodeConnection
     //{
     //    private INodeAIPathsFactory aiPathFactory = NodeAIPathsFactory.Default;
     //    private NodeAIRoute[] aiRoutes;
 
-    //    public AISegmentNodeConnection(AISegment segment, AINode node, AIRoadManager manager) : base(segment, node, manager)
+    //    public SegmentNodeConnection(Segment segment, Node node, AIRoadManager manager) : base(segment, node, manager)
     //    {
     //    }
 
@@ -19,11 +21,11 @@ namespace Simulation.Traffic
 
     //    private NodeAIRoute[] createAIRoutes() => aiPathFactory.CreateRoutes(this);
 
-    //    public new AISegmentNodeConnection Left { get => base.Left as AISegmentNodeConnection; internal set => base.Left = value; }
-    //    public new AISegmentNodeConnection Right { get => base.Right as AISegmentNodeConnection; internal set => base.Right = value; }
+    //    public new SegmentNodeConnection Left { get => base.Left as SegmentNodeConnection; internal set => base.Left = value; }
+    //    public new SegmentNodeConnection Right { get => base.Right as SegmentNodeConnection; internal set => base.Right = value; }
 
-    //    public new AINode Node => base.Node as AINode;
-    //    public new AISegment Segment => base.Segment as AISegment;
+    //    public new Node Node => base.Node as Node;
+    //    public new Segment Segment => base.Segment as Segment;
 
 
     //    internal void InvalidateRoutes()
@@ -81,21 +83,23 @@ namespace Simulation.Traffic
 
     public interface ISegmentNodeConnection : IObservable<SegmentNodeConnectionEvent>, IDisposable
     {
+        ISegment Segment { get; }
         INode Node { get; }
-        Vector3 Offset { get; }
-        Vector3 Tangent { get; }
+        Vector3 Offset { get; set; }
+        Vector3 Tangent { get; set; }
+        IObservableValue<IReadOnlyList<IAIRoute>> OutgoingAIRoutes { get; }
+        IObservableValue<IReadOnlyList<IAIRoute>> IncomingAIRoutes { get; }
     }
     public class SegmentNodeConnection : ISegmentNodeConnection
     {
         private readonly Subject<SegmentNodeConnectionEvent> localEvents = new Subject<SegmentNodeConnectionEvent>();
 
-
         private Vector3 tangent;
         private Vector3 offset;
 
 
-        public Node Node { get; }
-        public Segment Segment { get; }
+        public INode Node { get; }
+        public ISegment Segment { get; private set; }
 
         public Vector3 Offset
         {
@@ -135,13 +139,23 @@ namespace Simulation.Traffic
             }
         }
 
-         
+        // TODO: update based on connections in node
+        public IObservableValue<IReadOnlyList<IAIRoute>> OutgoingAIRoutes => throw new NotImplementedException();
 
-        public SegmentNodeConnection(Node node, Segment segment)
+        public IObservableValue<IReadOnlyList<IAIRoute>> IncomingAIRoutes => throw new NotImplementedException();
+
+        public SegmentNodeConnection(INode node)
         {
             Node = node;
-            Segment = segment;
             offset = new Vector3(0, 0, 5);
+        }
+
+        internal void SetSegment(ISegment segment)
+        {
+            if (Segment == null)
+                this.Segment = segment;
+            else
+                throw new InvalidOperationException("Segment already set");
         }
     }
 }

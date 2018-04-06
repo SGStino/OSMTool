@@ -10,7 +10,7 @@ namespace Simulation.Traffic.AI
         float Length { get; }
         float Speed { get; }
         float Cost { get; }
-        IAIPath[] Paths { get; }
+        IReadOnlyList<IAIPath> Paths { get; }
         IEnumerable<IAIRoute> NextRoutes { get; }
     }
 }

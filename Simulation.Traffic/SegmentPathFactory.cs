@@ -20,20 +20,20 @@ namespace Simulation.Traffic
 
     public static class SegmentExtensions
     {
-        public static Vector3 GetHeading(this SegmentNodeConnection connnection) => connnection.Segment.Start == connnection ? -connnection.Tangent : connnection.Tangent;
-        public static void SetHeading(this SegmentNodeConnection connnection, Vector3 heading) => connnection.Tangent = connnection.Segment.Start == connnection ? -heading : heading;
+        public static Vector3 GetHeading(this ISegmentNodeConnection connnection) => connnection.Segment.Start == connnection ? -connnection.Tangent : connnection.Tangent;
+        public static void SetHeading(this ISegmentNodeConnection connnection, Vector3 heading) => connnection.Tangent = connnection.Segment.Start == connnection ? -heading : heading;
 
-        public static float GetWidth(this Segment segment)
+        public static float GetWidth(this ISegment segment)
         {
             return segment.Description.Lanes.Sum(l => l.Width);
         }
 
-        public static Vector3 GetPosition(this SegmentNodeConnection con)
+        public static Vector3 GetPosition(this ISegmentNodeConnection con)
         {
             return GetPosition(con, Vector3.zero);
         }
 
-        public static Vector3 GetPosition(this SegmentNodeConnection con, Vector3 additionalOffset)
+        public static Vector3 GetPosition(this ISegmentNodeConnection con, Vector3 additionalOffset)
         {
             var off = con.Offset + additionalOffset;
             var tangent = con.Tangent;

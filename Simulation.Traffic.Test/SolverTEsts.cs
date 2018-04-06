@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simulation.Traffic.AI.Navigation;
 using Simulation.Traffic.AI.Agents;
+using Simulation.Data;
 
 namespace Simulation.Traffic.Test
 {
@@ -131,7 +132,7 @@ namespace Simulation.Traffic.Test
             TestPaths(from, to, route);
         }
 
-        private void TestPaths(IAIPath[] from, TestPath[] to, TestRoute[] route)
+        private void TestPaths(IReadOnlyList<IAIPath> from, TestPath[] to, TestRoute[] route)
         {
             var solver = new PathSolver(from, to, route);
 
@@ -153,6 +154,7 @@ namespace Simulation.Traffic.Test
 
     internal class TestPath : IAIPath
     {
+        private readonly BehaviorSubjectValue<IEnumerable<IAIPath>> pathsValue;
         private List<TestPath> paths = new List<TestPath>();
         private TestRoute route;
 
@@ -163,13 +165,17 @@ namespace Simulation.Traffic.Test
             var dir = (route.EndPosition - route.StartPosition).normalized;
 
 
-            LoftPath = new LinearPath(route.StartPosition, route.EndPosition);
+            LoftPath = new BehaviorSubjectValue<ILoftPath>(new LinearPath(route.StartPosition, route.EndPosition));
             SideOffsetStart = source == null ? index * 2 : source.SideOffsetEnd;
             SideOffsetEnd = index * 2;
             Index = index;
+
+            this.pathsValue = new BehaviorSubjectValue<IEnumerable<IAIPath>>(paths);
         }
         public int Index { get; }
-        public ILoftPath LoftPath { get; }
+
+
+        public IObservableValue<ILoftPath> LoftPath { get; }
 
         public float SideOffsetStart { get; }
 
@@ -189,13 +195,13 @@ namespace Simulation.Traffic.Test
 
         public float AverageSpeed => 1;
 
-        public IEnumerable<IAIPath> NextPaths => paths;
+        public IObservableValue<IEnumerable<IAIPath>> NextPaths => pathsValue;
 
         public LaneType LaneType => LaneType.Road;
 
         public VehicleTypes VehicleTypes => VehicleTypes.Vehicle;
 
-        public IEnumerable<IAIGraphNode> NextNodes => NextPaths;
+        public IEnumerable<IAIGraphNode> NextNodes => NextPaths.Value;
 
         internal void Connect(TestPath p)
         {
@@ -230,7 +236,7 @@ namespace Simulation.Traffic.Test
 
         public float Cost => 1;
 
-        public IAIPath[] Paths => paths.ToArray();
+        public IReadOnlyList<IAIPath> Paths => paths.ToArray();
 
         public IEnumerable<IAIRoute> NextRoutes => routes;
 

@@ -10,6 +10,7 @@ using Simulation.Traffic.Utilities;
 using System.Reactive.Subjects;
 using System.Reactive.Linq;
 using System.Reactive;
+using Simulation.Data;
 
 namespace Simulation.Traffic
 {
@@ -83,19 +84,19 @@ namespace Simulation.Traffic
         }
     }
 
-    public class AINode : Node
-    {
-        public AINode(Vector3 position, INodeAIPathsFactory aiFactory = null) : base(position)
-        {
-        }
+    //public class Node : Node
+    //{
+    //    public Node(Vector3 position, INodeAIPathsFactory aiFactory = null) : base(position)
+    //    {
+    //    }
 
-        public void InvalidateAIPaths(AISegment aISegment)
-        {
-        }
+    //    public void InvalidateAIPaths(Segment aISegment)
+    //    {
+    //    }
 
-        public new IEnumerable<AISegmentNodeConnection> Segments => base.Segments.OfType<AISegmentNodeConnection>();
+    //    public new IEnumerable<SegmentNodeConnection> Segments => base.Segments.OfType<SegmentNodeConnection>();
 
-    }
+    //}
 
     public struct NodeChangeEvent
     {
@@ -132,29 +133,30 @@ namespace Simulation.Traffic
     {
         private readonly Subject<NodeChangeEvent> localEvents = new Subject<NodeChangeEvent>();
         private readonly List<SegmentNodeConnection> segments = new List<SegmentNodeConnection>();
-        private readonly IConnectableObservable<Rect> _bounds;
+        private readonly IObservableValue<Rect> _bounds;
         private CompositeDisposable disposable = new CompositeDisposable();
         private Vector3 position;
+        private float radius;
 
         public IReadOnlyList<SegmentNodeConnection> SegmentList => segments;
 
 
-        public Node(Vector3 position, IObservable<Unit> sampler)
+        public Node(Vector3 position, IObservable<Unit> sampler = null)
         {
             this.position = position;
             var positionStream = this.Where(t => t.Type == NodeChangeEventType.Moved).Select(t => t.Position).StartWith(position);
             if (sampler != null)
                 positionStream = positionStream.Sample(sampler);
 
-            var boundStream = positionStream.Select(t => getBounds(t)).Replay(1);
-            disposable.Add(boundStream.Connect());
+            var boundStream = positionStream.Select(t => getBounds(t)).ToObservableValue();
+            disposable.Add(boundStream);
             disposable.Add(localEvents);
             this._bounds = boundStream;
         }
 
-        private Rect getBounds(object t)
+        private Rect getBounds(Vector3 t)
         {
-            throw new NotImplementedException();
+            return new Rect(t.x - radius, t.z - radius, radius * 2, radius * 2);
         }
 
         public void Dispose()
@@ -193,7 +195,7 @@ namespace Simulation.Traffic
             }
         }
 
-        public IObservable<Rect> Bounds => _bounds;
+        public IObservableValue<Rect> Bounds => _bounds;
 
         private void NotifyOfMovement()
         {
@@ -211,6 +213,11 @@ namespace Simulation.Traffic
 
 
         public IDisposable Subscribe(IObserver<NodeChangeEvent> observer) => localEvents.Subscribe(observer);
+
+        public static Node CreateAt(float x, float z)
+        {
+            return new Node(new Vector3(x, 0, z));
+        }
     }
 
     internal class AngleComparer : IComparer<SegmentNodeConnection>

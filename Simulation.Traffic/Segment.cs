@@ -8,17 +8,20 @@ using System.Reactive.Linq;
 using System.Reactive.Disposables;
 using System.Reactive;
 using System.Linq;
+using Simulation.Data;
+using System.Collections.Generic;
+
 namespace Simulation.Traffic
 {
 
-    //public class AISegment : Segment
+    //public class Segment : Segment
     //{
     //    private ISegmentAIPathsFactory aiPathFactory = SegmentAIPathsFactory.Default;
     //    private ISegmentPathFactory loftPathFactory = SegmentPathFactory.Default;
     //    private ILoftPath loftPath;
     //    private SegmentAIRoute[] aiRoutes;
 
-    //    public AISegment(SegmentDescription description, AIRoadManager manager) : base(description, manager)
+    //    public Segment(SegmentDescription description, AIRoadManager manager) : base(description, manager)
     //    {
     //    }
 
@@ -33,14 +36,14 @@ namespace Simulation.Traffic
 
 
 
-    //    public new AISegmentNodeConnection Start
+    //    public new SegmentNodeConnection Start
     //    {
-    //        get => base.Start as AISegmentNodeConnection;
+    //        get => base.Start as SegmentNodeConnection;
     //        internal set => base.Start = value;
     //    }
-    //    public new AISegmentNodeConnection End
+    //    public new SegmentNodeConnection End
     //    {
-    //        get => base.End as AISegmentNodeConnection;
+    //        get => base.End as SegmentNodeConnection;
     //        internal set => base.End = value;
     //    }
 
@@ -60,7 +63,7 @@ namespace Simulation.Traffic
     //    //public IRoadComponent<ILoftPath> LoftPath { get; }
     //    //public IRoadComponent<SegmentAIPath[]> AIPaths { get; }
 
-    //    //public AISegment(SegmentDescription description, RoadManager manager, ISegmentAIPathsFactory aiFactory = null) : base(description, manager)
+    //    //public Segment(SegmentDescription description, RoadManager manager, ISegmentAIPathsFactory aiFactory = null) : base(description, manager)
     //    //{
     //    //    LoftPath = new SegmentLoftPathComponent(this, SegmentPathFactory.Default);
     //    //    AIPaths = new SegmentAIPathComponent(this, aiFactory ?? SegmentAIPathsFactory.Default);
@@ -71,13 +74,20 @@ namespace Simulation.Traffic
 
     //    //private void InvalidateNodeAIPaths()
     //    //{
-    //    //    (Start.Node as AINode).InvalidateAIPaths(this);
+    //    //    (Start.Node as Node).InvalidateAIPaths(this);
     //    //}
     //}
 
     public interface ISegment : IObservable<SegmentEvent>, IDisposable, IBoundsObject2D
     {
-        IObservable<ILoftPath> LoftPath { get; } 
+        SegmentDescription Description { get; }
+        //IObservable<ILoftPath> LoftPath { get; } 
+        IObservableValue<ILoftPath> LoftPath { get; }
+
+        IReadOnlyList<IAIRoute> AIRoutes { get; }
+
+        ISegmentNodeConnection Start { get; }
+        ISegmentNodeConnection End { get; }
     }
 
     public struct SegmentEvent
@@ -101,14 +111,12 @@ namespace Simulation.Traffic
     {
         private readonly Subject<SegmentEvent> localEvents = new Subject<SegmentEvent>();
         private readonly IObservable<((Vector3 position, Vector3 offset, Vector3 tangent) start, (Vector3 position, Vector3 offset, Vector3 tangent) end)> _shapeChange;
-        private readonly IConnectableObservable<ILoftPath> _loftPath;
+        private readonly BehaviorSubjectValue<ILoftPath> _loftPath;
 
-        public IObservable<ILoftPath> LoftPath => _loftPath;
+        public IObservableValue<ILoftPath> LoftPath => _loftPath;
 
         private readonly CompositeDisposable dispose = new CompositeDisposable();
-        private readonly IObservable<Rect> _bounds;
-
-        public event Action<BoundsChangedEvent> BoundsChanged;
+        private readonly IObservableValue<Rect> _bounds;
 
 
         public SegmentDescription Description { get; }
@@ -116,9 +124,11 @@ namespace Simulation.Traffic
 
         public ISegmentNodeConnection Start { get; }
         public ISegmentNodeConnection End { get; }
-         
 
-        public IObservable<Rect> Bounds => _bounds;
+
+        public IObservableValue<Rect> Bounds => _bounds;
+
+        public IReadOnlyList<IAIRoute> AIRoutes { get; }
 
         //private Rect getBounds()
         //{
@@ -134,7 +144,7 @@ namespace Simulation.Traffic
         //    return Rect.MinMaxRect(minX, minY, maxX, maxY);
         //}
 
-        public Segment(SegmentDescription description, ISegmentNodeConnection start, ISegmentNodeConnection end, IObservable<Unit> sampler)
+        public Segment(SegmentDescription description, ISegmentNodeConnection start, ISegmentNodeConnection end, IObservable<Unit> sampler = null)
         {
             this.Description = description;
             Start = start;
@@ -171,14 +181,24 @@ namespace Simulation.Traffic
                 _shapeChange = _shapeChange.Sample(sampler); // only once per frame
 
 
-            _loftPath = _shapeChange.Select(v => new BiArcLoftPath(v.start.position + v.start.offset, v.start.tangent, v.end.position + v.end.offset, v.end.tangent)).Replay(1);
-            dispose.Add(_loftPath.Connect());
+            _loftPath = new BehaviorSubjectValue<ILoftPath>(_shapeChange.Select(v => new BiArcLoftPath(v.start.position + v.start.offset, v.start.tangent, v.end.position + v.end.offset, v.end.tangent)));
+            dispose.Add(_loftPath);
             dispose.Add(localEvents);
 
-            
+
 
             var _width = description.Lanes.Sum(l => l.Width);
-            _bounds = _loftPath.Select(p => p.GetBounds(_width));
+            var boundsSubject = _loftPath.Select(p => p.GetBounds(_width)).ToObservableValue();
+            dispose.Add(boundsSubject);
+            _bounds = boundsSubject;
+
+
+            AIRoutes = createAiRoutes(_loftPath);
+        }
+
+        private IReadOnlyList<IAIRoute> createAiRoutes(BehaviorSubjectValue<ILoftPath> loftPath)
+        {
+            throw new NotImplementedException();
         }
 
         public IDisposable Subscribe(IObserver<SegmentEvent> observer)
@@ -194,5 +214,15 @@ namespace Simulation.Traffic
         }
 
         private void RaiseEvent(SegmentEvent segmentEvent) => localEvents.OnNext(segmentEvent);
+
+        public static Segment Create(Node startNode, Node endNode, SegmentDescription description)
+        {
+            var end = new SegmentNodeConnection(endNode);
+            var start = new SegmentNodeConnection(startNode);
+            var segment = new Segment(description, start, end);
+            start.SetSegment(segment);
+            end.SetSegment(segment);
+            return segment;
+        }
     }
 }

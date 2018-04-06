@@ -3,23 +3,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Simulation.Traffic.AI.Agents;
+using Simulation.Data;
+using System.Reactive.Linq;
+
 namespace Simulation.Traffic.AI
 {
     public class SegmentAIPath : IAgentChainAIPath, IDisposable
     {
         public byte ID { get; }
-        private readonly AISegment segment;
+        private readonly Segment segment;
         private readonly LaneDescription laneDescription;
         private readonly float offset;
         private readonly LinkedAgentChain agents;
 
-        public SegmentAIPath( AISegment segment, LaneDescription laneDescription, float offset, byte id)
-        { 
+        public SegmentAIPath(Segment segment, LaneDescription laneDescription, float offset, byte id)
+        {
             this.segment = segment;
             this.laneDescription = laneDescription;
             this.offset = offset;
 
             this.agents = new LinkedAgentChain();
+
+            var nextPaths = this.GetEnd().OutgoingAIRoutes.Select(routes => routes.SelectMany(route => route.Paths)).ToObservableValue();
+            NextPaths = nextPaths;
         }
 
 
@@ -29,11 +35,7 @@ namespace Simulation.Traffic.AI
 
         public bool Reverse => laneDescription.Reverse;
 
-        public IEnumerable<IAIPath> NextPaths 
-            => this.GetEnd()
-            .AIRoutes
-            .SelectMany(t => t.Paths)
-            .Where(t => t.Source == this);
+        public IObservableValue<IEnumerable<IAIPath>> NextPaths { get; }
 
         public LaneType LaneType => laneDescription.LaneType;
 
@@ -50,7 +52,7 @@ namespace Simulation.Traffic.AI
 
         public LaneDescription Lane => laneDescription;
 
-        public ILoftPath LoftPath => Segment.LoftPath;
+        public IObservableValue<ILoftPath> LoftPath => Segment.LoftPath;
 
         public float SideOffsetStart => offset;
 
@@ -60,9 +62,9 @@ namespace Simulation.Traffic.AI
 
         public float PathOffsetEnd => 0;
 
-        public AISegment Segment => segment;
+        public Segment Segment => segment;
 
-         IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextPaths;
+        IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextPaths.Value;
 
         public IAgentChain Agents => agents;
 

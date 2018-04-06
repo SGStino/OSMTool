@@ -12,11 +12,11 @@ namespace Simulation.Traffic.AI
     {
         public static NodeAIPathsFactory Default { get; } = new NodeAIPathsFactory();
 
-        public NodeAIPath[] Create(AINode node)
+        public NodeAIPath[] Create(Node node)
         {
             var nodeRadius = 10;
 
-            var segments = node.Segments.Select(t => t.Segment).OfType<AISegment>().Where(t => t.Start != null && t.End != null).ToArray();
+            var segments = node.Segments.Select(t => t.Segment).OfType<Segment>().Where(t => t.Start != null && t.End != null).ToArray();
 
 
             var nodePaths = new List<NodeAIPath>();
@@ -25,9 +25,9 @@ namespace Simulation.Traffic.AI
                 for (int iB = 0; iB < iA; iB++)
                 {
                     var segA = segments[iA];
-                    var loftA = segA.LoftPath;
+                    var loftA = segA.LoftPath.Value;
                     var segB = segments[iB];
-                    var loftB = segB.LoftPath;
+                    var loftB = segB.LoftPath.Value;
 
 
                     var isAStart = segA.End?.Node == node;
@@ -51,7 +51,7 @@ namespace Simulation.Traffic.AI
             return nodePaths.ToArray();
         }
 
-        public NodeAIRoute[] CreateRoutes(AISegmentNodeConnection con)
+        public NodeAIRoute[] CreateRoutes(SegmentNodeConnection con)
         {
             var incomingRoutes = con.Segment.AIRoutes.Where(r => r.GetEnd()?.Node == con.Node).ToArray();
 
@@ -127,7 +127,7 @@ namespace Simulation.Traffic.AI
             }
         }
 
-        private float getAngle(AISegmentNodeConnection from, AISegmentNodeConnection to)
+        private float getAngle(SegmentNodeConnection from, SegmentNodeConnection to)
         {
             var a2d = new Vector2(from.Tangent.x, from.Tangent.z);
             var b2d = -new Vector2(to.Tangent.x, to.Tangent.z);
@@ -165,7 +165,7 @@ namespace Simulation.Traffic.AI
             return angleMap;
         }
 
-        private ILoftPath createLineLoft(SegmentAIPath iPath, AISegmentNodeConnection from, SegmentAIPath oPath, AISegmentNodeConnection to)
+        private ILoftPath createLineLoft(SegmentAIPath iPath, SegmentNodeConnection from, SegmentAIPath oPath, SegmentNodeConnection to)
         {
             var t1 = iPath.GetEndTransform();
             var t2 = oPath.GetStartTransform();
@@ -176,7 +176,7 @@ namespace Simulation.Traffic.AI
             var f1 = t1.MultiplyVector(Vector3.forward).normalized;
             var f2 = t2.MultiplyVector(Vector3.forward).normalized;
 
-          //  var l = (point2 - point1).magnitude;
+            //  var l = (point2 - point1).magnitude;
 
             //return new LinearPath(point2, point2 + f2 * l);
             return new BiArcLoftPath(point1, -f1, point2, -f2);
@@ -190,7 +190,7 @@ namespace Simulation.Traffic.AI
             return point;
         }
 
-        private IEnumerable<SegmentAIRoute> GetRoutes(AISegmentNodeConnection con, bool incoming)
+        private IEnumerable<SegmentAIRoute> GetRoutes(SegmentNodeConnection con, bool incoming)
         {
             var isEnd = con.Segment.End == con;
 
@@ -199,7 +199,7 @@ namespace Simulation.Traffic.AI
             return GetRoutes(isEnd ^ incoming, con.Segment);
         }
 
-        private static IEnumerable<SegmentAIRoute> GetRoutes(bool isEnd, AISegment segment)
+        private static IEnumerable<SegmentAIRoute> GetRoutes(bool isEnd, Segment segment)
         {
             return segment?.AIRoutes.Where(t => t.Reverse != isEnd);
         }

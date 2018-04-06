@@ -162,7 +162,7 @@ namespace Simulation.Traffic.AI
 
         public static bool Crosses(this IAIPath path, Ray ray, out float[] pathDistances, out float[] rayDistances)
         {
-            if (path.LoftPath.Crosses(ray, out pathDistances, out rayDistances))
+            if (path.LoftPath.Value.Crosses(ray, out pathDistances, out rayDistances))
             {
                 for (int i = 0; i < pathDistances.Length; i++)
                     pathDistances[i] = loftToPathDistance(path, pathDistances[i]);

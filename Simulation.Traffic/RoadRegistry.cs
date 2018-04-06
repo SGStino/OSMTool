@@ -8,6 +8,8 @@ using UnityEngine;
 
 namespace Simulation.Traffic
 {
+ 
+
     public class BoundsObjects2DRegistration<T> : IDisposable
     {
         public ISpatialPointer<T> Pointer { get; }
@@ -16,16 +18,16 @@ namespace Simulation.Traffic
 
         public T Node { get; }
 
-        public BoundsObjects2DRegistration(T node, ISpatialPointer<T> pointer, IObservable<BoundsChangedEvent> observable)
+        public BoundsObjects2DRegistration(T node, ISpatialPointer<T> pointer, IObservable<Rect> observable)
         {
             Node = node;
             Pointer = pointer;
             disposable = observable.Subscribe(updateBounds);
         }
 
-        void updateBounds(BoundsChangedEvent evt)
+        void updateBounds(Rect evt)
         {
-            Pointer.Bounds = evt.Bounds;
+            Pointer.Bounds = evt;
         }
 
         public void Dispose()
@@ -48,10 +50,9 @@ namespace Simulation.Traffic
         //private Dictionary<T, BoundsObjects2DRegistration<T>> nodeRegistrations = new Dictionary<T, BoundsObjects2DRegistration<T>>();
 
         public BoundsObjects2DRegistration<T> Register(T node)
-        {
-            var pointer = spatialRegistry.Register(node, node.Bounds);
-            var observable = Observable.FromEvent<BoundsChangedEvent>(h => node.BoundsChanged += h, h => node.BoundsChanged -= h);
-            var registration = new BoundsObjects2DRegistration<T>(node, pointer, observable);
+        { 
+            var pointer = spatialRegistry.Register(node, node.Bounds.Value); 
+            var registration = new BoundsObjects2DRegistration<T>(node, pointer, node.Bounds);
             //nodeRegistrations.Add(node, registration);
 
             //registration.Disposed += Remove;

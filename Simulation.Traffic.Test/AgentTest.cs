@@ -125,7 +125,7 @@ namespace Simulation.Traffic.Test
             this.endRoute = endRoute;
         }
 
-        public bool Find(Vector3 point, out IAIRoute[] routes, out IAIPath[] paths)
+        public bool Find(Vector3 point, out IReadOnlyList<IAIRoute> routes, out IReadOnlyList<IAIPath> paths)
         {
             if (point == start)
             {

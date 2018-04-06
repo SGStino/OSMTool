@@ -7,6 +7,6 @@ namespace Simulation.Traffic
 {
     public interface ISegmentAIPathsFactory
     {
-        SegmentAIRoute[] CreateRoutes(AISegment segment);
+        SegmentAIRoute[] CreateRoutes(Segment segment);
     }
 }

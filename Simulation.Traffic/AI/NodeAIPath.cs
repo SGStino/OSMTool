@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
+using Simulation.Data;
 using Simulation.Traffic.AI.Agents;
 using Simulation.Traffic.Lofts;
 
@@ -7,22 +9,25 @@ namespace Simulation.Traffic.AI
 {
     public class NodeAIPath : IAgentChainAIPath, IDisposable
     {
+        private readonly CompositeDisposable dispose;
         private readonly SegmentAIPath source;
         private readonly SegmentAIPath destination;
-        private readonly ILoftPath path;
         private readonly LinkedAgentChain agents;
 
-        public NodeAIPath(SegmentAIPath source, SegmentAIPath destination, ILoftPath path)
+        public NodeAIPath(SegmentAIPath source, SegmentAIPath destination, IObservableValue<ILoftPath> path)
         {
+            this.dispose = new CompositeDisposable();
             this.source = source;
             this.destination = destination;
-            this.path = path;
             this.agents = new LinkedAgentChain();
+            this.LoftPath = path;
+           var nextPaths = new BehaviorSubjectValue<IEnumerable<IAIPath>>(new[] { destination });
+            NextPaths = nextPaths;
+            dispose.Add(nextPaths);
+            dispose.Add(Disposable.Create(agents.Clear));
         }
 
-
-
-        public ILoftPath LoftPath => Path;
+        public IObservableValue<ILoftPath> LoftPath { get; }
 
         public float SideOffsetStart => 0;
 
@@ -38,7 +43,7 @@ namespace Simulation.Traffic.AI
 
         public float AverageSpeed => (source.AverageSpeed + destination.AverageSpeed) / 2;
 
-        public IEnumerable<IAIPath> NextPaths => new[] { destination };
+        public IObservableValue<IEnumerable<IAIPath>> NextPaths { get; }  
 
         public LaneType LaneType => destination.LaneType;
 
@@ -48,18 +53,14 @@ namespace Simulation.Traffic.AI
 
         public float PathOffsetEnd => 0.0f;
 
-        public ILoftPath Path => path;
+        public IObservableValue<ILoftPath> Path => LoftPath;
 
         public SegmentAIPath Source => source;
 
         public IAgentChain Agents => agents;
 
-        IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextPaths;
+        IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextPaths.Value;
 
-        public void Dispose()
-        {
-            // TODO: notify agents of path removal
-            agents.Clear();
-        }
+        public void Dispose() => dispose.Dispose();
     }
 }

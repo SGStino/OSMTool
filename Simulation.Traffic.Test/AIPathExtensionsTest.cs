@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simulation.Data;
 using Simulation.Traffic.AI;
 using Simulation.Traffic.Lofts;
 using System;
@@ -158,7 +159,7 @@ namespace Simulation.Traffic.Test
 
             var start = aiPath.GetStartTransform().MultiplyPoint3x4(Vector3.zero);
             var zero = aiPath.GetTransform(0).MultiplyPoint3x4(Vector3.zero);
-            var expected = new Vector3(4,0,8);
+            var expected = new Vector3(4, 0, 8);
 
             Assert.AreEqual(expected, zero);
             Assert.AreEqual(expected, start);
@@ -205,7 +206,7 @@ namespace Simulation.Traffic.Test
             loft.SnapTo(pointCenter, out var pointCenter2, out float distanceLoft);
             Assert.AreEqual(5.5f, distanceLoft);
             aiPath.SnapTo(pointCenter, out var distancePath);
-            Assert.AreEqual(4.5f, distancePath); 
+            Assert.AreEqual(4.5f, distancePath);
         }
         [TestMethod]
         public void TestSnapToLow()
@@ -448,14 +449,13 @@ namespace Simulation.Traffic.Test
 
     internal class DummyAIPath : IAIPath
     {
-        private LinearPath loft;
 
         public DummyAIPath(LinearPath loft)
         {
-            this.loft = loft;
+            this.LoftPath = new BehaviorSubjectValue<ILoftPath>(loft);
         }
 
-        public ILoftPath LoftPath => loft;
+        public IObservableValue<ILoftPath> LoftPath { get; }
 
         public float SideOffsetStart { get; set; }
 
@@ -475,12 +475,12 @@ namespace Simulation.Traffic.Test
 
         public float AverageSpeed => 1;
 
-        public IEnumerable<IAIPath> NextPaths => Enumerable.Empty<IAIPath>();
+        public IEnumerable<IAIGraphNode> NextNodes => NextPaths.Value;
+        public IObservableValue<IEnumerable<IAIPath>> NextPaths { get; } = new BehaviorSubjectValue<IEnumerable<IAIPath>>(Enumerable.Empty<IAIPath>());
 
         public LaneType LaneType => LaneType.Road;
 
         public VehicleTypes VehicleTypes => VehicleTypes.Vehicle;
 
-        public IEnumerable<IAIGraphNode> NextNodes => NextPaths;
     }
 }

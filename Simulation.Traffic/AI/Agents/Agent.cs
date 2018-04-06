@@ -1,4 +1,5 @@
-﻿using Simulation.Traffic.Lofts;
+﻿using Simulation.Data;
+using Simulation.Traffic.Lofts;
 using Simulation.Traffic.Utilities;
 using System;
 using System.Collections.Generic;
@@ -284,10 +285,10 @@ namespace Simulation.Traffic.AI.Agents
 
         public AgentAIPath(BiArcLoftPath loft)
         {
-            this.LoftPath = loft;
+            this.LoftPath = new BehaviorSubjectValue<ILoftPath>(loft);
         }
 
-        public ILoftPath LoftPath { get; }
+        public IObservableValue<ILoftPath> LoftPath { get; }
 
         public float SideOffsetStart => 0;
 
@@ -307,12 +308,12 @@ namespace Simulation.Traffic.AI.Agents
 
         public float AverageSpeed => MaxSpeed;
 
-        public IEnumerable<IAIPath> NextPaths => Enumerable.Empty<IAIPath>(); // not used
+        public IObservableValue<IEnumerable<IAIPath>> NextPaths { get; } = new BehaviorSubjectValue<IEnumerable<IAIPath>>(Enumerable.Empty<IAIPath>()); // not used
 
         public LaneType LaneType => LaneType.DirtTrack;
 
         public VehicleTypes VehicleTypes => VehicleTypes.Vehicle;
 
-        public IEnumerable<IAIGraphNode> NextNodes => NextPaths;
+        public IEnumerable<IAIGraphNode> NextNodes => NextPaths.Value;
     }
 }

@@ -57,7 +57,7 @@ namespace Simulation.Traffic.AI.Navigation
         {
            foreach(var n in getLeftRight(t))
                 yield return n;
-            foreach (var n in t.NextPaths)
+            foreach (var n in t.NextPaths.Value)
             {
                 yield return n;
                 //foreach (var n2 in getLeftRight(n))

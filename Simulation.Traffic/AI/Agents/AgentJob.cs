@@ -8,8 +8,8 @@ namespace Simulation.Traffic.AI.Agents
 {
     public class AgentJob : IDisposable // push into agent manager
     {
-        public void SetSource(IAIRoute[] route, IAIPath[] path) => startCriteria.Set(route, path);
-        public void SetDestination(IAIRoute[] route, IAIPath[] path) => endCriteria.Set(route, path);
+        public void SetSource(IEnumerable<IAIRoute> route, IEnumerable<IAIPath> path) => startCriteria.Set(route, path);
+        public void SetDestination(IEnumerable<IAIRoute> route, IEnumerable<IAIPath> path) => endCriteria.Set(route, path);
 
         public AgentJob()
         {

@@ -7,11 +7,11 @@ namespace Simulation.Traffic.AI
 {
     public class NodeAIRoute : IAIRoute, IDisposable
     {
-        private AISegmentNodeConnection con;
+        private ISegmentNodeConnection con;
         private readonly SegmentAIRoute target;
-        private readonly AISegmentNodeConnection con2;
+        private readonly ISegmentNodeConnection con2;
 
-        public NodeAIRoute(AISegmentNodeConnection con, SegmentAIRoute target, NodeAIPath[] paths)
+        public NodeAIRoute(SegmentNodeConnection con, SegmentAIRoute target, NodeAIPath[] paths)
         {
             this.con = con;
             this.target = target;
@@ -20,7 +20,7 @@ namespace Simulation.Traffic.AI
             con2 = target.GetStart();
         }
 
-        public AINode Node => con.Node;
+        public INode Node => con.Node;
 
         public float Length => 1;
 
@@ -35,7 +35,7 @@ namespace Simulation.Traffic.AI
 
         IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextRoutes;
 
-        IAIPath[] IAIRoute.Paths => Paths;
+        IReadOnlyList<IAIPath> IAIRoute.Paths => Paths;
 
 
         public Vector3 StartPosition => con.GetPosition();

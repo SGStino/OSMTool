@@ -5,6 +5,6 @@ namespace Simulation.Data.Trees
 {
     public interface IBoundsObject2D
     { 
-        IObservable<Rect> Bounds { get; }
+        IObservableValue<Rect> Bounds { get; }
     }
 }
