@@ -7,6 +7,6 @@ namespace Simulation.Traffic
 
     public interface INodeAIPathsFactory
     {
-        NodeAIRoute[] CreateRoutes(SegmentNodeConnection node);
+        NodeAIRoute[] CreateRoutes(ISegmentNodeConnection source, ISegmentNodeConnection target);
     }
 }

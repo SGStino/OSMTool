@@ -25,9 +25,12 @@ namespace Simulation.Traffic.Test
 
             var aiPath = new DummyAIPath(loft)
             {
-                PathOffsetStart = 2,
-                PathOffsetEnd = 5,
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 2,
+                pathOffsetEnd: 5,
+                sideOffsetStart: 0,
+                sideOffsetEnd: 0);
 
             var result = aiPath.GetDistanceFromLoftPath(distance);
 
@@ -47,10 +50,13 @@ namespace Simulation.Traffic.Test
 
             var aiPath = new DummyAIPath(loft)
             {
-                PathOffsetStart = 2,
-                PathOffsetEnd = 5,
                 Reverse = true
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 2,
+                pathOffsetEnd: 5,
+                sideOffsetStart: 0,
+                sideOffsetEnd: 0);
 
             var result = aiPath.GetDistanceFromLoftPath(distance);
 
@@ -65,17 +71,18 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4
+            { 
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
-            Assert.AreEqual(aiPath.PathOffsetStart, aiPath.GetStartPathOffset());
-            Assert.AreEqual(10 - aiPath.PathOffsetEnd, aiPath.GetEndPathOffset());
-            Assert.AreEqual(aiPath.SideOffsetStart, aiPath.GetStartSideOffset());
-            Assert.AreEqual(aiPath.SideOffsetEnd, aiPath.GetEndSideOffset());
+            Assert.AreEqual(aiPath.Offsets.Value.PathOffsetStart, aiPath.GetStartPathOffset());
+            Assert.AreEqual(10 - aiPath.Offsets.Value.PathOffsetEnd, aiPath.GetEndPathOffset());
+            Assert.AreEqual(aiPath.Offsets.Value.SideOffsetStart, aiPath.GetStartSideOffset());
+            Assert.AreEqual(aiPath.Offsets.Value.SideOffsetEnd, aiPath.GetEndSideOffset());
 
             var startTransform = aiPath.GetTransform(0);
             Assert.AreEqual(new Vector3(3, 0, 1), startTransform.MultiplyPoint3x4(Vector3.zero));
@@ -106,18 +113,19 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = true
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
-            Assert.AreEqual(10 - aiPath.PathOffsetEnd, aiPath.GetStartPathOffset());
-            Assert.AreEqual(aiPath.PathOffsetStart, aiPath.GetEndPathOffset());
-            Assert.AreEqual(aiPath.SideOffsetEnd, aiPath.GetStartSideOffset());
-            Assert.AreEqual(aiPath.SideOffsetStart, aiPath.GetEndSideOffset());
+            Assert.AreEqual(10 - aiPath.Offsets.Value.PathOffsetEnd, aiPath.GetStartPathOffset());
+            Assert.AreEqual(aiPath.Offsets.Value.PathOffsetStart, aiPath.GetEndPathOffset());
+            Assert.AreEqual(aiPath.Offsets.Value.SideOffsetEnd, aiPath.GetStartSideOffset());
+            Assert.AreEqual(aiPath.Offsets.Value.SideOffsetStart, aiPath.GetEndSideOffset());
 
             var startTransform = aiPath.GetTransform(0);
             Assert.AreEqual(new Vector3(4, 0, 8), startTransform.MultiplyPoint3x4(Vector3.zero));
@@ -148,13 +156,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = true
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var start = aiPath.GetStartTransform().MultiplyPoint3x4(Vector3.zero);
@@ -170,13 +179,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = false
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var start = aiPath.GetStartTransform().MultiplyPoint3x4(Vector3.zero);
@@ -193,13 +203,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = false
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var pointCenter = new Vector3(0, 0, 5.5f);
@@ -214,13 +225,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = false
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var pointCenter = new Vector3(0, 0, 0.5f);
@@ -235,13 +247,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = false
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var pointCenter = new Vector3(0, 0, -1f);
@@ -256,13 +269,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = false
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var pointCenter = new Vector3(0, 0, 9);
@@ -277,13 +291,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = false
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var pointCenter = new Vector3(0, 0, 11);
@@ -300,13 +315,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = true
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var pointCenter = new Vector3(0, 0, 5.5f);
@@ -321,13 +337,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = true
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var pointCenter = new Vector3(0, 0, 0.5f);
@@ -342,13 +359,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = true
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var pointCenter = new Vector3(0, 0, -1f);
@@ -363,13 +381,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = true
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var pointCenter = new Vector3(0, 0, 9);
@@ -384,13 +403,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = true
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var pointCenter = new Vector3(0, 0, 11);
@@ -407,13 +427,14 @@ namespace Simulation.Traffic.Test
             var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
-            {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
+            { 
                 Reverse = true
             };
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart: 1,
+                pathOffsetEnd: 2,
+                sideOffsetStart: 3,
+                sideOffsetEnd: 4);
 
 
             var end = aiPath.GetEndTransform().MultiplyPoint3x4(Vector3.zero);
@@ -430,13 +451,13 @@ namespace Simulation.Traffic.Test
 
             var aiPath = new DummyAIPath(loft)
             {
-                PathOffsetStart = 1,
-                PathOffsetEnd = 2,
-                SideOffsetStart = 3,
-                SideOffsetEnd = 4,
                 Reverse = false
             };
-
+            aiPath.Offsets.Value = new PathOffsets(
+                pathOffsetStart : 1,
+                pathOffsetEnd : 2,
+                sideOffsetStart : 3,
+                sideOffsetEnd : 4);
 
             var end = aiPath.GetEndTransform().MultiplyPoint3x4(Vector3.zero);
             var zero = aiPath.GetTransform(aiPath.GetLength()).MultiplyPoint3x4(Vector3.zero);
@@ -453,17 +474,12 @@ namespace Simulation.Traffic.Test
         public DummyAIPath(LinearPath loft)
         {
             this.LoftPath = new BehaviorSubjectValue<ILoftPath>(loft);
+             
         }
 
         public IObservableValue<ILoftPath> LoftPath { get; }
 
-        public float SideOffsetStart { get; set; }
-
-        public float SideOffsetEnd { get; set; }
-
-        public float PathOffsetStart { get; set; }
-
-        public float PathOffsetEnd { get; set; }
+ 
 
         public IAIPath LeftParralel => null;
 
@@ -482,5 +498,8 @@ namespace Simulation.Traffic.Test
 
         public VehicleTypes VehicleTypes => VehicleTypes.Vehicle;
 
+        public BehaviorSubjectValue<PathOffsets> Offsets { get; } = new BehaviorSubjectValue<PathOffsets>();
+
+        IObservableValue<PathOffsets> IAIPath.Offsets => Offsets;
     }
 }

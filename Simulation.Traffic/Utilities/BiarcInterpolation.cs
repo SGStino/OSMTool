@@ -9,12 +9,15 @@ namespace Simulation.Traffic
         //http://www.ryanjuckett.com/programming/biarc-interpolation/
 
 
-        public static void Biarc(SegmentNodeConnection start, SegmentNodeConnection end, out Arc arc1, out Arc arc2)
-        {
-            var t1 = start.Tangent;
-            var t2 = end.Tangent;
-            Biarc(t2d(start.Node.Position), t2d(t1).normalized, t2d(end.Node.Position), t2d(-t2).normalized, out arc1, out arc2);
-        }
+        //public static void Biarc(SegmentNodeConnection start, SegmentNodeConnection end, out Arc arc1, out Arc arc2)
+        //{
+        //    var t1 = start.Offset.Value.Tangent;
+        //    var t2 = end.Offset.Value.Tangent;
+
+        //    var p1 = start.Node.Position.Value;
+        //    var p2 = end.Node.Position.Value;
+        //    Biarc(t2d(p1), t2d(t1).normalized, t2d(p2), t2d(-t2).normalized, out arc1, out arc2);
+        //}
 
         private static Vector2 t2d(Vector3 position)
         {

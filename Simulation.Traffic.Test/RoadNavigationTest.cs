@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simulation.Traffic.AI;
 using Simulation.Traffic.AI.Navigation;
 using System;
 using System.Collections.Generic;
@@ -75,7 +76,8 @@ namespace Simulation.Traffic.Test
             Lanes = new[]
             {
                 dirtTrack
-            }
+            },
+            SegmentFactory = SegmentAIPathsFactory.Default
         };
         //public readonly AIRoadManager aiRoadManager;
         public readonly Node n_0_0;
@@ -96,16 +98,19 @@ namespace Simulation.Traffic.Test
         public readonly Segment seg_80_0_100_0;
 
         public TestRoads()
-        { 
-
-            this.n_0_0 = Node.CreateAt(0, 0);
-            this.n_20_0 = Node.CreateAt(20, 0);
-            this.n_40_0 = Node.CreateAt(40, 0);
-            this.n_40_20 = Node.CreateAt(40, 20);
-            this.n_60_0 = Node.CreateAt(60, 0);
-            this.n_60_20 = Node.CreateAt(60, 20);
-            this.n_80_0 = Node.CreateAt(80, 0);
-            this.n_100_0 = Node.CreateAt(100, 0);
+        {
+            var desc = new NodeDescription
+            {
+                Factory = NodeAIPathsFactory.Default
+            };
+            this.n_0_0 = Node.CreateAt(0, 0, desc);
+            this.n_20_0 = Node.CreateAt(20, 0, desc);
+            this.n_40_0 = Node.CreateAt(40, 0, desc);
+            this.n_40_20 = Node.CreateAt(40, 20, desc);
+            this.n_60_0 = Node.CreateAt(60, 0, desc);
+            this.n_60_20 = Node.CreateAt(60, 20, desc);
+            this.n_80_0 = Node.CreateAt(80, 0, desc);
+            this.n_100_0 = Node.CreateAt(100, 0, desc);
 
             this.seg_0_0_20_0 = Segment.Create(n_0_0, n_20_0, highway3Lanes);
             this.seg_20_0_40_20 = Segment.Create(n_20_0, n_40_20, highway3Lanes);

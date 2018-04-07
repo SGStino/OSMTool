@@ -78,39 +78,23 @@ namespace Simulation.Traffic
     //    //}
     //}
 
-    public interface ISegment : IObservable<SegmentEvent>, IDisposable, IBoundsObject2D
+    public interface ISegment : IDisposable, IBoundsObject2D
     {
         SegmentDescription Description { get; }
         //IObservable<ILoftPath> LoftPath { get; } 
         IObservableValue<ILoftPath> LoftPath { get; }
 
-        IReadOnlyList<IAIRoute> AIRoutes { get; }
+        IReadOnlyList<SegmentAIRoute> AIRoutes { get; }
 
         ISegmentNodeConnection Start { get; }
         ISegmentNodeConnection End { get; }
     }
 
-    public struct SegmentEvent
+
+
+    public class Segment : ISegment, IDisposable
     {
-        public SegmentEvent(SegmentEventType type) : this()
-        {
-            Type = type;
-        }
 
-        public SegmentEventType Type { get; }
-
-        public static SegmentEvent Disconnect() => new SegmentEvent(SegmentEventType.Disconnected);
-    }
-
-    public enum SegmentEventType
-    {
-        Disconnected
-    }
-
-    public class Segment : ISegment, IObservable<SegmentEvent>, IDisposable
-    {
-        private readonly Subject<SegmentEvent> localEvents = new Subject<SegmentEvent>();
-        private readonly IObservable<((Vector3 position, Vector3 offset, Vector3 tangent) start, (Vector3 position, Vector3 offset, Vector3 tangent) end)> _shapeChange;
         private readonly BehaviorSubjectValue<ILoftPath> _loftPath;
 
         public IObservableValue<ILoftPath> LoftPath => _loftPath;
@@ -128,7 +112,7 @@ namespace Simulation.Traffic
 
         public IObservableValue<Rect> Bounds => _bounds;
 
-        public IReadOnlyList<IAIRoute> AIRoutes { get; }
+        public IReadOnlyList<SegmentAIRoute> AIRoutes { get; }
 
         //private Rect getBounds()
         //{
@@ -153,37 +137,29 @@ namespace Simulation.Traffic
 
             var startPosition = start
                 .Node
-                .Where(t => t.Type == NodeChangeEventType.Moved)
-                .Select(t => t.Position)
-                .StartWith(end.Node.Position);
+                .Position;
 
             var endPosition = end
                 .Node
-                .Where(t => t.Type == NodeChangeEventType.Moved)
-                .Select(t => t.Position)
-                .StartWith(end.Node.Position);
+                .Position;
 
             var startOffsetTangent = start
-                .Where(t => t.Type == SegmentNodeConnectionEventType.OffsetChanged | t.Type == SegmentNodeConnectionEventType.TangentChanged)
-                .Select(t => (offset: t.Offset, tangent: t.Tangent))
-                .StartWith((offset: start.Offset, tangent: start.Tangent));
+                .Offset;
 
             var endOffsetTangent = end
-                .Where(t => t.Type == SegmentNodeConnectionEventType.OffsetChanged | t.Type == SegmentNodeConnectionEventType.TangentChanged)
-                .Select(t => (offset: t.Offset, tangent: t.Tangent))
-                .StartWith((offset: end.Offset, tangent: end.Tangent));
+                .Offset;
 
 
-            _shapeChange = startPosition.CombineLatest(endPosition, startOffsetTangent, endOffsetTangent, (sPos, ePos, s, e) => (start: (position: sPos, offset: s.offset, tangent: s.tangent), end: (position: ePos, offset: e.offset, tangent: e.tangent)));
+            var shapeChange = startPosition.CombineLatest(endPosition, startOffsetTangent, endOffsetTangent, (sPos, ePos, s, e) => (start: (position: sPos, offset: s), end: (position: ePos, offset: e)));
 
 
             if (sampler != null)
-                _shapeChange = _shapeChange.Sample(sampler); // only once per frame
+                shapeChange = shapeChange.Sample(sampler); // only once per frame
 
+             
 
-            _loftPath = new BehaviorSubjectValue<ILoftPath>(_shapeChange.Select(v => new BiArcLoftPath(v.start.position + v.start.offset, v.start.tangent, v.end.position + v.end.offset, v.end.tangent)));
+            _loftPath = new BehaviorSubjectValue<ILoftPath>(shapeChange.Select(v => new BiArcLoftPath(v.start.offset.GetPosition(v.start.position), v.start.offset.Tangent, v.end.offset.GetPosition(v.end.position), v.end.offset.Tangent)));
             dispose.Add(_loftPath);
-            dispose.Add(localEvents);
 
 
 
@@ -193,35 +169,31 @@ namespace Simulation.Traffic
             _bounds = boundsSubject;
 
 
-            AIRoutes = createAiRoutes(_loftPath);
+            AIRoutes = createAiRoutes(description.SegmentFactory);
         }
 
-        private IReadOnlyList<IAIRoute> createAiRoutes(BehaviorSubjectValue<ILoftPath> loftPath)
-        {
-            throw new NotImplementedException();
-        }
+        private SegmentAIRoute[] createAiRoutes(ISegmentAIPathsFactory factory) => factory.CreateRoutes(this);
 
-        public IDisposable Subscribe(IObserver<SegmentEvent> observer)
-        {
-            return ((IObservable<SegmentEvent>)localEvents).Subscribe(observer);
-        }
+
 
         public void Dispose()
         {
-            RaiseEvent(SegmentEvent.Disconnect());
-            localEvents.OnCompleted();
             dispose.Dispose();
         }
 
-        private void RaiseEvent(SegmentEvent segmentEvent) => localEvents.OnNext(segmentEvent);
 
         public static Segment Create(Node startNode, Node endNode, SegmentDescription description)
         {
-            var end = new SegmentNodeConnection(endNode);
-            var start = new SegmentNodeConnection(startNode);
+            var a = Vector3.Normalize(endNode.Position.Value - startNode.Position.Value);
+            var b = -a;
+
+            var end = new SegmentNodeConnection(endNode, a);
+            var start = new SegmentNodeConnection(startNode, b);
             var segment = new Segment(description, start, end);
             start.SetSegment(segment);
             end.SetSegment(segment);
+            startNode.Connect(start);
+            endNode.Connect(end);
             return segment;
         }
     }

@@ -7,20 +7,21 @@ namespace Simulation.Traffic.AI
 {
     public class NodeAIRoute : IAIRoute, IDisposable
     {
-        private ISegmentNodeConnection con;
-        private readonly SegmentAIRoute target;
-        private readonly ISegmentNodeConnection con2;
+        private ISegmentNodeConnection source;
+        private readonly SegmentAIRoute target; 
 
-        public NodeAIRoute(SegmentNodeConnection con, SegmentAIRoute target, NodeAIPath[] paths)
+        public NodeAIRoute(ISegmentNodeConnection source, SegmentAIRoute target, NodeAIPath[] paths)
         {
-            this.con = con;
+            this.source = source;
             this.target = target;
             Paths = paths;
 
-            con2 = target.GetStart();
-        }
+            Destination = target.GetStart();         }
 
-        public INode Node => con.Node;
+        public ISegmentNodeConnection Source { get; }
+        public ISegmentNodeConnection Destination { get; }
+
+        public INode Node => source.Node;
 
         public float Length => 1;
 
@@ -38,9 +39,9 @@ namespace Simulation.Traffic.AI
         IReadOnlyList<IAIPath> IAIRoute.Paths => Paths;
 
 
-        public Vector3 StartPosition => con.GetPosition();
+        public Vector3 StartPosition => source.GetPosition();
 
-        public Vector3 EndPosition => con2.GetPosition();
+        public Vector3 EndPosition => Destination.GetPosition();
 
         public void Dispose()
         {

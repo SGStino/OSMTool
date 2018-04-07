@@ -1,0 +1,80 @@
+﻿using System;
+using System.Linq;
+using UnityEngine;
+using Simulation.Traffic.Utilities;
+using System.Reactive.Linq;
+
+namespace Simulation.Traffic
+{
+    [Obsolete]
+    public static class NodeExtensions
+    {
+        public static void UpdateOffsets(this Node node)
+        {
+            var connections = node.Connections.Value;
+            float minOffset = 1;
+            int segmentCount = connections.Count;
+
+            if (segmentCount <= 0) return;
+            if (segmentCount <= 1)
+            {
+                var radius = connections.Max(l => l.Segment.GetWidth()) / 4;
+                foreach (var seg in connections)
+                    seg.Offset = new Vector3(0, 0, Math.Max(minOffset, radius));
+            }
+            else
+            {
+                var segments = connections.OrderBy(t => Math.Atan2(t.Tangent.z, t.Tangent.x)).ToArray();
+                float[] offsets = new float[segments.Length];
+
+                for (int curr = 0; curr < segmentCount; curr++)
+                {
+                    var prev = (curr - 1);
+                    if (prev < 0) prev += segmentCount;
+
+                    if (getOffsets(node, segments[prev], segments[curr], out var offsetA, out var offsetB))
+                    {
+                        offsets[curr] = Math.Max(minOffset, Mathf.Max(offsets[curr], offsetA));
+                        offsets[prev] = Math.Max(minOffset, Mathf.Max(offsets[prev], offsetB));
+                    }
+                }
+
+                for (int i = 0; i < segmentCount; i++)
+                {
+                    var offset = offsets[i];
+                    if (!float.IsNaN(offset) && !float.IsInfinity(offset))
+                    {
+                        segments[i].Offset = new Vector3(0, 0, Math.Max(minOffset, Mathf.Min(50, offsets[i])));
+                    }
+                    else
+                    {
+
+                    }
+                }
+            }
+
+        }
+
+        private static bool getOffsets(Node node, ISegmentNodeConnection con1, ISegmentNodeConnection con2, out float offsetA, out float offsetB)
+        {
+            var wA = con1.Segment.GetWidth();
+            var wB = con2.Segment.GetWidth();
+
+            var o = node.Position.GetXZ();
+
+            var dA = con1.Tangent.GetXZ();
+            var dB = con2.Tangent.GetXZ();
+
+            var dot = Vector3.Dot(dA, dB);
+            if (dot < -0.75)
+            {
+                offsetA = float.PositiveInfinity;
+                offsetB = float.PositiveInfinity;
+                return false;
+            }
+
+            return VectorMath2D.IntersectsLineLine(o, dA, wA, o, dB, wB, out offsetA, out offsetB);
+
+        }
+    }
+}

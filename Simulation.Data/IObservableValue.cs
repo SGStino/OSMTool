@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Simulation.Data
 {
-    public interface IObservableValue<T> : IObservable<T>
+    public interface IObservableValue<out T> : IObservable<T>
     {
         T Value { get; }
     }
@@ -22,20 +22,21 @@ namespace Simulation.Data
                 subject
             };
         }
-        public BehaviorSubjectValue( T initialValue = default(T))
+        public BehaviorSubjectValue(T initialValue = default(T))
         {
             subject = new BehaviorSubject<T>(initialValue);
             disposable = new CompositeDisposable()
-            { 
+            {
                 subject
             };
+
         }
 
 
         private BehaviorSubject<T> subject;
         private IDisposable disposable;
 
-        public T Value => subject.Value;
+        public T Value { get => subject.Value; set => subject.OnNext(value); }
 
         public IDisposable Subscribe(IObserver<T> observer) => subject.Subscribe(observer);
 
@@ -44,7 +45,7 @@ namespace Simulation.Data
 
     public static class BehaviorSubjectValueExtensions
     {
-        public static BehaviorSubjectValue<T> ToObservableValue<T>(this IObservable<T> source) => new BehaviorSubjectValue<T>(source);
+        public static BehaviorSubjectValue<T> ToObservableValue<T>(this IObservable<T> source, T initialValue = default(T)) => new BehaviorSubjectValue<T>(source, initialValue);
     }
 
 }

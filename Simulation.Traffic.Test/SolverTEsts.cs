@@ -166,9 +166,11 @@ namespace Simulation.Traffic.Test
 
 
             LoftPath = new BehaviorSubjectValue<ILoftPath>(new LinearPath(route.StartPosition, route.EndPosition));
-            SideOffsetStart = source == null ? index * 2 : source.SideOffsetEnd;
-            SideOffsetEnd = index * 2;
+            var sideOffsetStart = source == null ? index * 2 : source.Offsets.Value.SideOffsetStart;
+            var sideOffsetEnd = index * 2;
             Index = index;
+
+            Offsets = new BehaviorSubjectValue<PathOffsets>(new PathOffsets(sideOffsetStart, sideOffsetEnd, 0, 0));
 
             this.pathsValue = new BehaviorSubjectValue<IEnumerable<IAIPath>>(paths);
         }
@@ -177,13 +179,7 @@ namespace Simulation.Traffic.Test
 
         public IObservableValue<ILoftPath> LoftPath { get; }
 
-        public float SideOffsetStart { get; }
 
-        public float SideOffsetEnd { get; }
-
-        public float PathOffsetStart => 0;
-
-        public float PathOffsetEnd => 0;
 
         public IAIPath LeftParralel => route.Paths.OfType<TestPath>().FirstOrDefault(t => t.Index == Index - 1);
 
@@ -202,6 +198,8 @@ namespace Simulation.Traffic.Test
         public VehicleTypes VehicleTypes => VehicleTypes.Vehicle;
 
         public IEnumerable<IAIGraphNode> NextNodes => NextPaths.Value;
+
+        public IObservableValue<PathOffsets> Offsets { get; }
 
         internal void Connect(TestPath p)
         {

@@ -33,7 +33,7 @@ namespace Simulation.Traffic.Lofts
         public static void SnapTo(this ILoftPath path, Vector3 point, out Vector3 snapped, out float distance)
         {
             path.SnapTo(point, out distance);
-            snapped = path.GetTransformedPoint(distance, point);
+            snapped = path.GetTransformedPoint(distance, Vector3.zero);
         }
     }
 }

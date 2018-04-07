@@ -3,6 +3,8 @@ using Simulation.Traffic.AI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using UnityEngine;
 
@@ -56,98 +58,85 @@ namespace Simulation.Traffic
     //    }
     //}
 
-    public struct SegmentNodeConnectionEvent
+
+
+    public struct ConnectionOffset
     {
-        public SegmentNodeConnectionEvent(Vector3 offset, Vector3 tangent, SegmentNodeConnectionEventType type) : this()
+        public ConnectionOffset(Vector3 offset, Vector3 tangent) : this()
         {
             Offset = offset;
             Tangent = tangent;
-            Type = type;
         }
 
         public Vector3 Offset { get; }
         public Vector3 Tangent { get; }
-        public SegmentNodeConnectionEventType Type { get; }
-
-        public static SegmentNodeConnectionEvent TangentChanged(Vector3 offset, Vector3 tangent) => new SegmentNodeConnectionEvent(offset, tangent, SegmentNodeConnectionEventType.TangentChanged);
-        public static SegmentNodeConnectionEvent OffsetChanged(Vector3 offset, Vector3 tangent) => new SegmentNodeConnectionEvent(offset, tangent, SegmentNodeConnectionEventType.OffsetChanged);
-        public static SegmentNodeConnectionEvent Disconnected(Vector3 offset, Vector3 tangent) => new SegmentNodeConnectionEvent(offset, tangent, SegmentNodeConnectionEventType.Disconnected);
     }
 
-    public enum SegmentNodeConnectionEventType : byte
-    {
-        TangentChanged,
-        OffsetChanged,
-        Disconnected
-    }
-
-    public interface ISegmentNodeConnection : IObservable<SegmentNodeConnectionEvent>, IDisposable
+    public interface ISegmentNodeConnection : IDisposable
     {
         ISegment Segment { get; }
         INode Node { get; }
-        Vector3 Offset { get; set; }
-        Vector3 Tangent { get; set; }
-        IObservableValue<IReadOnlyList<IAIRoute>> OutgoingAIRoutes { get; }
-        IObservableValue<IReadOnlyList<IAIRoute>> IncomingAIRoutes { get; }
+        IObservableValue<ConnectionOffset> Offset { get; }
+        IObservableValue<IReadOnlyList<NodeAIRoute>> OutgoingAIRoutes { get; }
+        //IObservableValue<IReadOnlyList<IAIRoute>> IncomingAIRoutes { get; }
     }
     public class SegmentNodeConnection : ISegmentNodeConnection
     {
-        private readonly Subject<SegmentNodeConnectionEvent> localEvents = new Subject<SegmentNodeConnectionEvent>();
-
-        private Vector3 tangent;
-        private Vector3 offset;
-
+        private readonly CompositeDisposable disposable;
 
         public INode Node { get; }
         public ISegment Segment { get; private set; }
 
-        public Vector3 Offset
-        {
-            get { return offset; }
-            set
-            {
-                if (offset != value)
-                {
-                    offset = value;
-                    RaiseEvent(SegmentNodeConnectionEvent.OffsetChanged(value, tangent));
-                }
-            }
-        }
+        private BehaviorSubjectValue<ConnectionOffset> offset = new BehaviorSubjectValue<ConnectionOffset>();
 
-        private void RaiseEvent(SegmentNodeConnectionEvent segmentNodeConnectionEvent) => localEvents.OnNext(segmentNodeConnectionEvent);
+
 
         public void Dispose()
         {
-            RaiseEvent(SegmentNodeConnectionEvent.Disconnected(offset, tangent));
-            localEvents.OnCompleted();
-            localEvents.Dispose();
+            disposable.Dispose();
         }
 
-        public IDisposable Subscribe(IObserver<SegmentNodeConnectionEvent> observer) => localEvents.Subscribe(observer);
+        void Move(ConnectionOffset transform) => offset.Value = transform;
 
-        public Vector3 Tangent
+        public IObservableValue<IReadOnlyList<NodeAIRoute>> OutgoingAIRoutes { get; }
+
+        public IObservableValue<ConnectionOffset> Offset => offset;
+
+        public SegmentNodeConnection(INode node, Vector3 tangent)
         {
-            get { return tangent; }
-            set
-            {
-                if (value.magnitude == 0) throw new InvalidOperationException();
-                if (tangent != value)
+            this.disposable = new CompositeDisposable();
+            Node = node; 
+            var routes = node.Connections.Where(n => n.Contains(this)).Select(n => updateAIRoutes(OutgoingAIRoutes?.Value, n)).ToObservableValue(new NodeAIRoute[0]);
+            disposable.Add(routes);
+            this.OutgoingAIRoutes = routes;
+            disposable.Add(offset);
+            offset.Value = new ConnectionOffset(new Vector3(0, 0, 5), tangent);
+        }
+
+        private IReadOnlyList<NodeAIRoute> updateAIRoutes(IReadOnlyList<NodeAIRoute> oldRoutes, IReadOnlyList<ISegmentNodeConnection> n)
+        {
+            INodeAIPathsFactory factory = Node.Description.Factory;
+
+            var otherDestinations = new HashSet<ISegmentNodeConnection>(n.Where(i => i != this));
+
+            var newRoutes = new List<NodeAIRoute>();
+
+            if (oldRoutes != null)
+                foreach (var routes in oldRoutes.GroupBy(k => k.Destination))
                 {
-                    tangent = value;
-                    RaiseEvent(SegmentNodeConnectionEvent.TangentChanged(offset, tangent));
+                    if (otherDestinations.Remove(routes.Key))
+                        newRoutes.AddRange(routes);
+                    else
+                        new CompositeDisposable(routes).Dispose();// this route is no longer connected!
                 }
+
+            foreach (var newDestination in otherDestinations)
+            {
+                newRoutes.AddRange(factory.CreateRoutes(this, newDestination));
             }
-        }
 
-        // TODO: update based on connections in node
-        public IObservableValue<IReadOnlyList<IAIRoute>> OutgoingAIRoutes => throw new NotImplementedException();
 
-        public IObservableValue<IReadOnlyList<IAIRoute>> IncomingAIRoutes => throw new NotImplementedException();
-
-        public SegmentNodeConnection(INode node)
-        {
-            Node = node;
-            offset = new Vector3(0, 0, 5);
+            return newRoutes;
         }
 
         internal void SetSegment(ISegment segment)

@@ -285,18 +285,13 @@ namespace Simulation.Traffic.AI.Agents
 
         public AgentAIPath(BiArcLoftPath loft)
         {
-            this.LoftPath = new BehaviorSubjectValue<ILoftPath>(loft);
+            LoftPath = new BehaviorSubjectValue<ILoftPath>(loft);
+            Offsets = new BehaviorSubjectValue<PathOffsets>(new PathOffsets(0, 0, 0, 0));
         }
 
         public IObservableValue<ILoftPath> LoftPath { get; }
-
-        public float SideOffsetStart => 0;
-
-        public float SideOffsetEnd => 0;
-
-        public float PathOffsetStart => 0;
-
-        public float PathOffsetEnd => 0;
+        public IObservableValue<PathOffsets> Offsets { get; }
+      
 
         public IAIPath LeftParralel => null;
 

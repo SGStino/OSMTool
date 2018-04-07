@@ -7,7 +7,7 @@ namespace Simulation.Traffic.AI
     public class SegmentAIRoute : IAIRoute
     {
         public Segment Segment { get; }
-        public SegmentAIPath[] Paths { get; }
+        public IReadOnlyList<SegmentAIPath> Paths { get; }
 
         public bool Reverse { get; }
 

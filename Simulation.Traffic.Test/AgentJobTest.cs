@@ -40,7 +40,6 @@ namespace Simulation.Traffic.Test
         public void AgentJobTestFindRoute()
         {
 
-
             var startRoute = new[] { routeMap.mR0 };
             var endRoute = new[] { routeMap.mR5 };
 

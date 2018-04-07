@@ -37,8 +37,8 @@ namespace Simulation.Traffic.Utilities
             var signA = Mathf.Sign(dotA);
             var signB = Mathf.Sign(dotB);
 
-            tA *= -signA;
-            tB *= -signB;
+            tA *= signA;
+            tB *= signB;
 
             IntersectsLineLine(a + tA * widthA * 0.5f, dA, b + tB * widthB * 0.5f, dB, out distB, out distA);
             return true;

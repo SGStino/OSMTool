@@ -20,8 +20,8 @@ namespace Simulation.Traffic
 
     public static class SegmentExtensions
     {
-        public static Vector3 GetHeading(this ISegmentNodeConnection connnection) => connnection.Segment.Start == connnection ? -connnection.Tangent : connnection.Tangent;
-        public static void SetHeading(this ISegmentNodeConnection connnection, Vector3 heading) => connnection.Tangent = connnection.Segment.Start == connnection ? -heading : heading;
+        public static Vector3 GetHeading(this ISegmentNodeConnection connnection) => connnection.Segment.Start == connnection ? -connnection.Offset.Value.Tangent : connnection.Offset.Value.Tangent;
+        //public static void SetHeading(this ISegmentNodeConnection connnection, Vector3 heading) => connnection.Offset.Value.Tangent = connnection.Segment.Start == connnection ? -heading : heading;
 
         public static float GetWidth(this ISegment segment)
         {
@@ -35,12 +35,19 @@ namespace Simulation.Traffic
 
         public static Vector3 GetPosition(this ISegmentNodeConnection con, Vector3 additionalOffset)
         {
-            var off = con.Offset + additionalOffset;
-            var tangent = con.Tangent;
-            return con.Node.Position
-            + tangent * off.z
-            + Vector3.Cross(tangent, Vector3.up) * off.x
-            + Vector3.up * off.y;
+            var offsets = con.Offset.Value;
+            var off = offsets.Offset + additionalOffset;
+            var tangent = offsets.Tangent;
+            return GetPosition(con.Node.Position.Value, tangent, off); 
+        }
+
+        public static Vector3 GetPosition(this ConnectionOffset offset, Vector3 position)
+            => GetPosition(position, offset.Tangent, offset.Offset);
+        public static Vector3 GetPosition(Vector3 position, Vector3 tangent, Vector3 offset)
+        {
+            return position + tangent * offset.z
+            + Vector3.Cross(tangent, Vector3.up) * offset.x
+            + Vector3.up * offset.y;
         }
     }
 }

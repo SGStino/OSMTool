@@ -5,27 +5,32 @@ using System.Linq;
 using Simulation.Traffic.AI.Agents;
 using Simulation.Data;
 using System.Reactive.Linq;
+using System.Reactive.Disposables;
 
 namespace Simulation.Traffic.AI
 {
     public class SegmentAIPath : IAgentChainAIPath, IDisposable
     {
+        private CompositeDisposable disposable = new CompositeDisposable();
         public byte ID { get; }
         private readonly Segment segment;
         private readonly LaneDescription laneDescription;
-        private readonly float offset;
         private readonly LinkedAgentChain agents;
 
         public SegmentAIPath(Segment segment, LaneDescription laneDescription, float offset, byte id)
         {
             this.segment = segment;
             this.laneDescription = laneDescription;
-            this.offset = offset;
 
             this.agents = new LinkedAgentChain();
 
             var nextPaths = this.GetEnd().OutgoingAIRoutes.Select(routes => routes.SelectMany(route => route.Paths)).ToObservableValue();
+            disposable.Add(nextPaths);
             NextPaths = nextPaths;
+
+            var pathShape = new BehaviorSubjectValue<PathOffsets>(new PathOffsets(offset, offset, 0, 0));
+            disposable.Add(pathShape);
+            this.Offsets = pathShape;
         }
 
 
@@ -36,7 +41,7 @@ namespace Simulation.Traffic.AI
         public bool Reverse => laneDescription.Reverse;
 
         public IObservableValue<IEnumerable<IAIPath>> NextPaths { get; }
-
+        public IObservableValue<PathOffsets> Offsets { get; }
         public LaneType LaneType => laneDescription.LaneType;
 
         public VehicleTypes VehicleTypes => laneDescription.VehicleTypes;
@@ -54,13 +59,7 @@ namespace Simulation.Traffic.AI
 
         public IObservableValue<ILoftPath> LoftPath => Segment.LoftPath;
 
-        public float SideOffsetStart => offset;
 
-        public float SideOffsetEnd => offset;
-
-        public float PathOffsetStart => 0;
-
-        public float PathOffsetEnd => 0;
 
         public Segment Segment => segment;
 
@@ -76,7 +75,7 @@ namespace Simulation.Traffic.AI
 
         public void Dispose()
         {
-            // TODO: notify agents of path removal
+            disposable.Dispose();             
             agents.Clear();
         }
     }

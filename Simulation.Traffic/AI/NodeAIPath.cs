@@ -21,17 +21,21 @@ namespace Simulation.Traffic.AI
             this.destination = destination;
             this.agents = new LinkedAgentChain();
             this.LoftPath = path;
-           var nextPaths = new BehaviorSubjectValue<IEnumerable<IAIPath>>(new[] { destination });
-            NextPaths = nextPaths;
+
+            var shape = new BehaviorSubjectValue<PathOffsets>(new PathOffsets(0, 0, 0, 0));
+            dispose.Add(shape);
+            this.Offsets = shape;
+
+            var nextPaths = new BehaviorSubjectValue<IEnumerable<IAIPath>>(new[] { destination });
             dispose.Add(nextPaths);
+            NextPaths = nextPaths;
+
             dispose.Add(Disposable.Create(agents.Clear));
         }
 
         public IObservableValue<ILoftPath> LoftPath { get; }
+        public IObservableValue<PathOffsets> Offsets { get; }
 
-        public float SideOffsetStart => 0;
-
-        public float SideOffsetEnd => 0;
 
         public IAIPath LeftParralel { get; private set; }
 
@@ -43,15 +47,13 @@ namespace Simulation.Traffic.AI
 
         public float AverageSpeed => (source.AverageSpeed + destination.AverageSpeed) / 2;
 
-        public IObservableValue<IEnumerable<IAIPath>> NextPaths { get; }  
+        public IObservableValue<IEnumerable<IAIPath>> NextPaths { get; }
 
         public LaneType LaneType => destination.LaneType;
 
         public VehicleTypes VehicleTypes => destination.VehicleTypes;
 
-        public float PathOffsetStart => 0.0f;
 
-        public float PathOffsetEnd => 0.0f;
 
         public IObservableValue<ILoftPath> Path => LoftPath;
 
