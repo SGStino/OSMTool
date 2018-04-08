@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Rendering
 {
@@ -30,28 +30,7 @@ namespace Simulation.Rendering
             Indices = indices.ToArray();
         }
 
-        public void ToMesh(Mesh mesh)
-        {
-            mesh.Clear();
-            setMeshData(mesh);
-        }
-
-        private void setMeshData(Mesh mesh)
-        {
-            mesh.vertices = Positions;
-            mesh.tangents = Tangents;
-            mesh.normals = Normals;
-            mesh.uv = Texcoords;
-            mesh.SetIndices(Indices, MeshTopology.Triangles, 0);
-            mesh.UploadMeshData(true);
-        }
-
-        public Mesh CreateMesh(string name)
-        {
-            var mesh = new Mesh() { name = name };
-            setMeshData(mesh);
-            return mesh;
-        }
+ 
 
 
         public static MeshData Merge(params MeshData[] data) => Merge((IReadOnlyList<MeshData>)data);

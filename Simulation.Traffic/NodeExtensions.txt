@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using UnityEngine;
+using System.Numerics;
 using Simulation.Traffic.Utilities;
 using System.Reactive.Linq;
 
@@ -24,7 +24,7 @@ namespace Simulation.Traffic
             }
             else
             {
-                var segments = connections.OrderBy(t => Math.Atan2(t.Tangent.z, t.Tangent.x)).ToArray();
+                var segments = connections.OrderBy(t => Math.Atan2(t.Tangent.Z, t.Tangent.X)).ToArray();
                 float[] offsets = new float[segments.Length];
 
                 for (int curr = 0; curr < segmentCount; curr++)
@@ -34,8 +34,8 @@ namespace Simulation.Traffic
 
                     if (getOffsets(node, segments[prev], segments[curr], out var offsetA, out var offsetB))
                     {
-                        offsets[curr] = Math.Max(minOffset, Mathf.Max(offsets[curr], offsetA));
-                        offsets[prev] = Math.Max(minOffset, Mathf.Max(offsets[prev], offsetB));
+                        offsets[curr] = Math.Max(minOffset, MathF.Max(offsets[curr], offsetA));
+                        offsets[prev] = Math.Max(minOffset, MathF.Max(offsets[prev], offsetB));
                     }
                 }
 
@@ -44,7 +44,7 @@ namespace Simulation.Traffic
                     var offset = offsets[i];
                     if (!float.IsNaN(offset) && !float.IsInfinity(offset))
                     {
-                        segments[i].Offset = new Vector3(0, 0, Math.Max(minOffset, Mathf.Min(50, offsets[i])));
+                        segments[i].Offset = new Vector3(0, 0, Math.Max(minOffset, MathF.Min(50, offsets[i])));
                     }
                     else
                     {

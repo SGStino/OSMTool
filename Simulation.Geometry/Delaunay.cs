@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Geometry
 {
@@ -14,13 +14,13 @@ namespace Simulation.Geometry
         /// <returns>Returns a triangle that encompasses all triangulation Vector2s.</returns>
         private static Triangle SuperTriangle(IList<Vector2> triangulationVector2s)
         {
-            float M = triangulationVector2s[0].x;
+            float M = triangulationVector2s[0].X;
 
             // get the extremal x and y coordinates
             for (int i = 1; i < triangulationVector2s.Count; i++)
             {
-                float xAbs = Math.Abs(triangulationVector2s[i].x);
-                float yAbs = Math.Abs(triangulationVector2s[i].y);
+                float xAbs = Math.Abs(triangulationVector2s[i].X);
+                float yAbs = Math.Abs(triangulationVector2s[i].Y);
                 if (xAbs > M) M = xAbs;
                 if (yAbs > M) M = yAbs;
             }
@@ -58,12 +58,12 @@ namespace Simulation.Geometry
             var Vertex2 = points[triangle.p2];
             var Vertex3 = points[triangle.p3];
 
-            float ax = Vertex1.x - point.x;
-            float ay = Vertex1.y - point.y;
-            float bx = Vertex2.x - point.x;
-            float by = Vertex2.y - point.y;
-            float cx = Vertex3.x - point.x;
-            float cy = Vertex3.y - point.y;
+            float ax = Vertex1.X - point.X;
+            float ay = Vertex1.Y - point.Y;
+            float bx = Vertex2.X - point.X;
+            float by = Vertex2.Y - point.Y;
+            float cx = Vertex3.X - point.X;
+            float cy = Vertex3.Y - point.Y;
 
             float det_ab = ax * by - bx * ay;
             float det_bc = bx * cy - cx * by;

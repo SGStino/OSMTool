@@ -186,7 +186,7 @@ namespace Simulation.Traffic.IO
             var segments = roads.Segments.ToArray();
 
             BeginWriteNodes();
-            foreach (var node in nodes.OrderBy(n => n.Position.sqrMagnitude))
+            foreach (var node in nodes.OrderBy(n => n.Position.LengthSquared()))
                 Write(node);
             EndWriteNodes();
             BeginWriteDescriptions();
@@ -194,7 +194,7 @@ namespace Simulation.Traffic.IO
                 Write(description);
             EndWriteDescriptions();
             BeginWriteSegments();
-            foreach (var segment in segments.OrderBy(s => s.Start.Node.Position.sqrMagnitude))
+            foreach (var segment in segments.OrderBy(s => s.Start.Node.Position.LengthSquared()))
                 Write(segment);
             EndWriteSegments();
             writer.Flush();

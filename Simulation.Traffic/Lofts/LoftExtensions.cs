@@ -4,7 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.Lofts
 {
@@ -27,13 +28,13 @@ namespace Simulation.Traffic.Lofts
 
             path.SnapTo(point, out distance);
             var snap = path.GetTransform(distance).GetTranslate();
-            return (point - snap).magnitude;
+            return (point - snap).Length();
         }
 
         public static void SnapTo(this ILoftPath path, Vector3 point, out Vector3 snapped, out float distance)
         {
             path.SnapTo(point, out distance);
-            snapped = path.GetTransformedPoint(distance, Vector3.zero);
+            snapped = path.GetTransformedPoint(distance, Vector3.Zero);
         }
     }
 }

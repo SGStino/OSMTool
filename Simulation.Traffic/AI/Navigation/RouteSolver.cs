@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Traffic.AI.Navigation
 {
@@ -26,7 +26,7 @@ namespace Simulation.Traffic.AI.Navigation
 
         protected override float HeuristicCostEstimate(IAIRoute s, IAIRoute d)
         {
-            return (s.EndPosition - d.StartPosition).sqrMagnitude;
+            return (s.EndPosition - d.StartPosition).LengthSquared();
         }
     }
 }

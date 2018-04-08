@@ -7,7 +7,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.Test
 {
@@ -25,7 +26,7 @@ namespace Simulation.Traffic.Test
             var agent = new Agent(finder, runner);
 
             Assert.AreEqual(AgentStatus.Initializing, agent.CurrentStatus);
-            agent.Teleport(Matrix4x4.Translate(start));
+            agent.Teleport(Matrix4x4.CreateTranslation(start));
             Assert.AreEqual(AgentStatus.WaitingForRoute, agent.CurrentStatus);
 
             Assert.IsNotNull(runner.Job);
@@ -55,31 +56,31 @@ namespace Simulation.Traffic.Test
             Assert.AreEqual(AgentStatus.GoingToRoute, agent.CurrentStatus);
             while (agent.CurrentStatus == AgentStatus.GoingToRoute)
             {
-                pointHistory.Add(agent.CurrentTransform.MultiplyPoint3x4(Vector3.zero));
+                pointHistory.Add(agent.CurrentTransform.MultiplyPoint3x4(Vector3.Zero));
                 agent.Update(1 / 60.0f);
             }
 
             Assert.AreEqual(AgentStatus.FollowingRoute, agent.CurrentStatus);
             while (agent.CurrentStatus == AgentStatus.FollowingRoute)
             {
-                pointHistory.Add(agent.CurrentTransform.MultiplyPoint3x4(Vector3.zero));
+                pointHistory.Add(agent.CurrentTransform.MultiplyPoint3x4(Vector3.Zero));
                 agent.Update(1 / 60.0f);
             }
 
             Assert.AreEqual(AgentStatus.GoingToDestination, agent.CurrentStatus);
             while (agent.CurrentStatus == AgentStatus.GoingToDestination)
             {
-                pointHistory.Add(agent.CurrentTransform.MultiplyPoint3x4(Vector3.zero));
+                pointHistory.Add(agent.CurrentTransform.MultiplyPoint3x4(Vector3.Zero));
                 agent.Update(1 / 60.0f);
             }
             Assert.AreEqual(AgentStatus.DestinationReached, agent.CurrentStatus);
 
-            //var pointsString = string.Join(Environment.NewLine, pointHistory.Select(t => $"{t.x.ToString(CultureInfo.InvariantCulture)}, {t.z.ToString(CultureInfo.InvariantCulture)}"));
+            //var pointsString = string.Join(Environment.NewLine, pointHistory.Select(t => $"{t.X.ToString(CultureInfo.InvariantCulture)}, {t.Z.ToString(CultureInfo.InvariantCulture)}"));
 
             //var routePoints = string.Join(Environment.NewLine, agent.RouteSequence.SelectMany(t => new[]
             //{
-            //    $"{t.StartPosition.x.ToString(CultureInfo.InvariantCulture)}, {t.StartPosition.z.ToString(CultureInfo.InvariantCulture)}",
-            //    $"{t.EndPosition.x.ToString(CultureInfo.InvariantCulture)}, {t.EndPosition.z.ToString(CultureInfo.InvariantCulture)}"
+            //    $"{t.StartPosition.X.ToString(CultureInfo.InvariantCulture)}, {t.StartPosition.Z.ToString(CultureInfo.InvariantCulture)}",
+            //    $"{t.EndPosition.X.ToString(CultureInfo.InvariantCulture)}, {t.EndPosition.Z.ToString(CultureInfo.InvariantCulture)}"
             //}));
              
         }
@@ -88,9 +89,9 @@ namespace Simulation.Traffic.Test
         {
             var start = mR5.StartPosition;
             var end = mR5.EndPosition;
-            var dir = (end - start).normalized;
+            var dir = (end - start).Normalized();
 
-            var sideVector = Vector3.Cross(Vector3.up, dir) * side;
+            var sideVector = Vector3.Cross(Directions3.Up, dir) * side;
 
             return Vector3.Lerp(start, end, progress) + sideVector;
         }

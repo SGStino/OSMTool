@@ -1,8 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Simulation.Traffic.Lofts;
-using UnityEngine;
+using System.Numerics;
 using System.Linq;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic
 {
@@ -30,7 +31,7 @@ namespace Simulation.Traffic
 
         public static Vector3 GetPosition(this ISegmentNodeConnection con)
         {
-            return GetPosition(con, Vector3.zero);
+            return GetPosition(con, Vector3.Zero);
         }
 
         public static Vector3 GetPosition(this ISegmentNodeConnection con, Vector3 additionalOffset)
@@ -45,9 +46,9 @@ namespace Simulation.Traffic
             => GetPosition(position, offset.Tangent, offset.Offset);
         public static Vector3 GetPosition(Vector3 position, Vector3 tangent, Vector3 offset)
         {
-            return position + tangent * offset.z
-            + Vector3.Cross(tangent, Vector3.up) * offset.x
-            + Vector3.up * offset.y;
+            return position + tangent * offset.Z
+            + Vector3.Cross(tangent, Directions3.Up) * offset.X
+            + Directions3.Up * offset.Y;
         }
     }
 }

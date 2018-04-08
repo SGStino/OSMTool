@@ -4,10 +4,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Simulation.Traffic.Lofts;
 using System.Threading;
-using UnityEngine;
+using System.Numerics;
 using System.Reactive.Linq;
 using System;
 using Simulation.Data;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.AI
 {
@@ -42,8 +43,8 @@ namespace Simulation.Traffic.AI
         //            var headingA = isAStart ? segA.Start.GetHeading() : segB.End.GetHeading();
         //            var headingB = isBStart ? segB.Start.GetHeading() : segB.End.GetHeading();
 
-        //            var pointA = loftA.GetTransformedPoint(offsetA, Vector3.zero);
-        //            var pointB = loftB.GetTransformedPoint(offsetB, Vector3.zero);
+        //            var pointA = loftA.GetTransformedPoint(offsetA, Vector3.Zero);
+        //            var pointB = loftB.GetTransformedPoint(offsetB, Vector3.Zero);
 
         //            var loft = new BiArcLoftPath(pointA, headingA, pointB, headingB);
 
@@ -84,8 +85,8 @@ namespace Simulation.Traffic.AI
             var from = incoming.GetEnd();
             var to = outgoing.GetStart();
 
-            var inPaths = incoming.Paths.OrderBy(t => Mathf.Abs(t.Offsets.Value.SideOffsetStart)).ToArray();
-            var outPaths = outgoing.Paths.OrderBy(t => Mathf.Abs(t.Offsets.Value.SideOffsetStart)).ToArray();
+            var inPaths = incoming.Paths.OrderBy(t => MathF.Abs(t.Offsets.Value.SideOffsetStart)).ToArray();
+            var outPaths = outgoing.Paths.OrderBy(t => MathF.Abs(t.Offsets.Value.SideOffsetStart)).ToArray();
 
 
             if (inPaths.Length == outPaths.Length)
@@ -104,7 +105,7 @@ namespace Simulation.Traffic.AI
             {
                 float angle = getAngle(from, to);
 
-                int index = Mathf.RoundToInt(angle * 16 / (2 * Mathf.PI));
+                int index = MathF.RoundToInt(angle * 16 / (2 * MathF.PI));
 
                 if (index < 0) index += 16;
                 if (index >= 16) index -= 16;
@@ -135,10 +136,10 @@ namespace Simulation.Traffic.AI
             var fromTangent = from.Offset.Value.Tangent;
             var toTangent = to.Offset.Value.Tangent;
 
-            var a2d = new Vector2(fromTangent.x, fromTangent.z);
-            var b2d = -new Vector2(toTangent.x, toTangent.z);
+            var a2d = new Vector2(fromTangent.X, fromTangent.Z);
+            var b2d = -new Vector2(toTangent.X, toTangent.Z);
 
-            return Mathf.Atan2(a2d.y, a2d.x) - Mathf.Atan2(b2d.y, b2d.x);
+            return MathF.Atan2(a2d.Y, a2d.X) - MathF.Atan2(b2d.Y, b2d.X);
         }
 
         private static bool[] getAngleMap(Turn turn)
@@ -180,11 +181,11 @@ namespace Simulation.Traffic.AI
 
             var loft = end.CombineLatest<Matrix4x4, Matrix4x4, ILoftPath>(start, (t1, t2) =>
             {
-                var point1 = t1.MultiplyPoint3x4(Vector3.zero);
-                var point2 = t2.MultiplyPoint3x4(Vector3.zero);
+                var point1 = t1.MultiplyPoint3x4(Vector3.Zero);
+                var point2 = t2.MultiplyPoint3x4(Vector3.Zero);
 
-                var f1 = t1.MultiplyVector(Vector3.forward).normalized;
-                var f2 = t2.MultiplyVector(Vector3.forward).normalized;
+                var f1 = t1.MultiplyVector(Directions3.Forward).Normalized();
+                var f2 = t2.MultiplyVector(Directions3.Forward).Normalized();
                 return new BiArcLoftPath(point1, -f1, point2, -f2);
             });
 

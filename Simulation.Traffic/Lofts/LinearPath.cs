@@ -5,7 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.Lofts
 {
@@ -23,19 +24,19 @@ namespace Simulation.Traffic.Lofts
         public LinearPath(Vector3 start, Vector3 end)
         {
 #if DEBUG
-            if (float.IsNaN(start.x)) throw new InvalidOperationException("start.x is not a number");
-            if (float.IsNaN(start.y)) throw new InvalidOperationException("start.y is not a number");
-            if (float.IsNaN(start.z)) throw new InvalidOperationException("start.z is not a number");
-            if (float.IsNaN(end.x)) throw new InvalidOperationException("end.x is not a number");
-            if (float.IsNaN(end.y)) throw new InvalidOperationException("end.y is not a number");
-            if (float.IsNaN(end.z)) throw new InvalidOperationException("end.z is not a number");
+            if (float.IsNaN(start.X)) throw new InvalidOperationException("start.X is not a number");
+            if (float.IsNaN(start.Y)) throw new InvalidOperationException("start.Y is not a number");
+            if (float.IsNaN(start.Z)) throw new InvalidOperationException("start.Z is not a number");
+            if (float.IsNaN(end.X)) throw new InvalidOperationException("end.X is not a number");
+            if (float.IsNaN(end.Y)) throw new InvalidOperationException("end.Y is not a number");
+            if (float.IsNaN(end.Z)) throw new InvalidOperationException("end.Z is not a number");
 #endif
 
             var dir = (end - start);
-            this.length = dir.magnitude;
+            this.length = dir.Length();
             this.start = start;
             this.dir = dir / length;
-            this.tangent = Vector3.Cross(this.dir, Vector3.up).normalized;
+            this.tangent = Vector3.Normalize(Vector3.Cross(this.dir, Directions3.Up));
         }
 
         public float Length { get { return length; } }
@@ -48,16 +49,16 @@ namespace Simulation.Traffic.Lofts
 
             var forward = dir;
 
-            side = Vector3.Cross(Vector3.up, forward).normalized;
+            side = Vector3.Normalize(Vector3.Cross(Directions3.Up, forward));
 
             var up = Vector3.Cross(forward, side);
 
 
-            Matrix4x4 matrix = Matrix4x4.identity;
+            Matrix4x4 matrix = Matrix4x4.Identity;
             matrix.SetColumn(0, side);
             matrix.SetColumn(1, up);
             matrix.SetColumn(2, forward);
-            matrix.SetColumn(3, new Vector4(position.x, position.y, position.z, 1));
+            matrix.SetColumn(3, new Vector4(position.X, position.Y, position.Z, 1));
             return matrix;
         }
 
@@ -79,8 +80,8 @@ namespace Simulation.Traffic.Lofts
             return false;
         }
 
-        public Rect GetBounds(float width)
-        { 
+        public Rectangle GetBounds(float width)
+        {
 
             float minX = float.PositiveInfinity;
             float maxX = float.NegativeInfinity;
@@ -101,13 +102,13 @@ namespace Simulation.Traffic.Lofts
                 var min = point - offset;
                 var max = point + offset;
 
-                minX = Mathf.Min(minX, min.x, max.x);
-                minZ = Mathf.Min(minZ, min.z, max.z);
-                maxX = Mathf.Max(maxX, max.x, max.x);
-                maxZ = Mathf.Max(maxZ, max.z, max.z);
+                minX = MathF.Min(minX, min.X, max.X);
+                minZ = MathF.Min(minZ, min.Z, max.Z);
+                maxX = MathF.Max(maxX, max.X, max.X);
+                maxZ = MathF.Max(maxZ, max.Z, max.Z);
             }
 
-            return Rect.MinMaxRect(minX, minZ, maxX, maxZ);
+            return Rectangle.MinMaxRectangle(minX, minZ, maxX, maxZ);
         }
     }
 }

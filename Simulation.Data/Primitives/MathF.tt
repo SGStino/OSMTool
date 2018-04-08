@@ -1,0 +1,45 @@
+﻿<#@ template language="C#v4.6" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ output extension=".g.cs" #>
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace System
+{
+    public static partial class MathF
+    {
+<#
+var methods = typeof(System.Math).GetMethods();
+foreach(var method in methods.GroupBy(m => m.Name)) //
+{
+  
+    foreach(var overload in method.Where(t => t.ReturnParameter.ParameterType == typeof(double)))
+    {
+    #>
+        public static float <#=method.Key#>(<#
+var parameters = overload.GetParameters();
+bool first = true;
+foreach(var param in parameters)
+{
+var type = param.ParameterType;
+if(type == typeof(double))
+type = typeof(float);
+if(first) first = false; else {#>, <#}
+    #><#=type.Name#> <#=param.Name#><#
+}
+#>) => (float)Math.<#=method.Key#>(<#
+first = true;
+foreach(var param in parameters)
+{
+if(first) first = false; else {#>, <#}
+#><#=param.Name#><#
+}
+#>);                
+<#
+    }
+}
+#>
+    }
+}

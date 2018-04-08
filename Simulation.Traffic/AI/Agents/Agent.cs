@@ -4,9 +4,10 @@ using Simulation.Traffic.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Traffic.AI.Agents
 {
@@ -177,7 +178,7 @@ namespace Simulation.Traffic.AI.Agents
                 if (p < 0) // stand still, will you
                     return 0;
                 if (p < 1)
-                    return Mathf.Sqrt(p) * maxSpeed;
+                    return MathF.Sqrt(p) * maxSpeed;
                 return maxSpeed * SpeedVariance;
             }
             return maxSpeed * SpeedVariance;
@@ -214,7 +215,7 @@ namespace Simulation.Traffic.AI.Agents
 
         public float Speed => getSpeed(currentState);
 
-        private Matrix4x4 getTransform(AgentState state) => getPath(state)?.GetTransform(state.Progress) ?? Matrix4x4.zero;
+        private Matrix4x4 getTransform(AgentState state) => getPath(state)?.GetTransform(state.Progress) ?? default(Matrix4x4);
 
 
 

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Traffic.IO
 {
@@ -186,8 +186,8 @@ namespace Simulation.Traffic.IO
                             if (reader.TokenType == JsonToken.StartObject)
                             {
                                 Node start = null, end = null;
-                                Vector3 startTangent = Vector3.zero, endTangent = Vector3.zero;
-                                Vector3 startOffset = Vector3.zero, endOffset = Vector3.zero;
+                                Vector3 startTangent = Vector3.Zero, endTangent = Vector3.Zero;
+                                Vector3 startOffset = Vector3.Zero, endOffset = Vector3.Zero;
 
                                 SegmentDescription description = null;
                                 int depth = reader.Depth;

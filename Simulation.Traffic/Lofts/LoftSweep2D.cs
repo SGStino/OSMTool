@@ -4,7 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.Lofts
 {
@@ -53,25 +54,25 @@ namespace Simulation.Traffic.Lofts
             var distA = endA - startA;
             var distB = endB - startB;
 
-            var lenA = Mathf.Abs(distA);
-            var lenB = Mathf.Abs(distB);
+            var lenA = MathF.Abs(distA);
+            var lenB = MathF.Abs(distB);
 
-            var max = Mathf.Max(lenA, lenB);
-            var min = Mathf.Min(lenA, lenB);
+            var max = MathF.Max(lenA, lenB);
+            var min = MathF.Min(lenA, lenB);
 
-            var scaleA = Mathf.Sign(distA);
-            var scaleB = Mathf.Sign(distB);
+            var scaleA = MathF.Sign(distA);
+            var scaleB = MathF.Sign(distB);
 
             for (int x = 1; x < max+1; x++)
             {
                 if (x < lenB)
-                    for (int i = 1; i <= Mathf.Min(lenA+1, x+1); i++)
+                    for (int i = 1; i <= MathF.Min(lenA+1, x+1); i++)
                     {
                         if (test(i, x, pathA, startA, scaleA, widthA, pathB, startB, scaleB, widthB, out offsetA, out offsetB))
                             return true;
                     }
                 if (x < lenA)
-                    for (int j = 1; j < Mathf.Min(lenB+1, x+1); j++)
+                    for (int j = 1; j < MathF.Min(lenB+1, x+1); j++)
                     {
                         if (test(x, j, pathA, startA, scaleA, widthA, pathB, startB, scaleB, widthB, out offsetA, out offsetB))
                             return true;
@@ -119,8 +120,8 @@ namespace Simulation.Traffic.Lofts
             var tA = cA - cB;
             var tB = -tA;
 
-            var mA = Mathf.Sign(Vector2.Dot(tA, sAT)) * widthA;
-            var mB = Mathf.Sign(Vector2.Dot(tB, sBT)) * widthB;
+            var mA = MathF.Sign(Vector2.Dot(tA, sAT)) * widthA;
+            var mB = MathF.Sign(Vector2.Dot(tB, sBT)) * widthB;
 
             eAP -= eAT * mA;
             sAP -= sAT * mA;
@@ -137,7 +138,7 @@ namespace Simulation.Traffic.Lofts
             //Debug.DrawLine(t3d(cA + sAT), t3d(cA - sAT), Color.red);
             //Debug.DrawLine(t3d(cB + sBT), t3d(cB - sBT), Color.blue);
 
-            //Debug.DrawLine(t3d(cB), t3d(cB), Color.yellow);
+            //Debug.DrawLine(t3d(cB), t3d(cB), Color.Yellow);
 
             if (offsetA >= 0 && offsetB >= 0 && offsetA <= 1 && offsetB <= 1)
             {
@@ -145,8 +146,8 @@ namespace Simulation.Traffic.Lofts
                 offsetA = sA + offsetA * scaleA;
                 offsetB = sB + offsetB * scaleB;
 
-                //var pA = pathA.GetTransformedPoint(offsetA, Vector3.zero);
-                //var pB = pathB.GetTransformedPoint(offsetB, Vector3.zero);
+                //var pA = pathA.GetTransformedPoint(offsetA, Vector3.Zero);
+                //var pB = pathB.GetTransformedPoint(offsetB, Vector3.Zero);
                 //Debug.DrawLine(pB, t3d(sAP), Color.red);
                 //Debug.DrawLine(pA, t3d(sBP), Color.blue);
 
@@ -159,13 +160,13 @@ namespace Simulation.Traffic.Lofts
 
         private static Vector3 t3d(Vector2 sAP, float h = 0f)
         {
-            return new Vector3(sAP.x, h, sAP.y);
+            return new Vector3(sAP.X, h, sAP.Y);
         }
 
         private static Vector2 getPoint(Matrix4x4 t, int col)
         {
             var c = t.GetColumn(col);
-            return new Vector3(c.x, c.z);
+            return new Vector2(c.X, c.Z);
         }
     }
 }

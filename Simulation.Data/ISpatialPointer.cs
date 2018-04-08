@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Text;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Data
 {
 
     public interface ISpatialPointer<T> : IDisposable
-    {
-        Rect Bounds { get; set; }
+    {  
+        Rectangle Bounds { get; set; }
         T Item { get; }
     }
 }

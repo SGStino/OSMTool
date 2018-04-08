@@ -3,7 +3,7 @@ using Simulation.Data.Trees;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Simulation.Traffic.Utilities;
@@ -11,6 +11,7 @@ using System.Reactive.Subjects;
 using System.Reactive.Linq;
 using System.Reactive;
 using Simulation.Data;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic
 {
@@ -26,6 +27,8 @@ namespace Simulation.Traffic
     public class NodeDescription
     {
         public INodeAIPathsFactory Factory { get; set; }
+
+        public static NodeDescription Intersection { get; } = new NodeDescription { Factory = NodeAIPathsFactory.Default };
     }
 
     public class Node : IBoundsObject2D, INode
@@ -33,7 +36,7 @@ namespace Simulation.Traffic
 
         private BehaviorSubjectValue<IReadOnlyList<ISegmentNodeConnection>> connections;
 
-        private readonly IObservableValue<Rect> _bounds;
+        private readonly IObservableValue<Rectangle> _bounds;
         private CompositeDisposable disposable = new CompositeDisposable();
         private BehaviorSubjectValue<Vector3> _position;
         private float radius = 6;
@@ -55,9 +58,9 @@ namespace Simulation.Traffic
             connections = new BehaviorSubjectValue<IReadOnlyList<ISegmentNodeConnection>>(new ISegmentNodeConnection[0]);
         }
 
-        private Rect getBounds(Vector3 t)
+        private Rectangle getBounds(Vector3 t)
         {
-            return new Rect(t.x - radius, t.z - radius, radius * 2, radius * 2);
+            return Rectangle.CornerSize(t.X - radius, t.Z - radius, radius * 2, radius * 2);
         }
 
         public void Dispose()
@@ -96,8 +99,12 @@ namespace Simulation.Traffic
 
         public IObservableValue<Vector3> Position => _position;
 
-        public IObservableValue<Rect> Bounds => _bounds;
+        public IObservableValue<Rectangle> Bounds => _bounds;
 
+        public void Move(Vector3 destination)
+        {
+            _position.Value = destination;
+        }
 
 
         public static Node CreateAt(float x, float z, NodeDescription description)
@@ -117,7 +124,7 @@ namespace Simulation.Traffic
         private float getAngle(ISegmentNodeConnection arg)
         {
             var tangent = arg.Offset.Value.Tangent;
-            return Mathf.Atan2(tangent.z, tangent.x);
+            return MathF.Atan2(tangent.Z, tangent.X);
         }
 
     }

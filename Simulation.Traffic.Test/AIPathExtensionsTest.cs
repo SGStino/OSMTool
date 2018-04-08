@@ -7,7 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.Test
 {
@@ -21,7 +22,7 @@ namespace Simulation.Traffic.Test
         [DataRow(2, 0)]
         public void TestGetDistanceFromLoftForward(float distance, float expected)
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             {
@@ -45,7 +46,7 @@ namespace Simulation.Traffic.Test
         [DataRow(2, 3)]
         public void TestGetDistanceFromLoftBackward(float distance, float expected)
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
 
             var aiPath = new DummyAIPath(loft)
@@ -68,7 +69,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestForward()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -85,16 +86,16 @@ namespace Simulation.Traffic.Test
             Assert.AreEqual(aiPath.Offsets.Value.SideOffsetEnd, aiPath.GetEndSideOffset());
 
             var startTransform = aiPath.GetTransform(0);
-            Assert.AreEqual(new Vector3(3, 0, 1), startTransform.MultiplyPoint3x4(Vector3.zero));
+            Assert.AreEqual(new Vector3(3, 0, 1), startTransform.MultiplyPoint3x4(Vector3.Zero));
 
             var endTransform = aiPath.GetTransform(aiPath.GetLength());
-            Assert.AreEqual(new Vector3(4, 0, 8), endTransform.MultiplyPoint3x4(Vector3.zero));
+            Assert.AreEqual(new Vector3(4, 0, 8), endTransform.MultiplyPoint3x4(Vector3.Zero));
 
             startTransform = aiPath.GetStartTransform();
-            Assert.AreEqual(new Vector3(3, 0, 1), startTransform.MultiplyPoint3x4(Vector3.zero));
+            Assert.AreEqual(new Vector3(3, 0, 1), startTransform.MultiplyPoint3x4(Vector3.Zero));
 
             endTransform = aiPath.GetEndTransform();
-            Assert.AreEqual(new Vector3(4, 0, 8), endTransform.MultiplyPoint3x4(Vector3.zero));
+            Assert.AreEqual(new Vector3(4, 0, 8), endTransform.MultiplyPoint3x4(Vector3.Zero));
 
 
             Assert.AreEqual(7, aiPath.GetLength());
@@ -103,14 +104,14 @@ namespace Simulation.Traffic.Test
 
             var halfTransform = aiPath.GetTransform(halfLength);
 
-            Assert.AreEqual(new Vector3(3.5f, 0, 4.5f), halfTransform.MultiplyPoint3x4(Vector3.zero));
+            Assert.AreEqual(new Vector3(3.5f, 0, 4.5f), halfTransform.MultiplyPoint3x4(Vector3.Zero));
 
-            Assert.AreEqual(new Vector3(0, 0, 1), halfTransform.MultiplyVector(Vector3.forward));
+            Assert.AreEqual(new Vector3(0, 0, 1), halfTransform.MultiplyVector(Directions3.Forward));
         }
         [TestMethod]
         public void TestBackward()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -128,16 +129,16 @@ namespace Simulation.Traffic.Test
             Assert.AreEqual(aiPath.Offsets.Value.SideOffsetStart, aiPath.GetEndSideOffset());
 
             var startTransform = aiPath.GetTransform(0);
-            Assert.AreEqual(new Vector3(4, 0, 8), startTransform.MultiplyPoint3x4(Vector3.zero));
+            Assert.AreEqual(new Vector3(4, 0, 8), startTransform.MultiplyPoint3x4(Vector3.Zero));
 
             var endTransform = aiPath.GetTransform(aiPath.GetLength());
-            Assert.AreEqual(new Vector3(3, 0, 1), endTransform.MultiplyPoint3x4(Vector3.zero));
+            Assert.AreEqual(new Vector3(3, 0, 1), endTransform.MultiplyPoint3x4(Vector3.Zero));
 
             startTransform = aiPath.GetStartTransform();
-            Assert.AreEqual(new Vector3(4, 0, 8), startTransform.MultiplyPoint3x4(Vector3.zero));
+            Assert.AreEqual(new Vector3(4, 0, 8), startTransform.MultiplyPoint3x4(Vector3.Zero));
 
             endTransform = aiPath.GetEndTransform();
-            Assert.AreEqual(new Vector3(3, 0, 1), endTransform.MultiplyPoint3x4(Vector3.zero));
+            Assert.AreEqual(new Vector3(3, 0, 1), endTransform.MultiplyPoint3x4(Vector3.Zero));
 
 
             Assert.AreEqual(7, aiPath.GetLength());
@@ -146,14 +147,14 @@ namespace Simulation.Traffic.Test
 
             var halfTransform = aiPath.GetTransform(halfLength);
 
-            Assert.AreEqual(new Vector3(3.5f, 0, 4.5f), halfTransform.MultiplyPoint3x4(Vector3.zero));
+            Assert.AreEqual(new Vector3(3.5f, 0, 4.5f), halfTransform.MultiplyPoint3x4(Vector3.Zero));
 
-            Assert.AreEqual(new Vector3(0, 0, -1), halfTransform.MultiplyVector(Vector3.forward));
+            Assert.AreEqual(new Vector3(0, 0, -1), halfTransform.MultiplyVector(Directions3.Forward));
         }
         [TestMethod]
         public void TestStartTransformReverse()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -166,8 +167,8 @@ namespace Simulation.Traffic.Test
                 sideOffsetEnd: 4);
 
 
-            var start = aiPath.GetStartTransform().MultiplyPoint3x4(Vector3.zero);
-            var zero = aiPath.GetTransform(0).MultiplyPoint3x4(Vector3.zero);
+            var start = aiPath.GetStartTransform().MultiplyPoint3x4(Vector3.Zero);
+            var zero = aiPath.GetTransform(0).MultiplyPoint3x4(Vector3.Zero);
             var expected = new Vector3(4, 0, 8);
 
             Assert.AreEqual(expected, zero);
@@ -176,7 +177,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestStartTransform()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -189,8 +190,8 @@ namespace Simulation.Traffic.Test
                 sideOffsetEnd: 4);
 
 
-            var start = aiPath.GetStartTransform().MultiplyPoint3x4(Vector3.zero);
-            var zero = aiPath.GetTransform(0).MultiplyPoint3x4(Vector3.zero);
+            var start = aiPath.GetStartTransform().MultiplyPoint3x4(Vector3.Zero);
+            var zero = aiPath.GetTransform(0).MultiplyPoint3x4(Vector3.Zero);
             var expected = new Vector3(3, 0, 1);
 
             Assert.AreEqual(expected, zero);
@@ -200,7 +201,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapTo()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -222,7 +223,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapToLow()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -244,7 +245,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapToMin()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -266,7 +267,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapToHigh()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -288,7 +289,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapToMax()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -312,7 +313,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapToReverse()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -334,7 +335,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapToLowReverse()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -356,7 +357,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapToMinReverse()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -378,7 +379,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapToHighReverse()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -400,7 +401,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapToMaxReverse()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -424,7 +425,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestEndTransformReverse()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             { 
@@ -437,8 +438,8 @@ namespace Simulation.Traffic.Test
                 sideOffsetEnd: 4);
 
 
-            var end = aiPath.GetEndTransform().MultiplyPoint3x4(Vector3.zero);
-            var zero = aiPath.GetTransform(aiPath.GetLength()).MultiplyPoint3x4(Vector3.zero);
+            var end = aiPath.GetEndTransform().MultiplyPoint3x4(Vector3.Zero);
+            var zero = aiPath.GetTransform(aiPath.GetLength()).MultiplyPoint3x4(Vector3.Zero);
             var expected = new Vector3(3, 0, 1);
 
             Assert.AreEqual(expected, zero);
@@ -447,7 +448,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestEndTransform()
         {
-            var loft = new Lofts.LinearPath(Vector3.zero, new Vector3(0, 0, 10));
+            var loft = new Lofts.LinearPath(Vector3.Zero, new Vector3(0, 0, 10));
 
             var aiPath = new DummyAIPath(loft)
             {
@@ -459,8 +460,8 @@ namespace Simulation.Traffic.Test
                 sideOffsetStart : 3,
                 sideOffsetEnd : 4);
 
-            var end = aiPath.GetEndTransform().MultiplyPoint3x4(Vector3.zero);
-            var zero = aiPath.GetTransform(aiPath.GetLength()).MultiplyPoint3x4(Vector3.zero);
+            var end = aiPath.GetEndTransform().MultiplyPoint3x4(Vector3.Zero);
+            var zero = aiPath.GetTransform(aiPath.GetLength()).MultiplyPoint3x4(Vector3.Zero);
             var expected = new Vector3(4, 0, 8);
 
             Assert.AreEqual(expected, zero);

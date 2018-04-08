@@ -7,7 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.Test
 {
@@ -17,7 +18,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestUpdateShort()
         {
-            var linearPath = new LinearPath(Vector3.zero, Vector3.forward);
+            var linearPath = new LinearPath(Vector3.Zero, Directions3.Forward);
             var paths = new List<PathDescription>() { new PathDescription(new DummyAIPath(linearPath), 0, 1) };
 
             var state = new AgentState(0, 0);
@@ -34,7 +35,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestUpdateLong()
         {
-            var linearPath = new LinearPath(Vector3.zero, Vector3.forward);
+            var linearPath = new LinearPath(Vector3.Zero, Directions3.Forward);
             var paths = new List<PathDescription>() { new PathDescription(new DummyAIPath(linearPath), 0, 1) };
 
             var state = new AgentState(0, 0);
@@ -52,7 +53,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestUpdateEnd()
         {
-            var linearPath = new LinearPath(Vector3.zero, Vector3.forward);
+            var linearPath = new LinearPath(Vector3.Zero, Directions3.Forward);
             var paths = new List<PathDescription>() { new PathDescription(new DummyAIPath(linearPath), 0, 1) };
 
             var state = new AgentState(0, 0);

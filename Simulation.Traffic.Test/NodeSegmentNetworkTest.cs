@@ -42,10 +42,11 @@ namespace Simulation.Traffic.Test
             var nodeA = Node.CreateAt(-15, 0, nodeDescription);
             var nodeB = Node.CreateAt(15, 0, nodeDescription);
             var nodeC = Node.CreateAt(0, 10, nodeDescription);
-
+            var nodeD = Node.CreateAt(0, 20, nodeDescription);
             var segmentAB = Segment.Create(nodeA, nodeB, segmentDescription);
             var segmentBC = Segment.Create(nodeB, nodeC, segmentDescription);
             var segmentCA = Segment.Create(nodeC, nodeA, segmentDescription);
+            var segmentCD = Segment.Create(nodeC, nodeD, segmentDescription);
 
             Assert.AreEqual(2, segmentAB.AIRoutes.Count);
             Assert.AreEqual(2, segmentBC.AIRoutes.Count);
@@ -58,7 +59,7 @@ namespace Simulation.Traffic.Test
 
             Assert.AreEqual(2, nodeA.Connections.Value.Count);
             Assert.AreEqual(2, nodeB.Connections.Value.Count);
-            Assert.AreEqual(2, nodeB.Connections.Value.Count);
+            Assert.AreEqual(3, nodeC.Connections.Value.Count);
 
 
 
@@ -66,8 +67,9 @@ namespace Simulation.Traffic.Test
             Assert.AreEqual(1, nodeA.Connections.Value[1].OutgoingAIRoutes.Value.Count);
             Assert.AreEqual(1, nodeB.Connections.Value[0].OutgoingAIRoutes.Value.Count);
             Assert.AreEqual(1, nodeB.Connections.Value[1].OutgoingAIRoutes.Value.Count);
-            Assert.AreEqual(1, nodeC.Connections.Value[0].OutgoingAIRoutes.Value.Count);
-            Assert.AreEqual(1, nodeC.Connections.Value[1].OutgoingAIRoutes.Value.Count);
+            Assert.AreEqual(2, nodeC.Connections.Value[0].OutgoingAIRoutes.Value.Count);
+            Assert.AreEqual(2, nodeC.Connections.Value[1].OutgoingAIRoutes.Value.Count);
+            Assert.AreEqual(2, nodeC.Connections.Value[2].OutgoingAIRoutes.Value.Count);
         }
     }
 }

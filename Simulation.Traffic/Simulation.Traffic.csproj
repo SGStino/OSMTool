@@ -2,10 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.4.0" />
     <PackageReference Include="System.Reactive.Linq" Version="3.1.1" />
   </ItemGroup>
 
@@ -13,18 +15,24 @@
     <ProjectReference Include="..\Simulation.Data\Simulation.Data.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
+  <!--<ItemGroup>
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\Unity\Simulation\Library\UnityAssemblies\UnityEngine.dll</HintPath>
     </Reference>
-  </ItemGroup>
+  </ItemGroup>-->
   
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="System.Runtime.Extensions">
+      <HintPath>..\..\..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\System.Runtime.Extensions.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\Users\stijn\Documents\Unity\Simulation\Assets\References\$(ProjectName).dll&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(ProjectName).pdb&quot; &quot;C:\Users\stijn\Documents\Unity\Simulation\Assets\References\$(ProjectName).pdb&quot;" />
-  </Target>
+  </Target>-->
 
 </Project>

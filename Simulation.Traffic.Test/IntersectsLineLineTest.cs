@@ -3,7 +3,8 @@ using Simulation.Traffic.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.Test
 {
@@ -13,9 +14,9 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestIntersectLineLineCommonPointStart()
         {
-            var a = Vector2.one;
-            var b = Vector2.right;
-            var c = Vector2.up;
+            var a = Vector2.One;
+            var b = Directions2.Right;
+            var c = Directions2.Up;
 
             VectorMath2D.IntersectsLineLine(a, -b, a, -c, out var aL, out var bL);
 
@@ -25,9 +26,9 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestIntersectLineLineCommonPointEnd()
         {
-            var a = Vector2.one;
-            var b = Vector2.right;
-            var c = Vector2.up;
+            var a = Vector2.One;
+            var b = Directions2.Right;
+            var c = Directions2.Up;
 
             VectorMath2D.IntersectsLineLine(a + b, -b, a + c, -c, out var aL, out var bL);
 
@@ -37,9 +38,9 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestIntersectLineLineDoubleEnd()
         {
-            var a = Vector2.one;
-            var b = Vector2.right;
-            var c = Vector2.up;
+            var a = Vector2.One;
+            var b = Directions2.Right;
+            var c = Directions2.Up;
 
             VectorMath2D.IntersectsLineLine(a + b * 2, -b, a + c * 2, -c, out var aL, out var bL);
 
@@ -54,9 +55,9 @@ namespace Simulation.Traffic.Test
         [DataRow(-1, -1, 1, 1)]
         public void TestIntersectLineLineDoubleEndWithWidth(float tB, float tC, float eAL, float eBL)
         {
-            var a = Vector2.one;
-            var b = Vector2.right * tB;
-            var c = Vector2.up * tC;
+            var a = Vector2.One;
+            var b = Directions2.Right * tB;
+            var c = Directions2.Up * tC;
 
             var w = 2;
 
@@ -69,9 +70,9 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestIntersectLineLineInequalWidth()
         {
-            var a = Vector2.zero;
-            var b = Vector2.right;
-            var c = Vector2.up;
+            var a = Vector2.Zero;
+            var b = Directions2.Right;
+            var c = Directions2.Up;
 
             var w1 = 2;
             var w2 = 4;
@@ -88,7 +89,7 @@ namespace Simulation.Traffic.Test
         {
 
             int count = 10;
-            float delta = Mathf.PI * 2 / count;
+            float delta = MathF.PI * 2 / count;
 
             for (int iA = -count; iA < count; iA++)
             {
@@ -107,21 +108,21 @@ namespace Simulation.Traffic.Test
         [DataRow(-5.654867f, -2.51327419f)]
         public void TestAngle(float angleA, float angleB)
         {
-            Vector2 point = Vector2.zero;
-            var vA = new Vector2(Mathf.Cos(angleA), Mathf.Sin(angleA));
-            var deltaAngle = (Math.Max(angleA, angleB) - Math.Min(angleA, angleB)) % (Mathf.PI * 2);
-            var vB = new Vector2(Mathf.Cos(angleB), Mathf.Sin(angleB));
+            Vector2 point = Vector2.Zero;
+            var vA = new Vector2(MathF.Cos(angleA), MathF.Sin(angleA));
+            var deltaAngle = (Math.Max(angleA, angleB) - Math.Min(angleA, angleB)) % (MathF.PI * 2);
+            var vB = new Vector2(MathF.Cos(angleB), MathF.Sin(angleB));
 
             var halfAngle = deltaAngle / 2;
 
             var result = VectorMath2D.IntersectsLineLine(point, vA, 2, point, vB, 2, out var aL, out var bL);
 
-            var d = Mathf.Abs(1 / Mathf.Tan(halfAngle));
-            if (almostEqual(deltaAngle, Mathf.PI))
+            var d = MathF.Abs(1 / MathF.Tan(halfAngle));
+            if (almostEqual(deltaAngle, MathF.PI))
             {
                 Assert.IsFalse(result);
             }
-            else if (almostEqual(deltaAngle, 0) || almostEqual(deltaAngle, Mathf.PI * 2))
+            else if (almostEqual(deltaAngle, 0) || almostEqual(deltaAngle, MathF.PI * 2))
             {
                 Assert.IsTrue(float.IsInfinity(aL));
                 Assert.IsTrue(float.IsInfinity(bL));
@@ -137,7 +138,7 @@ namespace Simulation.Traffic.Test
 
         private bool almostEqual(float angleA, float angleB, float maxDelta = 0.0001f)
         {
-            var delta = Mathf.Abs(angleA - angleB);
+            var delta = MathF.Abs(angleA - angleB);
             return delta <= maxDelta;
         }
     }

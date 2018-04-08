@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-
+using System.Collections.Generic; 
 namespace Simulation.Traffic.AI.Agents
 {
     public struct AgentState
@@ -43,7 +38,7 @@ namespace Simulation.Traffic.AI.Agents
             var increment = speed * dt;
             progress += increment;
 
-            if (Mathf.Abs(increment) > 0.000001)
+            if (MathF.Abs(increment) > 0.000001)
                 result |= AgentStateResult.Moved;
 
             var currentIndex = currentState.PathIndex;

@@ -43,7 +43,7 @@ namespace Simulation.Traffic.AI.Navigation
             var start = s.GetEndTransform().GetTranslate();
             var end = d.GetStartTransform().GetTranslate();
 
-            return (end - start).sqrMagnitude;
+            return (end - start).LengthSquared();
         }
 
         protected override IEnumerable<IAIPath> GetNeighbors(IAIPath t)

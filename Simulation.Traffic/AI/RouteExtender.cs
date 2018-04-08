@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.AI
 {
@@ -44,8 +45,8 @@ namespace Simulation.Traffic.AI
             var departForward = departTransform.GetForward();
 
 
-            var fromForward = (approachPoint - from).normalized;
-            var toForward = (to - departPoint).normalized;
+            var fromForward = Vector3.Normalize (approachPoint - from);
+            var toForward = Vector3.Normalize(to - departPoint);
 
             var approachLoft = new BiArcLoftPath(from, -fromForward, approachPoint, -approachForward);
             var departLoft = new BiArcLoftPath(departPoint, -departForward, to, -toForward);
@@ -137,8 +138,8 @@ namespace Simulation.Traffic.AI
                 var startPoint = transformStart.GetTranslate();
                 var endPoint = transformEnd.GetTranslate();
 
-                var dStart = (startPoint - point).sqrMagnitude;
-                var dEnd = (endPoint - point).sqrMagnitude;
+                var dStart = (startPoint - point).LengthSquared();
+                var dEnd = (endPoint - point).LengthSquared();
 
                 if (dStart < dEnd)
                 {
@@ -172,15 +173,15 @@ namespace Simulation.Traffic.AI
             return false;
         }
 
-        private static float loftToPathDistance(IAIPath path, float v) => Mathf.Lerp(path.GetStartPathOffset(), path.GetEndPathOffset(), v / path.GetLength());
+        private static float loftToPathDistance(IAIPath path, float v) => MathF.Lerp(path.GetStartPathOffset(), path.GetEndPathOffset(), v / path.GetLength());
 
         public static bool Crosses(this ILoftPath loft, Ray ray, out float[] loftDistances, out float[] rayDistances)
         {
-            var origin = ray.origin;
-            var up = origin + Vector3.up;
-            var forward = origin + ray.direction;
-
-            var plane = new Plane(origin, up, forward);
+            var origin = ray.Origin;
+            var up = origin + Directions3.Up;
+            var forward = origin + ray.Direction;
+             
+            var plane = Plane.CreateFromVertices(origin, up, forward);
 
             if (loft.Intersects(plane, out loftDistances))
             {
@@ -188,8 +189,8 @@ namespace Simulation.Traffic.AI
 
                 for (int i = 0; i < loftDistances.Length; i++)
                 {
-                    var p = loft.GetTransformedPoint(loftDistances[i], Vector3.zero);
-                    rayDistances[i] = Vector3.Dot(p - ray.origin, ray.direction);
+                    var p = loft.GetTransformedPoint(loftDistances[i], Vector3.Zero);
+                    rayDistances[i] = Vector3.Dot(p - ray.Origin, ray.Direction);
                 }
 
                 return true;

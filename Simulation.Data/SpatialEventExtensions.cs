@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Linq;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Data
 {
     public static class SpatialEventExtensions
     {
-        public static IObservable<SpatialEvent<T>> WhereBounds<T>(this IObservable<SpatialEvent<T>> source, Func<Rect, bool> predicate)
+        public static IObservable<SpatialEvent<T>> WhereBounds<T>(this IObservable<SpatialEvent<T>> source, Func<Rectangle, bool> predicate)
         {
             if (predicate != null)
                 return source.Where(e =>

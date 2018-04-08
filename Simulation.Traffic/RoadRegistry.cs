@@ -4,7 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Text;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic
 {
@@ -18,14 +19,14 @@ namespace Simulation.Traffic
 
         public T Node { get; }
 
-        public BoundsObjects2DRegistration(T node, ISpatialPointer<T> pointer, IObservable<Rect> observable)
+        public BoundsObjects2DRegistration(T node, ISpatialPointer<T> pointer, IObservable<Rectangle> observable)
         {
             Node = node;
             Pointer = pointer;
             disposable = observable.Subscribe(updateBounds);
         }
 
-        void updateBounds(Rect evt)
+        void updateBounds(Rectangle evt)
         {
             Pointer.Bounds = evt;
         }
@@ -43,7 +44,7 @@ namespace Simulation.Traffic
 
     public class BoundsObjects2DRegistry<T> where T : IBoundsObject2D
     {
-        public BoundsObjects2DRegistry(Func<T, Rect> getNode)
+        public BoundsObjects2DRegistry(Func<T, Rectangle> getNode)
         { }
 
         private ISpatialRegistry<T> spatialRegistry = new SimpleSpatialRegistry<T>();

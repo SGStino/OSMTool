@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Traffic.AI
 {
@@ -29,9 +29,9 @@ namespace Simulation.Traffic.AI
         IEnumerable<IAIGraphNode> IAIGraphNode.NextNodes => NextRoutes;
 
 
-        public Vector3 StartPosition => this.GetStart()?.GetPosition() ?? Vector3.zero;
+        public Vector3 StartPosition => this.GetStart()?.GetPosition() ?? Vector3.Zero;
 
-        public Vector3 EndPosition => this.GetEnd()?.GetPosition() ?? Vector3.zero;
+        public Vector3 EndPosition => this.GetEnd()?.GetPosition() ?? Vector3.Zero;
 
         IEnumerable<IAIRoute> IAIRoute.NextRoutes => NextRoutes;
 

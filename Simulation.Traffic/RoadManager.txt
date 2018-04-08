@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Traffic
 {
@@ -32,17 +32,17 @@ namespace Simulation.Traffic
     {
 
 
-        private QuadTree<Node> nodes = new QuadTree<Node>(new Rect(0, 0, 1000, 1000));
-        private QuadTree<Segment> segments = new QuadTree<Segment>(new Rect(0, 0, 1000, 1000));
+        private QuadTree<Node> nodes = new QuadTree<Node>(new Rectangle(0, 0, 1000, 1000));
+        private QuadTree<Segment> segments = new QuadTree<Segment>(new Rectangle(0, 0, 1000, 1000));
 
         public IEnumerable<Node> Nodes => nodes.Items;
         public IEnumerable<Segment> Segments => segments.Items;
 
-        public IEnumerable<Segment> QuerySegments(Rect bounds) => segments.Query(bounds);
+        public IEnumerable<Segment> QuerySegments(Rectangle bounds) => segments.Query(bounds);
         public IEnumerable<Segment> QuerySegments(Vector2 point, float radius) => segments.Query(point, radius);
 
 
-        public IEnumerable<Node> QueryNodes(Rect bounds) => nodes.Query(bounds);
+        public IEnumerable<Node> QueryNodes(Rectangle bounds) => nodes.Query(bounds);
         public IEnumerable<Node> QueryNodes(Vector2 point, float radius) => nodes.Query(point, radius);
 
         public Node CreateNodeAt(float x, float y)
@@ -71,7 +71,7 @@ namespace Simulation.Traffic
             var segment = createSegment(start, end, description);
 
             var dir = start.Position - end.Position;
-            dir = dir.normalized;
+            dir = dir.Normalized();
 
             segment.Start = connect(segment, start, -dir);
             segment.End = connect(segment, end, dir);

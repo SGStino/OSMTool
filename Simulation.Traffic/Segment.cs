@@ -2,7 +2,7 @@
 using Simulation.Traffic.Lofts;
 using Simulation.Data.Trees;
 using System;
-using UnityEngine;
+using System.Numerics;
 using System.Reactive.Subjects;
 using System.Reactive.Linq;
 using System.Reactive.Disposables;
@@ -10,6 +10,7 @@ using System.Reactive;
 using System.Linq;
 using Simulation.Data;
 using System.Collections.Generic;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic
 {
@@ -100,7 +101,7 @@ namespace Simulation.Traffic
         public IObservableValue<ILoftPath> LoftPath => _loftPath;
 
         private readonly CompositeDisposable dispose = new CompositeDisposable();
-        private readonly IObservableValue<Rect> _bounds;
+        private readonly IObservableValue<Rectangle> _bounds;
 
 
         public SegmentDescription Description { get; }
@@ -110,22 +111,22 @@ namespace Simulation.Traffic
         public ISegmentNodeConnection End { get; }
 
 
-        public IObservableValue<Rect> Bounds => _bounds;
+        public IObservableValue<Rectangle> Bounds => _bounds;
 
         public IReadOnlyList<SegmentAIRoute> AIRoutes { get; }
 
-        //private Rect getBounds()
+        //private Rectangle getBounds()
         //{
         //    var a = Start.Node.Position;
         //    var b = End.Node.Position;
 
-        //    var minX = Mathf.Min(a.x, b.x);
-        //    var minY = Mathf.Min(a.y, b.y);
+        //    var minX = MathF.Min(a.X, b.X);
+        //    var minY = MathF.Min(a.Y, b.Y);
 
-        //    var maxX = Mathf.Max(a.x, b.x);
-        //    var maxY = Mathf.Max(a.y, b.y);
+        //    var maxX = MathF.Max(a.X, b.X);
+        //    var maxY = MathF.Max(a.Y, b.Y);
 
-        //    return Rect.MinMaxRect(minX, minY, maxX, maxY);
+        //    return Rectangle.MinMaxRectangle(minX, minY, maxX, maxY);
         //}
 
         public Segment(SegmentDescription description, ISegmentNodeConnection start, ISegmentNodeConnection end, IObservable<Unit> sampler = null)

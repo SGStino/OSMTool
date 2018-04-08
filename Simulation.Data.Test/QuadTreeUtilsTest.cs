@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simulation.Data.Primitives;
 using Simulation.Data.Trees;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Data.Test
 {
@@ -11,10 +12,10 @@ namespace Simulation.Data.Test
         public void TestEncapsulates()
 
         {
-            var rectA = Rect.MinMaxRect(-1, -1, 2, 2);
-            var rectB = Rect.MinMaxRect(0, 0, 1, 1);
-            var rectC = Rect.MinMaxRect(-2, -2, 0, 0);
-            var rectD = Rect.MinMaxRect(1, 1, 3, 3);
+            var rectA = Rectangle.MinMaxRectangle(-1, -1, 2, 2);
+            var rectB = Rectangle.MinMaxRectangle(0, 0, 1, 1);
+            var rectC = Rectangle.MinMaxRectangle(-2, -2, 0, 0);
+            var rectD = Rectangle.MinMaxRectangle(1, 1, 3, 3);
 
             Assert.IsTrue(QuadTreeUtils.Encapsulates(rectA, rectB));
             Assert.IsFalse(QuadTreeUtils.Encapsulates(rectA, rectC));
@@ -25,14 +26,14 @@ namespace Simulation.Data.Test
         public void TestDevideQuads()
         {
 
-            var root = Rect.MinMaxRect(0, 0, 2, 2);
+            var root = Rectangle.MinMaxRectangle(0, 0, 2, 2);
 
             var required = new[]
             {
-                Rect.MinMaxRect(0, 0, 1, 1),
-                Rect.MinMaxRect(1, 0, 2, 1),
-                Rect.MinMaxRect(0, 1, 1, 2),
-                Rect.MinMaxRect(1, 1, 2, 2)
+                Rectangle.MinMaxRectangle(0, 0, 1, 1),
+                Rectangle.MinMaxRectangle(1, 0, 2, 1),
+                Rectangle.MinMaxRectangle(0, 1, 1, 2),
+                Rectangle.MinMaxRectangle(1, 1, 2, 2)
             };
 
             var subs = QuadTreeUtils.DevideQuads(root);
@@ -45,7 +46,7 @@ namespace Simulation.Data.Test
         public void TestQuadIndex()
         {
 
-            var root = Rect.MinMaxRect(-1, -1, 2, 2);
+            var root = Rectangle.MinMaxRectangle(-1, -1, 2, 2);
             var targets = new[]{
                 new Vector2(0,0),
                 new Vector2(1,0),
@@ -64,7 +65,7 @@ namespace Simulation.Data.Test
         [TestMethod]
         public void TestGrowQuad()
         {
-            var source = Rect.MinMaxRect(0, 0, 1, 1);
+            var source = Rectangle.MinMaxRectangle(0, 0, 1, 1);
 
             var targets = new[]{
                 new Vector2(0,0),
@@ -75,10 +76,10 @@ namespace Simulation.Data.Test
 
             var required = new[]
             {
-                Rect.MinMaxRect(-1, -1, 1, 1),
-                Rect.MinMaxRect(0, -1, 2, 1),
-                Rect.MinMaxRect(-1, 0, 1, 2),
-                Rect.MinMaxRect(0,0, 2, 2)
+                Rectangle.MinMaxRectangle(-1, -1, 1, 1),
+                Rectangle.MinMaxRectangle(0, -1, 2, 1),
+                Rectangle.MinMaxRectangle(-1, 0, 1, 2),
+                Rectangle.MinMaxRectangle(0,0, 2, 2)
             };
 
             var sourceIndices = new[]

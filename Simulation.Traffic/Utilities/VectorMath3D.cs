@@ -2,24 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.Utilities
 {
     public static class VectorMath3D
     {
-        public static Vector2 GetXZ(this Vector3 input) => new Vector2(input.x, input.z);
-        public static Vector3 GetTranslate(this Matrix4x4 input) => input.MultiplyPoint3x4(Vector3.zero);
-        public static Vector3 GetForward(this Matrix4x4 input) => input.MultiplyVector(Vector3.forward);
-        public static Vector3 GetRight(this Matrix4x4 input) => input.MultiplyVector(Vector3.right);
-        public static Vector3 GetUp(this Matrix4x4 input) => input.MultiplyVector(Vector3.up);
+        public static Vector2 GetXZ(this Vector3 input) => new Vector2(input.X, input.Z);
+        public static Vector3 GetTranslate(this Matrix4x4 input) => input.MultiplyPoint3x4(Vector3.Zero);
+        public static Vector3 GetForward(this Matrix4x4 input) => input.MultiplyVector(Directions3.Forward);
+        public static Vector3 GetRight(this Matrix4x4 input) => input.MultiplyVector(Directions3.Right);
+        public static Vector3 GetUp(this Matrix4x4 input) => input.MultiplyVector(Directions3.Up);
 
 
         public static float GetAngle(Vector3 start, Vector3 end, Vector3 normal)
         {
-            var dot = Vector3.Dot(start.normalized, end.normalized);
-            dot = Mathf.Clamp(dot, -1, 1);// clean up edge cases with floating point precision
-            var angle = Mathf.Acos(dot);
+            var dot = Vector3.Dot(Vector3.Normalize(start), Vector3.Normalize(end));
+            dot = MathF.Clamp(dot, -1, 1);// clean up edge cases with floating point precision
+            var angle = MathF.Acos(dot);
             var cross = Vector3.Cross(start, end);
 
 
@@ -31,9 +32,9 @@ namespace Simulation.Traffic.Utilities
         public static void GetPointOnSegment(Vector3 start, Vector3 end, Vector3 point, out float distance)
         {
             var dir = end - start;
-            var len = dir.magnitude;
+            var len = dir.Length();
             dir /= len;
-              GetPointOnSegment(start, dir, len, point, out distance);
+            GetPointOnSegment(start, dir, len, point, out distance);
         }
 
         public static void GetPointOnSegment(Vector3 start, Vector3 dir, float length, Vector3 point, out float distance)
@@ -41,15 +42,15 @@ namespace Simulation.Traffic.Utilities
             var offset = point - start;
             var dot = Vector3.Dot(offset, dir) / length;
 
-            distance = Mathf.Clamp01(dot) * length;
+            distance = MathF.Clamp01(dot) * length;
             ///*return*/ distance * dir + start;
         }
 
         public static Vector3 GetPointOnCircle(Vector3 normal, float radius, Vector3 vector)
         {
-            var dir = Vector3.ProjectOnPlane(vector, normal);
+            var dir = vector.ProjectOnPlane(normal);
 
-            var len = dir.magnitude;
+            var len = dir.Length();
             dir /= len;
 
             return dir * radius;
@@ -57,12 +58,12 @@ namespace Simulation.Traffic.Utilities
 
         public static bool Intersect(Plane plane1, Plane plane2, out Ray intersection)
         {
-            var dir = Vector3.Cross(plane1.normal, plane2.normal);
-            var det = dir.sqrMagnitude;
+            var dir = Vector3.Cross(plane1.Normal, plane2.Normal);
+            var det = dir.LengthSquared();
 
-            if (Mathf.Abs(det) >= 0.000001f)
+            if (MathF.Abs(det) >= 0.000001f)
             {
-                var p = (Vector3.Cross(dir, plane2.normal) * plane1.distance + Vector3.Cross(plane1.normal, dir) * plane2.distance) / det;
+                var p = (Vector3.Cross(dir, plane2.Normal) * plane1.D + Vector3.Cross(plane1.Normal, dir) * plane2.D) / det;
 
                 intersection = new Ray(p, dir);
                 return true;
@@ -74,32 +75,35 @@ namespace Simulation.Traffic.Utilities
 
         public static bool IntersectCircle(Plane plane, Vector3 center, Vector3 normal, Vector3 forward, float radius, out float angle1, out float angle2)
         {
-            var circlePlane = new Plane(normal, center);
+            var circlePlane = new Plane(normal, Vector3.Dot(normal, center));
 
             if (Intersect(plane, circlePlane, out var ray))
             {
 
-                var matrix = Matrix4x4.LookAt(center, center + forward, normal).inverse;
+                var matrix = Matrix4x4.CreateLookAt(center, center + forward, normal);
 
-                var o = matrix.MultiplyPoint3x4(ray.origin);
-                var d = matrix.MultiplyVector(ray.direction);
-
-                var f = matrix.MultiplyVector(forward);
-
-                float near, far;
-                if (VectorMath2D.IntersectsLineCircle(o.GetXZ(), d.GetXZ(), Vector2.zero, radius, out near, out far))
+                if (Matrix4x4.Invert(matrix, out matrix))
                 {
-                    if (near == far)
-                    { 
-                        angle1 = angle2 = VectorMath3D.GetAngle(o + d * near, Vector3.forward, Vector3.up);
+
+                    var o = matrix.MultiplyPoint3x4(ray.Origin);
+                    var d = matrix.MultiplyVector(ray.Direction);
+
+                    var f = matrix.MultiplyVector(forward);
+
+                    float near, far;
+                    if (VectorMath2D.IntersectsLineCircle(o.GetXZ(), d.GetXZ(), Vector2.Zero, radius, out near, out far))
+                    {
+                        if (near == far)
+                        {
+                            angle1 = angle2 = VectorMath3D.GetAngle(o + d * near, Directions3.Forward, Directions3.Up);
+                            return true;
+                        }
+                        // TODO: Solve with VectorMath2D for performance gain
+                        angle1 = VectorMath2D.GetAngle(Directions2.Up, o.GetXZ() + d.GetXZ() * near);
+                        angle2 = VectorMath2D.GetAngle(Directions2.Up, o.GetXZ() + d.GetXZ() * far);
                         return true;
                     }
-                    // TODO: Solve with VectorMath2D for performance gain
-                    angle1 = VectorMath2D.GetAngle(Vector2.up, o.GetXZ() + d.GetXZ() * near);
-                    angle2 = VectorMath2D.GetAngle(Vector3.up, o.GetXZ() + d.GetXZ() * far);
-                    return true;
                 }
-
                 angle1 = angle2 = float.NaN;
                 return false;
             }

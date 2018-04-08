@@ -2,16 +2,32 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
 
+
+  <!--<ItemGroup>
+    <Compile Include="Primitives\MathF.g.cs"> 
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MathF.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>-->
+
   <ItemGroup>
+    <PackageReference Include="System.Numerics.Vectors" Version="4.4.0" />
     <PackageReference Include="System.Reactive" Version="3.1.1" />
+    <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Unity\Simulation\Library\UnityAssemblies\UnityEngine.dll</HintPath>
-    </Reference>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
+
+  <!--<ItemGroup>
+    <None Update="Primitives\MathF.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MathF.g.cs</LastGenOutput>
+    </None>
+  </ItemGroup>-->
 
 </Project>

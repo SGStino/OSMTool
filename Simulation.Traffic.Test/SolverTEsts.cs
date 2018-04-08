@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine;
+using System.Numerics;
 using Simulation.Traffic.Lofts;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -162,7 +162,7 @@ namespace Simulation.Traffic.Test
         {
             this.route = route;
 
-            var dir = (route.EndPosition - route.StartPosition).normalized;
+            var dir = Vector3.Normalize(route.EndPosition - route.StartPosition);
 
 
             LoftPath = new BehaviorSubjectValue<ILoftPath>(new LinearPath(route.StartPosition, route.EndPosition));

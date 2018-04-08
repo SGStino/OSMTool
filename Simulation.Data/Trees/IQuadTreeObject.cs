@@ -1,11 +1,11 @@
 ﻿using System;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Data.Trees
 {
     //public interface IQuadTreeObject
     //{
-    //    Rect Bounds { get; }
+    //    Rectangle Bounds { get; }
     //    //event Action<BoundsChangedEvent> BoundsChanged;
     //}
 }

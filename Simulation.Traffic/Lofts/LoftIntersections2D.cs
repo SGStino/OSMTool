@@ -1,5 +1,7 @@
-﻿using Simulation.Traffic.Utilities;
-using UnityEngine;
+﻿using Simulation.Data.Primitives;
+using Simulation.Traffic.Utilities;
+using System;
+using System.Numerics;
 
 namespace Simulation.Traffic.Lofts
 {
@@ -48,8 +50,8 @@ namespace Simulation.Traffic.Lofts
             var lenA = a.Length;
             var lenB = b.Length;
 
-            var countA = Mathf.CeilToInt(lenA)/4;
-            var countB = Mathf.CeilToInt(lenB)/4;
+            var countA = MathF.CeilToInt(lenA) / 4;
+            var countB = MathF.CeilToInt(lenB) / 4;
 
 
 
@@ -130,10 +132,10 @@ namespace Simulation.Traffic.Lofts
             offsetA = offsetB = float.NaN;
             return false;
         }
-        static Color[] colors = { Color.red, Color.green, Color.blue, Color.black };
+        //static Color[] colors = { Color.red, Color.green, Color.blue, Color.black };
         private static bool intersectsDiscreteSegment(int slot, ILoftPath a, ILoftPath b, out float offsetA, out float offsetB, float dA, float dB, float oA, float oB, Vector2 aS, Vector2 aD, Vector2 bS, Vector2 bD)
         {
-            //int t = Mathf.FloorToInt(Time.time % 4);
+            //int t = MathF.FloorToInt(Time.time % 4);
             //if (t == slot)
             //{
             //    Debug.DrawLine(t3d(aS), t3d(aS + aD), colors[t]);
@@ -147,7 +149,7 @@ namespace Simulation.Traffic.Lofts
                 offsetA += oA - dA;
                 offsetB += oB - dB;
 
-                //Debug.DrawLine(b.GetTransformedPoint(offsetB, Vector3.zero), a.GetTransformedPoint(offsetA, Vector3.zero), Color.blue);
+                //Debug.DrawLine(b.GetTransformedPoint(offsetB, Vector3.Zero), a.GetTransformedPoint(offsetA, Vector3.Zero), Color.blue);
                 return true;
             }
             offsetB = offsetA = float.NaN;
@@ -156,7 +158,7 @@ namespace Simulation.Traffic.Lofts
 
         private static Vector2 t2d(Vector4 input)
         {
-            return new Vector2(input.x, input.z);
+            return new Vector2(input.X, input.Z);
         }
 
 
@@ -196,16 +198,16 @@ namespace Simulation.Traffic.Lofts
             widthA /= 2;
             widthB /= 2;
 
-            var lenA = get2DLength(a.Tangent.y, a.Length);
-            var lenB = get2DLength(b.Tangent.y, b.Length);
+            var lenA = get2DLength(a.Tangent.Y, a.Length);
+            var lenB = get2DLength(b.Tangent.Y, b.Length);
 
             if (mode == IntersectionMode.Edge)
             {
                 var bC = bP + bD * 0.5f;
                 var aC = aP + aD * 0.5f;
 
-                var signA = Mathf.Sign(Vector2.Dot(bC - aC, aT));
-                var signB = Mathf.Sign(Vector2.Dot(aC - bC, bT));
+                var signA = MathF.Sign(Vector2.Dot(bC - aC, aT));
+                var signB = MathF.Sign(Vector2.Dot(aC - bC, bT));
 
 
 
@@ -225,7 +227,7 @@ namespace Simulation.Traffic.Lofts
         private static float get2DLength(float y, float length)
         {
             if (y == 0) return length;
-            return Mathf.Sqrt(length * length + y * y);
+            return MathF.Sqrt(length * length + y * y);
         }
 
         private static bool intersectsRays(Vector2 aP, Vector2 aD, Vector2 aT, float widthA, float lenA, Vector2 bP, Vector2 bD, Vector2 bT, float widthB, float lenB, out float offsetA, out float offsetB)
@@ -249,11 +251,11 @@ namespace Simulation.Traffic.Lofts
 
         private static Vector2 t2d(Vector3 start)
         {
-            return new Vector2(start.x, start.z);
+            return new Vector2(start.X, start.Z);
         }
         private static Vector3 t3d(Vector2 start, float offset = 0.5f)
         {
-            return new Vector3(start.x, offset, start.y);
+            return new Vector3(start.X, offset, start.Y);
         }
 
         private static bool intersectsArcArc(ArcLoftPath a, float widthA, ArcLoftPath b, float widthB, IntersectionMode mode, out float offsetA, out float offsetB)
@@ -261,15 +263,15 @@ namespace Simulation.Traffic.Lofts
 
             Vector3 aCenter, aAxisX, aAxisY;
             float aRadiusX, aRadiusY;
-            if (a.Normal.y > 0.99999)
+            if (a.Normal.Y > 0.99999)
             {
                 aCenter = a.Center;
-                aCenter.y = a.StartPoint.y;
-                aAxisX = Vector3.right;
-                aAxisY = Vector3.forward;
+                aCenter.Y = a.StartPoint.Y;
+                aAxisX = Directions3.Right;
+                aAxisY = Directions3.Forward;
                 var ray = a.StartPoint;
-                ray.y = 0;
-                aRadiusX = aRadiusY = ray.magnitude;
+                ray.Y = 0;
+                aRadiusX = aRadiusY = ray.Length();
             }
             else
             {
@@ -278,17 +280,17 @@ namespace Simulation.Traffic.Lofts
 
             Vector3 bCenter, bAxisX, bAxisY;
             float bRadiusX, bRadiusY;
-            if (b.Normal.y > 0.99999)
+            if (b.Normal.Y > 0.99999)
             {
                 bCenter = b.Center;
-                bCenter.y = b.StartPoint.y;
-                bAxisX = Vector3.right;
-                bAxisY = Vector3.forward;
+                bCenter.Y = b.StartPoint.Y;
+                bAxisX = Directions3.Right;
+                bAxisY = Directions3.Forward;
 
                 var ray = b.StartPoint;
-                ray.y = 0;
-                bRadiusX = bRadiusY = ray.magnitude;
-                Debug.DrawLine(bCenter, b.StartPoint, Color.green);
+                ray.Y = 0;
+                bRadiusX = bRadiusY = ray.Length();
+                //Debug.DrawLine(bCenter, b.StartPoint, Color.green);
             }
             else
             {
@@ -296,12 +298,12 @@ namespace Simulation.Traffic.Lofts
             }
 
 
-            var aAngle = -Mathf.Atan2(aAxisX.z, aAxisX.x);
-            var bAngle = -Mathf.Atan2(bAxisX.z, bAxisX.x);
+            var aAngle = -MathF.Atan2(aAxisX.Z, aAxisX.X);
+            var bAngle = -MathF.Atan2(bAxisX.Z, bAxisX.X);
 
-            var displayOffset = Vector3.right * 50;
+            var displayOffset = Directions3.Right * 50;
 
-             
+
 
             offsetB = offsetA = float.NaN;
             return false;
@@ -311,7 +313,7 @@ namespace Simulation.Traffic.Lofts
             widthA /= 2;
             widthB /= 2;
 
-            if (a.Normal.y > 0.99999f)
+            if (a.Normal.Y > 0.99999f)
             {
                 // perfect circle
 
@@ -322,10 +324,10 @@ namespace Simulation.Traffic.Lofts
 
                 var center = a.Center;
 
-                center.y = a.StartPoint.y;
+                center.Y = a.StartPoint.Y;
 
                 var radius = a.Radius;
-                 
+
 
                 if (mode == IntersectionMode.Edge)
                 {
@@ -346,16 +348,16 @@ namespace Simulation.Traffic.Lofts
                 float radiusX, radiusY;
                 get2DEllipse(a, out center, out axisX, out axisY, out radiusX, out radiusY);
 
-                var bDirLen = get2DLength(b.Dir.y, b.Length);
+                var bDirLen = get2DLength(b.Dir.Y, b.Length);
                 var bStart = project(b.Start - center, axisX, axisY);
                 var bDir = project(b.Dir * bDirLen, axisX, axisY);
                 var bTan = project(b.Tangent * widthB, axisX, axisY);
 
                 var aStart = project(a.StartPoint, axisX, axisY);
 
-                //DebugUtils.DrawEllipse(Vector3.zero, radiusX + widthA, radiusY + widthA, Color.cyan);
-                //DebugUtils.DrawEllipse(Vector3.zero, radiusX, radiusY, Color.yellow);
-                //DebugUtils.DrawEllipse(Vector3.zero, radiusX - widthA, radiusY - widthA, Color.magenta);
+                //DebugUtils.DrawEllipse(Vector3.Zero, radiusX + widthA, radiusY + widthA, Color.cyan);
+                //DebugUtils.DrawEllipse(Vector3.Zero, radiusX, radiusY, Color.Yellow);
+                //DebugUtils.DrawEllipse(Vector3.Zero, radiusX - widthA, radiusY - widthA, Color.magenta);
 
 
                 if (mode == IntersectionMode.Edge)
@@ -382,15 +384,15 @@ namespace Simulation.Traffic.Lofts
             center = a.Center + offset;
             var direction = (a.StartPoint + a.Center - center);
 
-            var radius = direction.magnitude;
+            var radius = direction.Length();
 
             axisX = a.Normal;
-            axisX.y = 0;
-            axisX.Normalize();
+            axisX.Y = 0;
+            axisX = Vector3.Normalize(axisX);
 
-            axisY = new Vector3(-axisX.z, 0, axisX.x);
-            radiusX = Vector3.Cross(axisX, a.Normal).magnitude * radius;
-            radiusY = Vector3.Cross(axisY, a.Normal).magnitude * radius;
+            axisY = new Vector3(-axisX.Z, 0, axisX.X);
+            radiusX = Vector3.Cross(axisX, a.Normal).Length() * radius;
+            radiusY = Vector3.Cross(axisY, a.Normal).Length() * radius;
             //Debug.DrawLine(center, center + axisX * radiusX, Color.red);
             //Debug.DrawLine(center, center + axisY * radiusY, Color.green);
 
@@ -398,14 +400,14 @@ namespace Simulation.Traffic.Lofts
 
             //DebugUtils.DrawCircle(center, radius, a.Normal, Color.blue);
 
-            //Debug.DrawLine(center, a.Center, Color.yellow);
+            //Debug.DrawLine(center, a.Center, Color.Yellow);
         }
 
         private static bool intersectEllipseCenter(ArcLoftPath a, out float offsetA, out float offsetB, Vector3 center, float radiusX, float radiusY, float bDirLen, Vector3 bStart, Vector3 bDir)
         {
             float nearDistance;
             float farDistance;
-            if (VectorMath2D.IntersectsLineEllipse(t2d(bStart), t2d(bDir), Vector3.zero, radiusX, radiusY, out nearDistance, out farDistance))
+            if (VectorMath2D.IntersectsLineEllipse(t2d(bStart), t2d(bDir), Vector2.Zero, radiusX, radiusY, out nearDistance, out farDistance))
             {
                 float bestOffsetA = float.PositiveInfinity, bestOffsetB = float.PositiveInfinity;
                 if (checkRange(a, bDir, center, bDirLen, bStart, nearDistance, ref bestOffsetA, ref bestOffsetB))
@@ -442,11 +444,11 @@ namespace Simulation.Traffic.Lofts
 
 
 
-            bool intersectsInnerLeft = VectorMath2D.IntersectsLineEllipse(t2d(startLeft), t2d(bDir), Vector3.zero, innerRadiusX, innerRadiusY, out nearDistanceInnerLeft, out farDistanceInnerLeft);
-            bool intersectsInnerRight = VectorMath2D.IntersectsLineEllipse(t2d(startRight), t2d(bDir), Vector3.zero, innerRadiusX, innerRadiusY, out nearDistanceInnerRight, out farDistanceInnerRight);
+            bool intersectsInnerLeft = VectorMath2D.IntersectsLineEllipse(t2d(startLeft), t2d(bDir), Vector2.Zero, innerRadiusX, innerRadiusY, out nearDistanceInnerLeft, out farDistanceInnerLeft);
+            bool intersectsInnerRight = VectorMath2D.IntersectsLineEllipse(t2d(startRight), t2d(bDir), Vector2.Zero, innerRadiusX, innerRadiusY, out nearDistanceInnerRight, out farDistanceInnerRight);
 
-            bool intersectsOuterLeft = VectorMath2D.IntersectsLineEllipse(t2d(startLeft), t2d(bDir), Vector3.zero, outerRadiusX, outerRadiusY, out nearDistanceOuterLeft, out farDistanceOuterLeft);
-            bool intersectsOuterRight = VectorMath2D.IntersectsLineEllipse(t2d(startRight), t2d(bDir), Vector3.zero, outerRadiusX, outerRadiusY, out nearDistanceOuterRight, out farDistanceOuterRight);
+            bool intersectsOuterLeft = VectorMath2D.IntersectsLineEllipse(t2d(startLeft), t2d(bDir), Vector2.Zero, outerRadiusX, outerRadiusY, out nearDistanceOuterLeft, out farDistanceOuterLeft);
+            bool intersectsOuterRight = VectorMath2D.IntersectsLineEllipse(t2d(startRight), t2d(bDir), Vector2.Zero, outerRadiusX, outerRadiusY, out nearDistanceOuterRight, out farDistanceOuterRight);
 
 
             //if (intersectsOuterLeft)
@@ -455,9 +457,9 @@ namespace Simulation.Traffic.Lofts
             //    Debug.DrawLine(startRight + bDir * nearDistanceOuterRight, startRight + bDir * farDistanceOuterRight, Color.green);
 
             //if (intersectsInnerLeft)
-            //    Debug.DrawLine(startLeft + bDir * nearDistanceInnerLeft, startLeft + bDir * farDistanceInnerLeft, Color.yellow);
+            //    Debug.DrawLine(startLeft + bDir * nearDistanceInnerLeft, startLeft + bDir * farDistanceInnerLeft, Color.Yellow);
             //if (intersectsInnerRight)
-            //    Debug.DrawLine(startRight + bDir * nearDistanceInnerRight, startRight + bDir * farDistanceInnerRight, Color.yellow);
+            //    Debug.DrawLine(startRight + bDir * nearDistanceInnerRight, startRight + bDir * farDistanceInnerRight, Color.Yellow);
 
 
             float bestOffsetA = float.PositiveInfinity, bestOffsetB = float.PositiveInfinity;
@@ -507,7 +509,7 @@ namespace Simulation.Traffic.Lofts
                 if (a.GetOffsetToPoint(farPoint, out offsetA))
                 {
                     //Debug.DrawLine(farPoint, farPoint + Vector3.left * 5, Color.green);
-                    //Debug.DrawLine(farPoint, farPoint + Vector3.forward * 5, Color.green);
+                    //Debug.DrawLine(farPoint, farPoint + Directions3.Forward * 5, Color.green);
                     offsetB = distance * bDirLen;
 
                     if (offsetA < bestOffsetA)
@@ -523,8 +525,8 @@ namespace Simulation.Traffic.Lofts
         private static Vector3 project(Vector3 input, Vector3 x, Vector3 z)
         {
             var output = new Vector3(0, 0, 0);
-            output.x = Vector3.Dot(input, x);
-            output.z = Vector3.Dot(input, z);
+            output.X = Vector3.Dot(input, x);
+            output.Z = Vector3.Dot(input, z);
             return output;
         }
     }

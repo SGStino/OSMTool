@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿using System.Numerics;
 
 namespace Simulation.Traffic.IO
 {
@@ -12,18 +12,18 @@ namespace Simulation.Traffic.IO
         {
             return new Vector3D
             {
-                X = d.x,
-                Y = d.y,
-                Z = d.z
+                X = d.X,
+                Y = d.Y,
+                Z = d.Z
             };
         }
         public static implicit operator Vector3(Vector3D d)
         {
             return new Vector3
             {
-                x = d.X,
-                y = d.Y,
-                z = d.Z
+                X = d.X,
+                Y = d.Y,
+                Z = d.Z
             };
         }
     }

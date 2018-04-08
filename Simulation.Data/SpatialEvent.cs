@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using Simulation.Data.Primitives;
+using System.Numerics;
 
 namespace Simulation.Data
 {
     public struct SpatialEvent<T>
     {
-        public SpatialEvent(T item, Rect? oldBounds, Rect? newBounds, SpatialEventType type) : this()
+        public SpatialEvent(T item, Rectangle? oldBounds, Rectangle? newBounds, SpatialEventType type) : this()
         {
             Item = item;
             OldBounds = oldBounds;
@@ -13,13 +14,13 @@ namespace Simulation.Data
         }
 
         public T Item { get; }
-        public Rect? OldBounds { get; }
-        public Rect? NewBounds { get; }
+        public Rectangle? OldBounds { get; }
+        public Rectangle? NewBounds { get; }
         public SpatialEventType Type { get; }
 
 
-        public static SpatialEvent<T> Added(T item, Rect bounds) => new SpatialEvent<T>(item, null, bounds, SpatialEventType.Added);
-        public static SpatialEvent<T> Removed(T item, Rect bounds) => new SpatialEvent<T>(item, bounds, null, SpatialEventType.Removed);
-        public static SpatialEvent<T> Moved(T item, Rect oldBounds, Rect newBounds) => new SpatialEvent<T>(item, oldBounds, newBounds, SpatialEventType.Moved);
+        public static SpatialEvent<T> Added(T item, Rectangle bounds) => new SpatialEvent<T>(item, null, bounds, SpatialEventType.Added);
+        public static SpatialEvent<T> Removed(T item, Rectangle bounds) => new SpatialEvent<T>(item, bounds, null, SpatialEventType.Removed);
+        public static SpatialEvent<T> Moved(T item, Rectangle oldBounds, Rectangle newBounds) => new SpatialEvent<T>(item, oldBounds, newBounds, SpatialEventType.Moved);
     }
 }

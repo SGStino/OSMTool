@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.Lofts
 {
@@ -12,6 +13,6 @@ namespace Simulation.Traffic.Lofts
         Matrix4x4 GetTransform(float progress);
         void SnapTo(Vector3 to, out float distance);
         bool Intersects(Plane plane, out float[] loftDistances);
-        Rect GetBounds(float width);
+        Rectangle GetBounds(float width);
     } 
 }

@@ -1,22 +1,23 @@
-﻿using UnityEngine;
+﻿using Simulation.Data.Primitives;
+using System.Numerics;
 
 namespace Simulation.Data
 {
     internal class SimpleSpatialPointer<T> : ISpatialPointer<T>
     {
         private SimpleSpatialRegistry<T> _simpleSpatialRegistry;
-        private Rect _bounds;
+        private Rectangle _bounds;
 
 
 
-        public SimpleSpatialPointer(T item, SimpleSpatialRegistry<T> simpleSpatialRegistry, Rect bounds)
+        public SimpleSpatialPointer(T item, SimpleSpatialRegistry<T> simpleSpatialRegistry, Rectangle bounds)
         {
             Item = item;
             _bounds = bounds;
             _simpleSpatialRegistry = simpleSpatialRegistry;
         }
 
-        public Rect Bounds
+        public Rectangle Bounds
         {
             get => _bounds;
             set

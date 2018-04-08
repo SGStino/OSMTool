@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using UnityEngine;
+using System.Numerics;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Data
 {
@@ -25,14 +26,14 @@ namespace Simulation.Data
             pointers.Clear();
         }
 
-        public IObservable<SpatialEvent<T>> Observe(Rect area) => localEvents.WhereBounds(b => b.Overlaps(area));
-        public IObservable<SpatialEvent<T>> Observe(Vector3 center, float radius) => localEvents.WhereBounds(b => QuadTreeUtils.Overlaps(b, center, radius));
+        public IObservable<SpatialEvent<T>> Observe(Rectangle area) => localEvents.WhereBounds(b => b.Overlaps(area));
+        public IObservable<SpatialEvent<T>> Observe(Vector2 center, float radius) => localEvents.WhereBounds(b => b.Overlaps(center, radius));
 
-        public IEnumerable<T> Query(Rect area) => pointers.Where(b => b.Bounds.Overlaps(area)).Select(t => t.Item);
+        public IEnumerable<T> Query(Rectangle area) => pointers.Where(b => b.Bounds.Overlaps(area)).Select(t => t.Item);
 
-        public IEnumerable<T> Query(Vector3 center, float radius) => pointers.Where(b => QuadTreeUtils.Overlaps(b.Bounds, center, radius)).Select(t => t.Item);
+        public IEnumerable<T> Query(Vector2 center, float radius) => pointers.Where(b => b.Bounds.Overlaps(center, radius)).Select(t => t.Item);
 
-        public ISpatialPointer<T> Register(T item, Rect bounds)
+        public ISpatialPointer<T> Register(T item, Rectangle bounds)
         {
             var pointer = new SimpleSpatialPointer<T>(item, this, bounds);
             pointers.Add(pointer);
@@ -40,9 +41,9 @@ namespace Simulation.Data
             return pointer;
         }
 
-        internal void Move(SimpleSpatialPointer<T> simpleSpatialPointer, Rect oldBounds, Rect newBounds) => localEvents.OnNext(SpatialEvent<T>.Moved(simpleSpatialPointer.Item, oldBounds, newBounds));
+        internal void Move(SimpleSpatialPointer<T> simpleSpatialPointer, Rectangle oldBounds, Rectangle newBounds) => localEvents.OnNext(SpatialEvent<T>.Moved(simpleSpatialPointer.Item, oldBounds, newBounds));
 
-        internal void Remove(SimpleSpatialPointer<T> simpleSpatialPointer, Rect bounds)
+        internal void Remove(SimpleSpatialPointer<T> simpleSpatialPointer, Rectangle bounds)
         {
             localEvents.OnNext(SpatialEvent<T>.Removed(simpleSpatialPointer.Item, bounds));
             pointers.Remove(simpleSpatialPointer);

@@ -3,27 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
-
+using System.Numerics;
+using Simulation.Data.Primitives;
 namespace Simulation.Data.Trees
 {
     public static class QuadTreeUtils
     {
-        public static bool Encapsulates(this Rect maxBounds, Rect bounds)
+        public static bool Encapsulates(this Rectangle maxBounds, Rectangle bounds)
         {
-            if (bounds.xMin <= maxBounds.xMin) return false;
-            if (bounds.yMin <= maxBounds.yMin) return false;
-            if (bounds.xMax >= maxBounds.xMax) return false;
-            if (bounds.yMax >= maxBounds.yMax) return false;
+            if (bounds.Min.X <= maxBounds.Min.X) return false;
+            if (bounds.Min.Y <= maxBounds.Min.Y) return false;
+            if (bounds.Max.X >= maxBounds.Max.X) return false;
+            if (bounds.Max.Y >= maxBounds.Max.Y) return false;
             return true;
         }
 
-        public static Rect[] DevideQuads(Rect bounds)
+        public static Rectangle[] DevideQuads(Rectangle bounds)
         {
-            var x0 = bounds.min.x;
-            var y0 = bounds.min.y;
-            var x2 = bounds.max.x;
-            var y2 = bounds.max.y;
+            var x0 = bounds.Min.X;
+            var y0 = bounds.Min.Y;
+            var x2 = bounds.Max.X;
+            var y2 = bounds.Max.Y;
             var x1 = (x2 + x0) / 2;
             var y1 = (y2 + y0) / 2;
 
@@ -31,64 +31,57 @@ namespace Simulation.Data.Trees
             var yCoord = new float[,] { { y0, y1 }, { y1, y2 } };
             var xCoord = new float[,] { { x0, x1 }, { x1, x2 } };
 
-            var children = new Rect[4];
+            var children = new Rectangle[4];
 
             for (int i = 0; i < 4; i++)
             {
                 var x = i % 2;
                 var y = i / 2;
 
-                children[i] = Rect.MinMaxRect(xCoord[x, 0], yCoord[y, 0], xCoord[x, 1], yCoord[y, 1]);
+                children[i] = Rectangle.MinMaxRectangle(xCoord[x, 0], yCoord[y, 0], xCoord[x, 1], yCoord[y, 1]);
             }
             return children;
         }
 
-        internal static Rect Combine(this Rect source, Rect target)
-        {
-            var xMin = Math.Min(source.xMin, target.xMin);
-            var yMin = Math.Min(source.yMin, target.yMin);
-            var xMax = Math.Max(source.xMax, target.xMax);
-            var yMax = Math.Max(source.yMax, target.yMax);
+        internal static Rectangle Combine(this Rectangle source, Rectangle target)
+        { 
+            Vector2 Min, Max;
+            Min.X = Math.Min(source.Min.X, target.Min.X);
+            Min.Y = Math.Min(source.Min.Y, target.Min.Y);
+            Max.X = Math.Max(source.Max.X, target.Max.X);
+            Max.Y = Math.Max(source.Max.Y, target.Max.Y);
 
-            return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
+            return Rectangle.MinMaxRectangle(Min, Max);
         }
 
-        internal static bool Overlaps(this Rect bounds, Vector2 point, float radius)
+
+
+        public static int GetQuadIndex(Rectangle node, Vector2 target)
         {
-            var pX = point.x - Mathf.Clamp(point.x, bounds.xMin, bounds.xMax);
-            var pY = point.y - Mathf.Clamp(point.y, bounds.yMin, bounds.yMax);
-
-            var r2 = radius * radius;
-
-            return (pX * pX + pY * pY) <= r2;
-        }
-
-        public static int GetQuadIndex(Rect node, Vector2 target)
-        {
-            var max = node.center;
-            var xPos = max.x < target.x;
-            var yPos = max.y < target.y;
+            var max = node.Center;
+            var xPos = max.X < target.X;
+            var yPos = max.Y < target.Y;
             return (xPos ? 1 : 0) + (yPos ? 2 : 0);
         }
 
-        public static Rect GrowQuad(Rect initial, Vector2 target, out int targetIndex, out int sourceIndex)
+        public static Rectangle GrowQuad(Rectangle initial, Vector2 target, out int targetIndex, out int sourceIndex)
         {
 
 
-            var xPos = initial.center.x < target.x;
-            var yPos = initial.center.y < target.y;
+            var xPos = initial.Center.X < target.X;
+            var yPos = initial.Center.Y < target.Y;
 
 
             Vector2 min;
             Vector2 max;
 
 
-            GetCoordinates(initial.xMin, initial.xMax, xPos, out min.x, out max.x);
-            GetCoordinates(initial.yMin, initial.yMax, yPos, out min.y, out max.y);
+            GetCoordinates(initial.Min.X, initial.Max.X, xPos, out min.X, out max.X);
+            GetCoordinates(initial.Min.Y, initial.Max.Y, yPos, out min.Y, out max.Y);
 
             targetIndex = (xPos ? 1 : 0) + (yPos ? 2 : 0);
             sourceIndex = (xPos ? 0 : 1) + (yPos ? 0 : 2);
-            return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+            return Rectangle.MinMaxRectangle(min.X, min.Y, max.X, max.Y);
         }
         private static void GetCoordinates(float min, float max, bool dir, out float left, out float right)
         {

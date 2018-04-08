@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Geometry
 {
@@ -60,7 +60,7 @@ namespace Simulation.Geometry
             var vertex = points[i];
 
             var d = vertex - center;
-            return Mathf.Atan2(d.y, d.x);
+            return MathF.Atan2(d.Y, d.X);
         }
     }
 

@@ -1,7 +1,8 @@
 ﻿
+using Simulation.Data.Primitives;
 using Simulation.Traffic.Utilities;
 using System;
-using UnityEngine;
+using System.Numerics;
 
 namespace Simulation.Traffic.Lofts
 {
@@ -14,31 +15,30 @@ namespace Simulation.Traffic.Lofts
         public ILoftPath Arc2 { get { return arc2; } }
         private Vector3 t3d(Vector2 input)
         {
-            return new Vector3(input.x, 0, input.y);
+            return new Vector3(input.X, 0, input.Y);
         }
         public BiArcLoftPath(Vector3 start, Vector3 tangentStart, Vector3 end, Vector3 tangentEnd)
         {
 #if DEBUG
-            if (float.IsNaN(start.x)) throw new InvalidOperationException("start.x is not a number");
-            if (float.IsNaN(start.y)) throw new InvalidOperationException("start.y is not a number");
-            if (float.IsNaN(start.z)) throw new InvalidOperationException("start.z is not a number");
-            if (float.IsNaN(end.x)) throw new InvalidOperationException("end.x is not a number");
-            if (float.IsNaN(end.y)) throw new InvalidOperationException("end.y is not a number");
-            if (float.IsNaN(end.z)) throw new InvalidOperationException("end.z is not a number");
-            if (float.IsNaN(tangentStart.x)) throw new InvalidOperationException("tangentStart.x is not a number");
-            if (float.IsNaN(tangentStart.y)) throw new InvalidOperationException("tangentStart.y is not a number");
-            if (float.IsNaN(tangentStart.z)) throw new InvalidOperationException("tangentStart.z is not a number");
-            if (float.IsNaN(tangentEnd.x)) throw new InvalidOperationException("tangentEnd.x is not a number");
-            if (float.IsNaN(tangentEnd.y)) throw new InvalidOperationException("tangentEnd.y is not a number");
-            if (float.IsNaN(tangentEnd.z)) throw new InvalidOperationException("tangentEnd.z is not a number");
+            if (float.IsNaN(start.X)) throw new InvalidOperationException("start.X is not a number");
+            if (float.IsNaN(start.Y)) throw new InvalidOperationException("start.Y is not a number");
+            if (float.IsNaN(start.Z)) throw new InvalidOperationException("start.Z is not a number");
+            if (float.IsNaN(end.X)) throw new InvalidOperationException("end.X is not a number");
+            if (float.IsNaN(end.Y)) throw new InvalidOperationException("end.Y is not a number");
+            if (float.IsNaN(end.Z)) throw new InvalidOperationException("end.Z is not a number");
+            if (float.IsNaN(tangentStart.X)) throw new InvalidOperationException("tangentStart.X is not a number");
+            if (float.IsNaN(tangentStart.Y)) throw new InvalidOperationException("tangentStart.Y is not a number");
+            if (float.IsNaN(tangentStart.Z)) throw new InvalidOperationException("tangentStart.Z is not a number");
+            if (float.IsNaN(tangentEnd.X)) throw new InvalidOperationException("tangentEnd.X is not a number");
+            if (float.IsNaN(tangentEnd.Y)) throw new InvalidOperationException("tangentEnd.Y is not a number");
+            if (float.IsNaN(tangentEnd.Z)) throw new InvalidOperationException("tangentEnd.Z is not a number");
 
-            var distSqr = (start - end).sqrMagnitude;
+            var distSqr = (start - end).LengthSquared();
             if (distSqr < 0.001)
                 throw new InvalidOperationException("Zero Length");
 #endif
-
-            tangentStart.Normalize();
-            tangentEnd.Normalize();
+            tangentStart = Vector3.Normalize(tangentStart);             
+            tangentEnd = Vector3.Normalize(tangentEnd);
 
             var pointStart = start + tangentStart;
             var pointEnd = end + tangentEnd;
@@ -46,10 +46,8 @@ namespace Simulation.Traffic.Lofts
             var c1 = (start + end) / 2;
             var c2 = (pointStart + pointEnd) / 2;
 
-            var n1 = end - start;
-            var n2 = pointEnd - pointStart;
-            n1.Normalize();
-            n2.Normalize();
+            var n1 = Vector3.Normalize( end - start);
+            var n2 = Vector3.Normalize(pointEnd - pointStart); 
 
             //Debug.DrawLine(pointStart, pointEnd);
 
@@ -59,49 +57,49 @@ namespace Simulation.Traffic.Lofts
             //DebugUtils.DrawPlane(c1, n1, .01f, Color.red);
             //DebugUtils.DrawPlane(c2, n2, .01f, Color.red);
 
-            //Debug.DrawLine(Vector3.zero, n1 * d1);
-            //Debug.DrawLine(Vector3.zero, n2 * d2);
+            //Debug.DrawLine(Vector3.Zero, n1 * d1);
+            //Debug.DrawLine(Vector3.Zero, n2 * d2);
 
             Ray r12;
             if (intersect(n1, d1, n2, d2, out r12))
             {
                 //Debug.DrawLine(r12.origin, r12.GetPoint(10), Color.blue);
 
-                var r = Vector3.Dot(start - r12.origin, r12.direction);
+                var r = Vector3.Dot(start - r12.Origin, r12.Direction);
 
                 var center1 = r12.GetPoint(r);
 
-                //Debug.DrawLine(center1, start, Color.yellow);
-                //Debug.DrawLine(center1, end, Color.yellow);
+                //Debug.DrawLine(center1, start, Color.Yellow);
+                //Debug.DrawLine(center1, end, Color.Yellow);
 #if DEBUG
-                if (float.IsNaN(center1.x)) throw new InvalidOperationException("center1.x is not a number");
-                if (float.IsNaN(center1.y)) throw new InvalidOperationException("center1.y is not a number");
-                if (float.IsNaN(center1.z)) throw new InvalidOperationException("center1.z is not a number");
+                if (float.IsNaN(center1.X)) throw new InvalidOperationException("center1.X is not a number");
+                if (float.IsNaN(center1.Y)) throw new InvalidOperationException("center1.Y is not a number");
+                if (float.IsNaN(center1.Z)) throw new InvalidOperationException("center1.Z is not a number");
 #endif
 
-                var rH = (center1 - start).magnitude;
-                var rC = (center1 - c1).magnitude;
+                var rH = (center1 - start).Length();
+                var rC = (center1 - c1).Length();
 #if DEBUG
                 if (float.IsNaN(rH)) throw new InvalidOperationException("rH is not a number");
                 if (float.IsNaN(rC)) throw new InvalidOperationException("rC is not a number");
 #endif
 
                 Vector3 pointH1, pointH2;
-                if (Mathf.Abs(rC) > 0.00001f)
+                if (MathF.Abs(rC) > 0.00001f)
                 {
                     var lCH = (c1 - center1) / rC * rH;
-                    //DebugUtils.DrawCircle(center1, rH, r12.direction, Color.yellow);
+                    //DebugUtils.DrawCircle(center1, rH, r12.direction, Color.Yellow);
 #if DEBUG
-                    if (float.IsNaN(lCH.x)) throw new InvalidOperationException("lCH.x is not a number");
-                    if (float.IsNaN(lCH.y)) throw new InvalidOperationException("lCH.y is not a number");
-                    if (float.IsNaN(lCH.z)) throw new InvalidOperationException("lCH.z is not a number");
+                    if (float.IsNaN(lCH.X)) throw new InvalidOperationException("lCH.X is not a number");
+                    if (float.IsNaN(lCH.Y)) throw new InvalidOperationException("lCH.Y is not a number");
+                    if (float.IsNaN(lCH.Z)) throw new InvalidOperationException("lCH.Z is not a number");
 #endif
                     pointH2 = center1 + lCH;
                     pointH1 = center1 - lCH;
                 }
                 else
                 {
-                    pointH1 = pointH2 = center1 - tangentStart * (start - end).magnitude / 2;
+                    pointH1 = pointH2 = center1 - tangentStart * (start - end).Length() / 2;
                 }
                 //Debug.DrawLine(pointH1, pointH2, Color.green);
 
@@ -135,7 +133,7 @@ namespace Simulation.Traffic.Lofts
 
         private string asBin(Vector3 start)
         {
-            return asBin(start.x) + " " + asBin(start.y) + " " + asBin(start.z);
+            return asBin(start.X) + " " + asBin(start.Y) + " " + asBin(start.Z);
         }
 
         private string asBin(float z)
@@ -146,15 +144,15 @@ namespace Simulation.Traffic.Lofts
         private ILoftPath getArc(Vector3 point, Vector3 tangent, Vector3 pointH, bool reverse)
         {
 #if DEBUG
-            if (float.IsNaN(point.x)) throw new InvalidOperationException("point.x is not a number");
-            if (float.IsNaN(point.y)) throw new InvalidOperationException("point.y is not a number");
-            if (float.IsNaN(point.z)) throw new InvalidOperationException("point.z is not a number");
-            if (float.IsNaN(tangent.x)) throw new InvalidOperationException("tangent.x is not a number");
-            if (float.IsNaN(tangent.y)) throw new InvalidOperationException("tangent.y is not a number");
-            if (float.IsNaN(tangent.z)) throw new InvalidOperationException("tangent.z is not a number");
-            if (float.IsNaN(pointH.x)) throw new InvalidOperationException("pointH.x is not a number");
-            if (float.IsNaN(pointH.y)) throw new InvalidOperationException("pointH.y is not a number");
-            if (float.IsNaN(pointH.z)) throw new InvalidOperationException("pointH.z is not a number");
+            if (float.IsNaN(point.X)) throw new InvalidOperationException("point.X is not a number");
+            if (float.IsNaN(point.Y)) throw new InvalidOperationException("point.Y is not a number");
+            if (float.IsNaN(point.Z)) throw new InvalidOperationException("point.Z is not a number");
+            if (float.IsNaN(tangent.X)) throw new InvalidOperationException("tangent.X is not a number");
+            if (float.IsNaN(tangent.Y)) throw new InvalidOperationException("tangent.Y is not a number");
+            if (float.IsNaN(tangent.Z)) throw new InvalidOperationException("tangent.Z is not a number");
+            if (float.IsNaN(pointH.X)) throw new InvalidOperationException("pointH.X is not a number");
+            if (float.IsNaN(pointH.Y)) throw new InvalidOperationException("pointH.Y is not a number");
+            if (float.IsNaN(pointH.Z)) throw new InvalidOperationException("pointH.Z is not a number");
 #endif
 
             //Debug.DrawLine(point, point + tangent * 10);
@@ -162,7 +160,7 @@ namespace Simulation.Traffic.Lofts
 
             var pHSC = (pointH + point) / 2;
 
-            var pHSn = lHP.normalized;
+            var pHSn = Vector3.Normalize(lHP);
 
             var pHSd = Vector3.Dot(pHSn, pHSC);
 
@@ -175,9 +173,9 @@ namespace Simulation.Traffic.Lofts
             Ray rS;
             if (intersect(pSn, pSd, pHSn, pHSd, out rS))
             {
-                var center = rS.GetPoint(Vector3.Dot(rS.direction, point - rS.origin));
+                var center = rS.GetPoint(Vector3.Dot(rS.Direction, point - rS.Origin));
                 //Debug.DrawLine(rS.origin, center, Color.blue);
-                //DebugUtils.DrawCircle(center, (center - point).magnitude, rS.direction, Color.cyan);
+                //DebugUtils.DrawCircle(center, (center - point).Length(), rS.direction, Color.cyan);
 
 
                 //Debug.DrawLine(point, centerStart, Color.magenta);
@@ -186,12 +184,12 @@ namespace Simulation.Traffic.Lofts
 
                 // TODO: it isn't always shortest angle
 
-                var side = Vector3.Cross(tangent, Vector3.up);
+                var side = Vector3.Cross(tangent, Directions3.Up);
                 var dot = Vector3.Dot(side, point - center);
 
-                //if (Mathf.Abs(dot) < 0.0001f)
+                //if (MathF.Abs(dot) < 0.0001f)
                 //{
-                //    side = Vector3.Cross(tangent, Vector3.right);
+                //    side = Vector3.Cross(tangent, Directions3.Right);
                 //    dot = Vector3.Dot(side, point - center);
                 //}
 
@@ -211,7 +209,7 @@ namespace Simulation.Traffic.Lofts
         private bool intersect(Vector3 p1n, float p1d, Vector3 p2n, float p2d, out Ray ray)
         {
             var p3n = Vector3.Cross(p1n, p2n);
-            var det = p3n.sqrMagnitude;
+            var det = p3n.LengthSquared();
             if (det >= 0.000001)
             {
                 var p3 = ((Vector3.Cross(p2n, p3n) * p1d) + (Vector3.Cross(p3n, p1n) * p2d)) / det;
@@ -251,10 +249,10 @@ namespace Simulation.Traffic.Lofts
             var dotEnd = Vector2.Dot(t1, tangentEnd);
 
 
-            if (Mathf.Abs(dotStart) < 0.1)
+            if (MathF.Abs(dotStart) < 0.1)
             {
                 // straight start
-                if (Mathf.Abs(dotEnd) < 0.1)
+                if (MathF.Abs(dotEnd) < 0.1)
                 {
                     // straight end
                     arc1 = new LinearPath(t3d(start), t3d(c1));
@@ -270,8 +268,8 @@ namespace Simulation.Traffic.Lofts
 
             //Debug.DrawLine(t3d(pointEnd), t3d(pointStart), Color.black);
 
-            //Debug.DrawRay(t3d(c1), t3d(t1.normalized * 2), Color.gray);
-            //Debug.DrawRay(t3d(c2), t3d(t2.normalized * 2), Color.green);
+            //Debug.DrawRay(t3d(c1), t3d(t1.Normalized() * 2), Color.gray);
+            //Debug.DrawRay(t3d(c2), t3d(t2.Normalized() * 2), Color.green);
 
             float u, v;
             intersect(c1, t1, c2, t2, out u, out v);
@@ -286,28 +284,28 @@ namespace Simulation.Traffic.Lofts
             else
             {
                 var center1 = c1 + t1 * u;
-                var rc1 = (center1 - start).magnitude;
+                var rc1 = (center1 - start).Length();
                 // STEP 3: create point H somewhere on the first Circle (we take halfway between start and end)
 
                 var dir = Vector2.Dot(t2, tangentStart)
                     + Vector2.Dot(t2, tangentEnd);
 
-                var distCenter2pointH = (rc1 / t1.magnitude);
+                var distCenter2pointH = (rc1 / t1.Length());
 
                 pointH1 = center1 + t1 * distCenter2pointH;
                 pointH2 = center1 - t1 * distCenter2pointH;
 
-                //Debug.DrawRay(t3d(c1), t3d(t1.normalized * 2 * Mathf.Sign(u)), Color.red);
+                //Debug.DrawRay(t3d(c1), t3d(t1.Normalized() * 2 * MathF.Sign(u)), Color.red);
 
                 //Debug.DrawLine(t3d(center1), t3d(start), Color.magenta);
                 //Debug.DrawLine(t3d(center1), t3d(end), Color.cyan);
 
-                //Debug.DrawLine(t3d(pointH1), t3d(start), Color.yellow);
-                //Debug.DrawLine(t3d(pointH1), t3d(end), Color.yellow);
-                //Debug.DrawLine(t3d(pointH2), t3d(start), Color.yellow);
-                //Debug.DrawLine(t3d(pointH2), t3d(end), Color.yellow);
+                //Debug.DrawLine(t3d(pointH1), t3d(start), Color.Yellow);
+                //Debug.DrawLine(t3d(pointH1), t3d(end), Color.Yellow);
+                //Debug.DrawLine(t3d(pointH2), t3d(start), Color.Yellow);
+                //Debug.DrawLine(t3d(pointH2), t3d(end), Color.Yellow);
 
-                //DebugUtils.DrawCircle(t3d(center1), (center1 - start).magnitude, Vector3.up, Color.white);
+                //DebugUtils.DrawCircle(t3d(center1), (center1 - start).Length(), Directions3.Up, Color.white);
 
             }
             var pointH = pointH1;
@@ -343,10 +341,10 @@ namespace Simulation.Traffic.Lofts
                 var isClockwise = u > 0;
                 var angle = getAngle(arcStartVector, (othersegment ? pointH : refPoint) - center, isClockwise);
 
-                if (Mathf.Abs(angle) < 0.001)
+                if (MathF.Abs(angle) < 0.001)
                     return getLinear(refPoint, pointH, othersegment);
                 else
-                    return new ArcLoftPath(t3d(arcStartVector), -angle, t3d(center), Vector3.up);
+                    return new ArcLoftPath(t3d(arcStartVector), -angle, t3d(center), Directions3.Up);
             }
             else
                 return getLinear(refPoint, pointH, false);
@@ -362,12 +360,12 @@ namespace Simulation.Traffic.Lofts
 
         private float getAngle(Vector2 v1, Vector2 v2, bool clockWise)
         {
-            var dot = v1.x * v2.x + v1.y * v2.y;
-            var det = v1.x * v2.y - v1.y * v2.x;
-            var a = Mathf.Atan2(det, dot);
-            if (a < 0) a += Mathf.PI * 2;
+            var dot = v1.X * v2.X + v1.Y * v2.Y;
+            var det = v1.X * v2.Y - v1.Y * v2.X;
+            var a = MathF.Atan2(det, dot);
+            if (a < 0) a += MathF.PI * 2;
             if (!clockWise)
-                a = -(Mathf.PI * 2 - a);
+                a = -(MathF.PI * 2 - a);
             return a;
         }
 
@@ -375,18 +373,18 @@ namespace Simulation.Traffic.Lofts
 
         private bool intersect(Vector2 p1, Vector2 d1, Vector2 p2, Vector2 d2, out float u, out float v)
         {
-            u = (p1.y * d2.x + d2.y * p2.x - p2.y * d2.x - d2.y * p1.x) / (d1.x * d2.y - d1.y * d2.x);
-            v = (p1.x + d1.x * u - p2.x) / d2.x;
+            u = (p1.Y * d2.X + d2.Y * p2.X - p2.Y * d2.X - d2.Y * p1.X) / (d1.X * d2.Y - d1.Y * d2.X);
+            v = (p1.X + d1.X * u - p2.X) / d2.X;
             return !float.IsInfinity(u);
         }
 
         private Vector2 makeBiTangent(Vector2 t)
         {
-            return new Vector2(t.y, -t.x);
+            return new Vector2(t.Y, -t.X);
         }
         private Vector3 makeBiTangent(Vector3 t)
         {
-            return Vector3.Cross(Vector3.up, t);
+            return Vector3.Cross(Directions3.Up, t);
         }
         */
         public float Length { get { return arc1.Length + arc2.Length; } }
@@ -417,8 +415,8 @@ namespace Simulation.Traffic.Lofts
             //Debug.DrawLine(p1, to, Color.blue);
             //Debug.DrawLine(p2, to, Color.red);
 
-            var l1 = (p1 - to).magnitude;
-            var l2 = (p2 - to).magnitude;
+            var l1 = (p1 - to).Length();
+            var l2 = (p2 - to).Length();
 
             if (l1 < l2)
             {
@@ -453,16 +451,16 @@ namespace Simulation.Traffic.Lofts
             return intersect;
         }
 
-        public Rect GetBounds(float width)
+        public Rectangle GetBounds(float width)
         {
             var b1 = arc1.GetBounds(width);
             var b2 = arc2.GetBounds(width);
 
-            var minX = Mathf.Min(b1.xMin, b2.xMin);
-            var maxX = Mathf.Max(b1.xMax, b2.xMax);
-            var minY = Mathf.Min(b1.yMin, b2.yMin);
-            var maxY = Mathf.Max(b1.yMax, b2.yMax);
-            return Rect.MinMaxRect(minX, minY, maxX, maxY);
+            var minX = MathF.Min(b1.Min.X, b2.Min.X);
+            var maxX = MathF.Max(b1.Max.X, b2.Max.X);
+            var minY = MathF.Min(b1.Min.Y, b2.Min.Y);
+            var maxY = MathF.Max(b1.Max.Y, b2.Max.Y);
+            return Rectangle.MinMaxRectangle(minX, minY, maxX, maxY);
         }
     }
 }
