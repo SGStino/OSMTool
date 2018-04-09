@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsmTool.Core", "OSMTool.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsmTool.Test", "OSMTool.Test\OsmTool.Test.csproj", "{A07FC462-ED6E-4D51-863C-E3FD71F25FF5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Traffic", "Simulation.Traffic\Simulation.Traffic.csproj", "{D8BFFC12-1277-4D9D-BF86-6E1F407F3BC0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Traffic", "Simulation.Traffic\Simulation.Traffic.csproj", "{D8BFFC12-1277-4D9D-BF86-6E1F407F3BC0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alpinechough.Srtm", "..\..\..\..\Source\Git\Alpinechough.Srtm\Alpinechough.Srtm.csproj", "{CD10A6E7-745F-4C82-9AAB-C5AA90944195}"
 EndProject
@@ -31,11 +31,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.People.Generator
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Data", "Simulation.Data\Simulation.Data.csproj", "{D94BF5BD-54D2-4179-923E-2C7FF5BEC8A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Buildings.Test", "Simulation.Buildings.Test\Simulation.Buildings.Test.csproj", "{DC4269E8-5A5E-429E-A73C-F307BA072090}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Buildings.Test", "Simulation.Buildings.Test\Simulation.Buildings.Test.csproj", "{DC4269E8-5A5E-429E-A73C-F307BA072090}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Rendering", "Simulation.Rendering\Simulation.Rendering.csproj", "{3E052699-8A55-4DF5-8923-D818A57E32CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Rendering", "Simulation.Rendering\Simulation.Rendering.csproj", "{3E052699-8A55-4DF5-8923-D818A57E32CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Data.Test", "Simulation.Data.Test\Simulation.Data.Test.csproj", "{D5815D0C-4FCD-471B-872E-81613BC543E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Data.Test", "Simulation.Data.Test\Simulation.Data.Test.csproj", "{D5815D0C-4FCD-471B-872E-81613BC543E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.WpfTest", "Simulation.WpfTest\Simulation.WpfTest.csproj", "{47786E63-DD28-415B-806A-D7C1A88ACA08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +113,10 @@ Global
 		{D5815D0C-4FCD-471B-872E-81613BC543E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5815D0C-4FCD-471B-872E-81613BC543E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5815D0C-4FCD-471B-872E-81613BC543E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47786E63-DD28-415B-806A-D7C1A88ACA08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47786E63-DD28-415B-806A-D7C1A88ACA08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47786E63-DD28-415B-806A-D7C1A88ACA08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47786E63-DD28-415B-806A-D7C1A88ACA08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -96,8 +96,10 @@ namespace Simulation.Traffic
             disposable.Dispose();
         }
 
-        void Move(ConnectionOffset transform) => offset.Value = transform;
-
+        public void Move(ConnectionOffset transform) => offset.Value = transform;
+        public void Move(Vector3 offset, Vector3 tangent) => Move(new ConnectionOffset(offset, tangent));
+        public void MoveOffset(Vector3 offset) => Move(new ConnectionOffset(offset, this.offset.Value.Tangent));
+        public void MoveTangent(Vector3 tangent) => Move(new ConnectionOffset(this.offset.Value.Tangent, tangent));
         public IObservableValue<IReadOnlyList<NodeAIRoute>> OutgoingAIRoutes { get; }
 
         public IObservableValue<ConnectionOffset> Offset => offset;
@@ -105,7 +107,7 @@ namespace Simulation.Traffic
         public SegmentNodeConnection(INode node, Vector3 tangent)
         {
             this.disposable = new CompositeDisposable();
-            Node = node; 
+            Node = node;
             var routes = node.Connections.Where(n => n.Contains(this)).Select(n => updateAIRoutes(OutgoingAIRoutes?.Value, n)).ToObservableValue(new NodeAIRoute[0]);
             disposable.Add(routes);
             this.OutgoingAIRoutes = routes;

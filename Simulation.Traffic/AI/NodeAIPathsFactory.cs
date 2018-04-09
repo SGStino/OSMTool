@@ -176,8 +176,10 @@ namespace Simulation.Traffic.AI
         {
 
             var end = iPath.ObserveTransform(1, absolute: false);
-            var start = iPath.ObserveTransform(0, absolute: false);
+            var start = oPath.ObserveTransform(0, absolute: false);
 
+            if (iPath == oPath)
+                throw new InvalidOperationException("Input path == Output path, but paths can't be bidirectional!");
 
             var loft = end.CombineLatest<Matrix4x4, Matrix4x4, ILoftPath>(start, (t1, t2) =>
             {

@@ -1,0 +1,26 @@
+﻿<Window x:Class="Simulation.WpfTest.BiArcWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Simulation.WpfTest"
+        mc:Ignorable="d"
+        Title="BiArcWindow" Height="300" Width="300">
+    <Canvas>
+        <Canvas.Resources>
+            <Style TargetType="Ellipse">
+                <Setter Property="Canvas.Left" Value="20"/>
+                <Setter Property="Canvas.Top" Value="20"/>
+                <Setter Property="Width" Value="20"/>
+                <Setter Property="Height" Value="20"/>
+                <Setter Property="Margin" Value="-10"/>
+            </Style>
+        </Canvas.Resources>
+        <Line Name="line1" Stroke="Red" StrokeThickness="2"/>
+        <Polyline Name="polyLine" Stroke="Green" StrokeThickness="2"/>
+        <Ellipse Name="startPoint" Fill="Red"/>
+        <Ellipse Name="endPoint" Fill="Blue"/>
+        <Ellipse Name="startTangent" Fill="Yellow"/>
+        <Ellipse Name="endTangent" Fill="Cyan"/>
+    </Canvas>
+</Window>

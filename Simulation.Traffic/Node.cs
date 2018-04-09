@@ -12,6 +12,7 @@ using System.Reactive.Linq;
 using System.Reactive;
 using Simulation.Data;
 using Simulation.Data.Primitives;
+using System.Reactive.Disposables;
 
 namespace Simulation.Traffic
 {
@@ -107,9 +108,9 @@ namespace Simulation.Traffic
         }
 
 
-        public static Node CreateAt(float x, float z, NodeDescription description)
+        public static Node CreateAt(float x, float z, NodeDescription description = null)
         {
-            return new Node(new Vector3(x, 0, z), description);
+            return new Node(new Vector3(x, 0, z), description ?? NodeDescription.Intersection);
         }
     }
 

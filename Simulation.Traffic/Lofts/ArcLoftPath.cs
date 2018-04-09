@@ -86,12 +86,14 @@ namespace Simulation.Traffic.Lofts
 
             position += center;
 
-            Matrix4x4 matrix = Matrix4x4.Identity;
-            matrix.SetColumn(0, side);
-            matrix.SetColumn(1, up);
-            matrix.SetColumn(2, forward);
-            matrix.SetColumn(3, new Vector4(position.X, position.Y, position.Z, 1));
-            return matrix;
+            return Matrix4x4.CreateLookAt(position, position + forward, up);
+
+            //Matrix4x4 matrix = Matrix4x4.Identity;
+            //matrix.SetColumn(0, side);
+            //matrix.SetColumn(1, up);
+            //matrix.SetColumn(2, forward);
+            //matrix.SetColumn(3, new Vector4(position.X, position.Y, position.Z, 1));
+            //return matrix;
         }
 
         static Vector3 GetPosition(float angle, Vector3 normal, Vector3 startPosition)

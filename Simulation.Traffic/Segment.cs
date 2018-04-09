@@ -185,7 +185,7 @@ namespace Simulation.Traffic
 
         public static Segment Create(Node startNode, Node endNode, SegmentDescription description)
         {
-            var a = Vector3.Normalize(endNode.Position.Value - startNode.Position.Value);
+            var a = -Vector3.Normalize(endNode.Position.Value - startNode.Position.Value);
             var b = -a;
 
             var end = new SegmentNodeConnection(endNode, a);
@@ -195,6 +195,7 @@ namespace Simulation.Traffic
             end.SetSegment(segment);
             startNode.Connect(start);
             endNode.Connect(end);
+             
             return segment;
         }
     }

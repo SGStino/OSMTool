@@ -27,16 +27,16 @@ namespace Simulation.Traffic.AI
 
         private static Matrix4x4 GetTransform(float distance, bool reverse, ILoftPath path, PathOffsets offsets, bool absolute)
         {
-            float progress = distance;
-            if (absolute)
-            {
-                var length = GetLength(path, offsets);
-                progress = distance / length;
-                if (reverse)
-                    progress = 1 - progress;
+            var length = GetLength(path, offsets);
 
-                distance = offsets.PathOffsetStart + progress * length;
-            }
+            float progress = distance;
+            if (absolute) 
+                progress = distance / length;
+
+            if (reverse)
+                progress = 1 - progress;
+
+            distance = offsets.PathOffsetStart + progress * length;
 
             var maxDistance = path.Length;
 
