@@ -35,6 +35,8 @@ namespace Simulation.WpfTest
                 startPoint.MouseMove += StartPoint_MouseMove;
                 startPoint.MouseUp += StartPoint_MouseUp;
                 startPoint.MouseLeave += StartPoint_MouseLeave;
+
+
             }
 
             private void StartPoint_MouseLeave(object sender, MouseEventArgs e)
@@ -75,6 +77,7 @@ namespace Simulation.WpfTest
             new DragControl(endPoint).moved += BiArcWindow_moved;
             new DragControl(startTangent).moved += BiArcWindow_moved;
             new DragControl(endTangent).moved += BiArcWindow_moved;
+            BiArcWindow_moved();
         }
 
         private void BiArcWindow_moved()
@@ -93,26 +96,38 @@ namespace Simulation.WpfTest
             var v3 = new Vector3((float)p3.X, 0, (float)p3.Y);
             var v4 = new Vector3((float)p4.X, 0, (float)p4.Y);
 
+
+
             var t1 = Vector3.Normalize(v3 - v1);
             var t2 = Vector3.Normalize(v4 - v2);
-            try
-            {
-                var biarc = new BiArcLoftPath(v1, t1, v2, t2);
 
-                polyLine.Points.Clear();
-                for (int i = 0; i < biarc.Length; i++)
-                {
-                    var p = biarc.GetTransformedPoint(i, Vector3.Zero);
+            var parameters = new BiArcParameters(v1 / 10, t1, v2 / 10, t2);
 
-                    polyLine.Points.Add(new Point(p.X, p.Z));
-                }
-            }catch(Exception e)
-            {
+            var (arc1, arc2) = BiArcGenerator.Form1(parameters, 1);
 
-            }
+
+
+            var center1 = new Point(arc1.Center.X * 10, arc1.Center.Z * 10);
+            polyLine.Points.Clear();
+
+            arc(arc1);
+            arc(arc2);
+
         }
 
-
+        private void arc(ArcDefinition arc1)
+        {
+            var sign = -MathF.Sign(arc1.Theta);
+            var angle = MathF.Abs(arc1.Theta)*2;
+            var delta = angle / 50;
+            for (float i = 0; i < angle; i += delta)
+            {
+                var quat = Quaternion.CreateFromAxisAngle(arc1.Axis, i * sign);
+                var p3d = arc1.Center + Vector3.Transform(arc1.EndDir, quat) * arc1.R;
+                var p2d = new Point(p3d.X * 10, p3d.Z * 10);
+                polyLine.Points.Add(p2d);
+            }
+        }
 
         private Point getPoint(Ellipse startPoint)
         {

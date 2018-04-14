@@ -7,6 +7,13 @@
         mc:Ignorable="d"
         Title="BiArcWindow" Height="300" Width="300">
     <Canvas>
+        <Canvas.Background>
+            <VisualBrush>
+                <VisualBrush.Visual>
+                    <DrawingVisual x:Name="drawing"/>
+                </VisualBrush.Visual>
+            </VisualBrush>
+        </Canvas.Background>
         <Canvas.Resources>
             <Style TargetType="Ellipse">
                 <Setter Property="Canvas.Left" Value="20"/>
@@ -18,9 +25,11 @@
         </Canvas.Resources>
         <Line Name="line1" Stroke="Red" StrokeThickness="2"/>
         <Polyline Name="polyLine" Stroke="Green" StrokeThickness="2"/>
-        <Ellipse Name="startPoint" Fill="Red"/>
-        <Ellipse Name="endPoint" Fill="Blue"/>
-        <Ellipse Name="startTangent" Fill="Yellow"/>
-        <Ellipse Name="endTangent" Fill="Cyan"/>
+        <Ellipse Canvas.Left="150" Canvas.Top="100" Name="startPoint" Fill="Red"/>
+        <Ellipse Canvas.Left="50" Name="endPoint" Fill="Blue"/>
+        <Ellipse Canvas.Left="125" Canvas.Top="75" Name="startTangent" Fill="Yellow"/>
+        <Ellipse Canvas.Left="75" Name="endTangent" Fill="Cyan"/>
+
+
     </Canvas>
 </Window>
