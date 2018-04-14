@@ -80,7 +80,14 @@ namespace Simulation.Traffic.Lofts
             return new ArcDefinition(center: center, e1: e1, e2: e2, endDir: enddir, axis: axis, r: r, theta: theta);
         }
 
-        public static (ArcDefinition arc1, ArcDefinition arc2) Form1(BiArcParameters parameters, float rho)
+
+        public static (ArcDefinition arc1, ArcDefinition arc2) ArcsFromPoints((Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4) points)
+        {
+            var arc1 = ThreePointToCircularArc(points.p0, points.p1, points.p2);
+            var arc2 = ThreePointToCircularArc(points.p2, points.p3, points.p4);
+            return (arc1, arc2);
+        }
+        public static (Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4) Form1(BiArcParameters parameters, float rho)
         {
             float a1, a2;
             Vector3 B1, B2;
@@ -105,11 +112,25 @@ namespace Simulation.Traffic.Lofts
 
             B12 = (a2 * B1 + a1 * B2) / (a1 + a2);
 
-            var arc1 = ThreePointToCircularArc(p1, B1, B12);
-            var arc2 = ThreePointToCircularArc(B12, B2, p2);
-            return (arc1, arc2);
+            return (p1, B1, B12, B2, p2); 
         }
 
+        public static bool AreColinear(params Vector3[] points)
+        {
+            var len = points?.Length ?? -1;
+            if (len < 1) return false;
+            if (len <= 2) return true;
+              
+            var previousSegment = points[1] - points[0];
+            for(int i = 2; i < points.Length; i++)
+            {
+                var segment = points[i] - points[i - 1];
+                var cross = Cross(segment, previousSegment);
+                if (cross.LengthSquared() > 0.00001) return false;
+                previousSegment = segment;
+            }
+            return true;
+        }
     }
 
 }

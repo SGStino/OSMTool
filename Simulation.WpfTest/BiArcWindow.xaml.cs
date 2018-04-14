@@ -110,8 +110,8 @@ namespace Simulation.WpfTest
             var center1 = new Point(arc1.Center.X * 10, arc1.Center.Z * 10);
             polyLine.Points.Clear();
 
-            arc(arc1);
             arc(arc2);
+            arc(arc1);
 
         }
 
@@ -122,8 +122,11 @@ namespace Simulation.WpfTest
             var delta = angle / 50;
             for (float i = 0; i < angle; i += delta)
             {
-                var quat = Quaternion.CreateFromAxisAngle(arc1.Axis, i * sign);
-                var p3d = arc1.Center + Vector3.Transform(arc1.EndDir, quat) * arc1.R;
+
+                var o = i * sign; 
+
+                var quat = Quaternion.CreateFromAxisAngle(arc1.Axis, o);
+                var p3d = arc1.Center + Vector3.Transform(arc1.EndDir, quat) * (arc1.R);
                 var p2d = new Point(p3d.X * 10, p3d.Z * 10);
                 polyLine.Points.Add(p2d);
             }

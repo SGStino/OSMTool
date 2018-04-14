@@ -24,10 +24,10 @@
             </Style>
         </Canvas.Resources>
         <Line Name="line1" Stroke="Red" StrokeThickness="2"/>
-        <Polyline Name="polyLine" Stroke="Green" StrokeThickness="2"/>
-        <Ellipse Canvas.Left="150" Canvas.Top="100" Name="startPoint" Fill="Red"/>
+        <Polyline Name="polyLine" Stroke="Green" StrokeThickness="20"/>
+        <Ellipse Canvas.Left="150"  Name="startPoint" Fill="Red"/>
         <Ellipse Canvas.Left="50" Name="endPoint" Fill="Blue"/>
-        <Ellipse Canvas.Left="125" Canvas.Top="75" Name="startTangent" Fill="Yellow"/>
+        <Ellipse Canvas.Left="125"  Name="startTangent" Fill="Yellow"/>
         <Ellipse Canvas.Left="75" Name="endTangent" Fill="Cyan"/>
 
 

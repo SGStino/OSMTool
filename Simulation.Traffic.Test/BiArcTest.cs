@@ -80,9 +80,9 @@ namespace Simulation.Traffic.Test
             for (int i = 1; i < n; i++)
             {
                 var parameters = new BiArcParameters(points[i - 1], tangents[i - 1], points[i], tangents[i]);
-                var (arc1, arc2) = BiArcGenerator.Form1(parameters, 1.0f);
+                var (arc1, arc2) = BiArcGenerator.ArcsFromPoints(BiArcGenerator.Form1(parameters, 1.0f));
 
-                var (pyArc1, pyArc2) = arcs[i-1];
+                var (pyArc1, pyArc2) = arcs[i - 1];
 
                 check(pyArc1, arc1);
                 check(pyArc2, arc2);
