@@ -7,6 +7,7 @@ using static System.MathF;
 using MathNet.Numerics.RootFinding;
 using MathNet.Numerics;
 using System.Linq;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.Lofts
 {
@@ -46,8 +47,52 @@ namespace Simulation.Traffic.Lofts
             R = r;
             Theta = theta;
         }
+
+        public static ArcDefinition FromAxisAngle(Vector3 startPoint, float angle, Vector3 center, Vector3 axis)
+        {
+            axis = -Normalize(axis) * Sign(angle);
+            angle = Abs(angle);
+            center += Dot(startPoint - center, axis) * axis;
+
+            var dir = startPoint - center;
+            var r = dir.Length();
+            dir /= r;
+
+
+            var dir2 = Cross(axis, dir);
+
+            var end = Transform(dir, Quaternion.CreateFromAxisAngle(axis, angle));
+
+            return new ArcDefinition(center, dir, dir2, end, axis, r, angle / 2);
+        }
     }
 
+    public static class ArcDefinitionExtensions
+    {
+        public static Vector3 GetStartPosition(this ArcDefinition def)
+        {
+            return GetPosition(def, 0);
+        }
+        public static Vector3 GetEndPosition(this ArcDefinition def)
+        {
+            return def.Center + def.EndDir * def.R;
+        }
+        public static float GetArcLength(this ArcDefinition def)
+        {
+            return def.R * def.Theta * 2;
+        }
+        public static Vector3 GetPosition(this ArcDefinition def, float angle)
+        {
+            var quat = Quaternion.CreateFromAxisAngle(def.Axis, angle - def.Theta * 2);
+            return def.Center + Transform(def.EndDir, quat) * def.R;
+        }
+        public static Vector3 GetRight(this ArcDefinition def, float angle)
+        {
+            var s = -Sign(angle - def.Theta * 2);
+            var quat = Quaternion.CreateFromAxisAngle(def.Axis, angle - def.Theta * 2);
+            return Transform(def.EndDir, quat) * s;
+        }
+    }
 
     public static class BiArcGenerator
     {
@@ -101,7 +146,7 @@ namespace Simulation.Traffic.Lofts
 
             var (r1, r2) = FindRoots.Quadratic(C0, C1, C2);
 
-            a1 = new[] { (float)r1.Real, (float)r2.Real }.Where(n => n > 0).Min();
+            a1 = new[] { (float)r1.Real, (float)r2.Real }.Where(n => n >= 0).Min();
 
             a2 = rho * a1;
 
@@ -112,7 +157,7 @@ namespace Simulation.Traffic.Lofts
 
             B12 = (a2 * B1 + a1 * B2) / (a1 + a2);
 
-            return (p1, B1, B12, B2, p2); 
+            return (p1, B1, B12, B2, p2);
         }
 
         public static bool AreColinear(params Vector3[] points)
@@ -120,9 +165,9 @@ namespace Simulation.Traffic.Lofts
             var len = points?.Length ?? -1;
             if (len < 1) return false;
             if (len <= 2) return true;
-              
+
             var previousSegment = points[1] - points[0];
-            for(int i = 2; i < points.Length; i++)
+            for (int i = 2; i < points.Length; i++)
             {
                 var segment = points[i] - points[i - 1];
                 var cross = Cross(segment, previousSegment);

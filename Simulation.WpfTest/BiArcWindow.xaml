@@ -6,30 +6,34 @@
         xmlns:local="clr-namespace:Simulation.WpfTest"
         mc:Ignorable="d"
         Title="BiArcWindow" Height="300" Width="300">
-    <Canvas>
-        <Canvas.Background>
-            <VisualBrush>
-                <VisualBrush.Visual>
-                    <DrawingVisual x:Name="drawing"/>
-                </VisualBrush.Visual>
-            </VisualBrush>
-        </Canvas.Background>
-        <Canvas.Resources>
-            <Style TargetType="Ellipse">
-                <Setter Property="Canvas.Left" Value="20"/>
-                <Setter Property="Canvas.Top" Value="20"/>
-                <Setter Property="Width" Value="20"/>
-                <Setter Property="Height" Value="20"/>
-                <Setter Property="Margin" Value="-10"/>
-            </Style>
-        </Canvas.Resources>
-        <Line Name="line1" Stroke="Red" StrokeThickness="2"/>
-        <Polyline Name="polyLine" Stroke="Green" StrokeThickness="20"/>
-        <Ellipse Canvas.Left="150"  Name="startPoint" Fill="Red"/>
-        <Ellipse Canvas.Left="50" Name="endPoint" Fill="Blue"/>
-        <Ellipse Canvas.Left="125"  Name="startTangent" Fill="Yellow"/>
-        <Ellipse Canvas.Left="75" Name="endTangent" Fill="Cyan"/>
+    <Viewbox>
+        <Canvas Width="200" Height="200">
+            <Canvas.Background>
+                <VisualBrush>
+                    <VisualBrush.Visual>
+                        <DrawingVisual x:Name="drawing"/>
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </Canvas.Background>
+            <Canvas.Resources>
+                <Style TargetType="Ellipse">
+                    <Setter Property="Canvas.Left" Value="20"/>
+                    <Setter Property="Canvas.Top" Value="20"/>
+                    <Setter Property="Width" Value="20"/>
+                    <Setter Property="Height" Value="20"/>
+                    <Setter Property="Margin" Value="-10"/>
+                </Style>
+            </Canvas.Resources>
+            <Canvas Name="subCanvas"/>
+            <Line Name="line1" Stroke="Red" StrokeThickness="2"/>
+            <Polyline Name="polyLine" Stroke="Green" StrokeThickness="2"/>
+            <Polyline Name="polyLine1" Stroke="Lime" StrokeThickness="2"/>
+            <Ellipse Canvas.Left="150"  Name="startPoint" Fill="Red"/>
+            <Ellipse Canvas.Left="50" Name="endPoint" Fill="Blue"/>
+            <Ellipse Canvas.Left="125"  Name="startTangent" Fill="Yellow"/>
+            <Ellipse Canvas.Left="25" Name="endTangent" Fill="Cyan"/>
 
 
-    </Canvas>
+        </Canvas>
+    </Viewbox>
 </Window>

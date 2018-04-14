@@ -24,5 +24,13 @@ namespace Simulation.Traffic.Test
             var angle = VectorMath3D.GetAngle(from, to, Directions3.Up);
             Assert.AreEqual(expected, angle);
         }
+
+        [TestMethod]
+        public void TestMatrix()
+        {
+            var identity = Matrix4x4.CreateWorld(Vector3.Zero, Directions3.Forward, Directions3.Up);
+
+            Assert.IsTrue(identity.IsIdentity);
+        }
     }
 }

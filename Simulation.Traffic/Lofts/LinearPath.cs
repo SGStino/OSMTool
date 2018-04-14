@@ -54,7 +54,7 @@ namespace Simulation.Traffic.Lofts
             var up = Vector3.Cross(forward, side);
 
 
-            return Matrix4x4.CreateLookAt(position, position + forward, up);
+            return Matrix4x4.CreateWorld(position, forward, up);
 
             //Matrix4x4 matrix = Matrix4x4.Identity;
             //matrix.SetColumn(0, side);

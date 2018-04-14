@@ -260,147 +260,149 @@ namespace Simulation.Traffic.Lofts
 
         private static bool intersectsArcArc(ArcLoftPath a, float widthA, ArcLoftPath b, float widthB, IntersectionMode mode, out float offsetA, out float offsetB)
         {
+            throw new NotImplementedException();
+            //Vector3 aCenter, aAxisX, aAxisY;
+            //float aRadiusX, aRadiusY;
+            //if (a.Normal.Y > 0.99999)
+            //{
+            //    aCenter = a.Center;
+            //    aCenter.Y = a.StartPoint.Y;
+            //    aAxisX = Directions3.Right;
+            //    aAxisY = Directions3.Forward;
+            //    var ray = a.StartPoint;
+            //    ray.Y = 0;
+            //    aRadiusX = aRadiusY = ray.Length();
+            //}
+            //else
+            //{
+            //    get2DEllipse(a, out aCenter, out aAxisX, out aAxisY, out aRadiusX, out aRadiusY);
+            //}
 
-            Vector3 aCenter, aAxisX, aAxisY;
-            float aRadiusX, aRadiusY;
-            if (a.Normal.Y > 0.99999)
-            {
-                aCenter = a.Center;
-                aCenter.Y = a.StartPoint.Y;
-                aAxisX = Directions3.Right;
-                aAxisY = Directions3.Forward;
-                var ray = a.StartPoint;
-                ray.Y = 0;
-                aRadiusX = aRadiusY = ray.Length();
-            }
-            else
-            {
-                get2DEllipse(a, out aCenter, out aAxisX, out aAxisY, out aRadiusX, out aRadiusY);
-            }
+            //Vector3 bCenter, bAxisX, bAxisY;
+            //float bRadiusX, bRadiusY;
+            //if (b.Normal.Y > 0.99999)
+            //{
+            //    bCenter = b.Center;
+            //    bCenter.Y = b.StartPoint.Y;
+            //    bAxisX = Directions3.Right;
+            //    bAxisY = Directions3.Forward;
 
-            Vector3 bCenter, bAxisX, bAxisY;
-            float bRadiusX, bRadiusY;
-            if (b.Normal.Y > 0.99999)
-            {
-                bCenter = b.Center;
-                bCenter.Y = b.StartPoint.Y;
-                bAxisX = Directions3.Right;
-                bAxisY = Directions3.Forward;
-
-                var ray = b.StartPoint;
-                ray.Y = 0;
-                bRadiusX = bRadiusY = ray.Length();
-                //Debug.DrawLine(bCenter, b.StartPoint, Color.green);
-            }
-            else
-            {
-                get2DEllipse(b, out bCenter, out bAxisX, out bAxisY, out bRadiusX, out bRadiusY);
-            }
-
-
-            var aAngle = -MathF.Atan2(aAxisX.Z, aAxisX.X);
-            var bAngle = -MathF.Atan2(bAxisX.Z, bAxisX.X);
-
-            var displayOffset = Directions3.Right * 50;
+            //    var ray = b.StartPoint;
+            //    ray.Y = 0;
+            //    bRadiusX = bRadiusY = ray.Length();
+            //    //Debug.DrawLine(bCenter, b.StartPoint, Color.green);
+            //}
+            //else
+            //{
+            //    get2DEllipse(b, out bCenter, out bAxisX, out bAxisY, out bRadiusX, out bRadiusY);
+            //}
 
 
+            //var aAngle = -MathF.Atan2(aAxisX.Z, aAxisX.X);
+            //var bAngle = -MathF.Atan2(bAxisX.Z, bAxisX.X);
 
-            offsetB = offsetA = float.NaN;
-            return false;
+            //var displayOffset = Directions3.Right * 50;
+
+
+
+            //offsetB = offsetA = float.NaN;
+            //return false;
         }
         private static bool intersectsArcLinear(ArcLoftPath a, float widthA, LinearPath b, float widthB, IntersectionMode mode, out float offsetA, out float offsetB)
         {
-            widthA /= 2;
-            widthB /= 2;
+            throw new NotImplementedException();
+            //widthA /= 2;
+            //widthB /= 2;
 
-            if (a.Normal.Y > 0.99999f)
-            {
-                // perfect circle
+            //if (a.Normal.Y > 0.99999f)
+            //{
+            //    // perfect circle
 
-                var bDirLen = b.Length;
-                var bStart = b.Start - a.Center;
-                var bDir = b.Dir * bDirLen;
-                var bTan = b.Tangent * widthB;
+            //    var bDirLen = b.Length;
+            //    var bStart = b.Start - a.Center;
+            //    var bDir = b.Dir * bDirLen;
+            //    var bTan = b.Tangent * widthB;
 
-                var center = a.Center;
+            //    var center = a.Center;
 
-                center.Y = a.StartPoint.Y;
+            //    center.Y = a.StartPoint.Y;
 
-                var radius = a.Radius;
-
-
-                if (mode == IntersectionMode.Edge)
-                {
-                    if (intersectsEllipseEdge(a, bStart, bDir, bTan, center, bDirLen, widthB, radius, radius, out offsetA, out offsetB))
-                    {
-                        return true;
-                    }
-                }
-                else
-                {
-                    if (intersectEllipseCenter(a, out offsetA, out offsetB, center, radius, radius, bDirLen, bStart, bDir))
-                        return true;
-                }
-            }
-            else
-            {
-                Vector3 center, axisX, axisY;
-                float radiusX, radiusY;
-                get2DEllipse(a, out center, out axisX, out axisY, out radiusX, out radiusY);
-
-                var bDirLen = get2DLength(b.Dir.Y, b.Length);
-                var bStart = project(b.Start - center, axisX, axisY);
-                var bDir = project(b.Dir * bDirLen, axisX, axisY);
-                var bTan = project(b.Tangent * widthB, axisX, axisY);
-
-                var aStart = project(a.StartPoint, axisX, axisY);
-
-                //DebugUtils.DrawEllipse(Vector3.Zero, radiusX + widthA, radiusY + widthA, Color.cyan);
-                //DebugUtils.DrawEllipse(Vector3.Zero, radiusX, radiusY, Color.Yellow);
-                //DebugUtils.DrawEllipse(Vector3.Zero, radiusX - widthA, radiusY - widthA, Color.magenta);
+            //    var radius = a.Radius;
 
 
-                if (mode == IntersectionMode.Edge)
-                {
-                    if (intersectsEllipseEdge(a, bStart, bDir, bTan, center, bDirLen, widthB, radiusX, radiusY, out offsetA, out offsetB))
-                    {
-                        return true;
-                    }
-                }
-                else
-                {
-                    if (intersectEllipseCenter(a, out offsetA, out offsetB, center, radiusX, radiusY, bDirLen, bStart, bDir))
-                        return true;
-                }
-            }
+            //    if (mode == IntersectionMode.Edge)
+            //    {
+            //        if (intersectsEllipseEdge(a, bStart, bDir, bTan, center, bDirLen, widthB, radius, radius, out offsetA, out offsetB))
+            //        {
+            //            return true;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if (intersectEllipseCenter(a, out offsetA, out offsetB, center, radius, radius, bDirLen, bStart, bDir))
+            //            return true;
+            //    }
+            //}
+            //else
+            //{
+            //    Vector3 center, axisX, axisY;
+            //    float radiusX, radiusY;
+            //    get2DEllipse(a, out center, out axisX, out axisY, out radiusX, out radiusY);
 
-            offsetB = offsetA = float.NaN;
-            return false;
+            //    var bDirLen = get2DLength(b.Dir.Y, b.Length);
+            //    var bStart = project(b.Start - center, axisX, axisY);
+            //    var bDir = project(b.Dir * bDirLen, axisX, axisY);
+            //    var bTan = project(b.Tangent * widthB, axisX, axisY);
+
+            //    var aStart = project(a.StartPoint, axisX, axisY);
+
+            //    //DebugUtils.DrawEllipse(Vector3.Zero, radiusX + widthA, radiusY + widthA, Color.cyan);
+            //    //DebugUtils.DrawEllipse(Vector3.Zero, radiusX, radiusY, Color.Yellow);
+            //    //DebugUtils.DrawEllipse(Vector3.Zero, radiusX - widthA, radiusY - widthA, Color.magenta);
+
+
+            //    if (mode == IntersectionMode.Edge)
+            //    {
+            //        if (intersectsEllipseEdge(a, bStart, bDir, bTan, center, bDirLen, widthB, radiusX, radiusY, out offsetA, out offsetB))
+            //        {
+            //            return true;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if (intersectEllipseCenter(a, out offsetA, out offsetB, center, radiusX, radiusY, bDirLen, bStart, bDir))
+            //            return true;
+            //    }
+            //}
+
+            //offsetB = offsetA = float.NaN;
+            //return false;
         }
 
         private static void get2DEllipse(ArcLoftPath a, out Vector3 center, out Vector3 axisX, out Vector3 axisY, out float radiusX, out float radiusY)
         {
-            var offset = Vector3.Dot(a.StartPoint, a.Normal) * a.Normal;
-            center = a.Center + offset;
-            var direction = (a.StartPoint + a.Center - center);
+            throw new NotImplementedException();
+            //var offset = Vector3.Dot(a.StartPoint, a.Normal) * a.Normal;
+            //center = a.Center + offset;
+            //var direction = (a.StartPoint + a.Center - center);
 
-            var radius = direction.Length();
+            //var radius = direction.Length();
 
-            axisX = a.Normal;
-            axisX.Y = 0;
-            axisX = Vector3.Normalize(axisX);
+            //axisX = a.Normal;
+            //axisX.Y = 0;
+            //axisX = Vector3.Normalize(axisX);
 
-            axisY = new Vector3(-axisX.Z, 0, axisX.X);
-            radiusX = Vector3.Cross(axisX, a.Normal).Length() * radius;
-            radiusY = Vector3.Cross(axisY, a.Normal).Length() * radius;
-            //Debug.DrawLine(center, center + axisX * radiusX, Color.red);
-            //Debug.DrawLine(center, center + axisY * radiusY, Color.green);
+            //axisY = new Vector3(-axisX.Z, 0, axisX.X);
+            //radiusX = Vector3.Cross(axisX, a.Normal).Length() * radius;
+            //radiusY = Vector3.Cross(axisY, a.Normal).Length() * radius;
+            ////Debug.DrawLine(center, center + axisX * radiusX, Color.red);
+            ////Debug.DrawLine(center, center + axisY * radiusY, Color.green);
 
-            //Debug.DrawLine(a.StartPoint + a.Center, a.Center, Color.red);
+            ////Debug.DrawLine(a.StartPoint + a.Center, a.Center, Color.red);
 
-            //DebugUtils.DrawCircle(center, radius, a.Normal, Color.blue);
+            ////DebugUtils.DrawCircle(center, radius, a.Normal, Color.blue);
 
-            //Debug.DrawLine(center, a.Center, Color.Yellow);
+            ////Debug.DrawLine(center, a.Center, Color.Yellow);
         }
 
         private static bool intersectEllipseCenter(ArcLoftPath a, out float offsetA, out float offsetB, Vector3 center, float radiusX, float radiusY, float bDirLen, Vector3 bStart, Vector3 bDir)

@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simulation.Data.Primitives;
 using Simulation.Traffic.Lofts;
 using System;
 using System.Collections.Generic;
@@ -60,7 +61,7 @@ namespace Simulation.Traffic.Test
 
         [DataRow(0)]
         [DataTestMethod]
-        public void TestCase(int set)
+        public void TestGenerator(int set)
         {
             var points = dataSets[set];
             var n = points.Length;
@@ -89,6 +90,95 @@ namespace Simulation.Traffic.Test
             }
         }
 
+        (Vector3 p1, Vector3 p2, Vector3 p3, float angle, Vector3 endDir, Vector3 axis, Vector3 center)[] arcTest = new[]
+        {
+            (new Vector3(0,0,5), new Vector3(5,0,5), new Vector3(5,0,0),  MathF.PI / 2, new Vector3(1, 0, 0), new Vector3(0,1,0), Vector3.Zero),
+            (new Vector3(5,0,0), new Vector3(5,0,5), new Vector3(0,0,5),  MathF.PI / 2, new Vector3(0, 0, 1), new Vector3(0,-1,0), Vector3.Zero)
+        };
+
+        [DataRow(0)]
+        [DataRow(1)]
+        [DataTestMethod]
+        public void TestThreePointToCircularArc(int index)
+        {
+            var (p1, p2, p3, angle, endDir, axis, center) = arcTest[index];
+
+
+
+            var def = BiArcGenerator.ThreePointToCircularArc(p1, p2, p3);
+
+            check(center, def.Center);
+            check(endDir, def.EndDir);
+            check(axis, def.Axis);
+            Assert.AreEqual(5, def.R, delta);
+            Assert.AreEqual(angle / 2, def.Theta, delta);
+
+
+            check(p3, def.GetEndPosition());
+            check(p1, def.GetStartPosition());
+
+            var s22 = MathF.Sqrt(2) / 2;
+            check(new Vector3(s22, 0, s22) * 5, def.GetPosition(angle / 2));
+        }
+        [TestMethod]
+        public void TestArcFromAxisAngleNegative()
+        {
+            var arc = ArcDefinition.FromAxisAngle(Directions3.Right, MathF.PI / 2, Vector3.Zero, Directions3.Down);
+
+            check(Directions3.Right, arc.GetStartPosition());
+            check(Directions3.Forward, arc.GetEndPosition());
+
+
+            var forward = arc.GetPosition(0.001f) - arc.GetPosition(-0.001f);
+            forward = Vector3.Normalize(forward);
+
+            check(Directions3.Forward, forward);
+
+            var right = Vector3.Cross(Directions3.Up, forward);
+            check(Directions3.Right, right);
+
+            check(right, arc.GetRight(0));
+
+
+            var angle = MathF.PI / 4;
+
+            forward = arc.GetPosition(angle + 0.001f) - arc.GetPosition(angle - 0.001f);
+            forward = Vector3.Normalize(forward);
+            right = Vector3.Cross(Directions3.Up, forward);
+            check(right, arc.GetRight(angle));
+        }
+
+        [TestMethod]
+        public void TestArcFromAxisAnglePositive()
+        {
+            var arc = ArcDefinition.FromAxisAngle(Directions3.Right, MathF.PI / 2, Vector3.Zero, Directions3.Up);
+
+            check(Directions3.Right, arc.GetStartPosition());
+            check(Directions3.Backward, arc.GetEndPosition());
+
+
+            var forward = arc.GetPosition(0.001f) - arc.GetPosition(-0.001f);
+            forward = Vector3.Normalize(forward);
+
+            check(Directions3.Backward, forward);
+
+            var right = Vector3.Cross(Directions3.Up, forward);
+            check(Directions3.Left, right);
+
+            check(right, arc.GetRight(0));
+
+
+            var angle = MathF.PI / 4;
+
+            forward = arc.GetPosition(angle + 0.001f) - arc.GetPosition(angle - 0.001f);
+            forward = Vector3.Normalize(forward);
+            right = Vector3.Cross(Directions3.Up, forward);
+            check(right, arc.GetRight(angle));
+
+        }
+
+
+
         private void check(ArcDefinition pyArc2, ArcDefinition arc2)
         {
             check(pyArc2.Center, arc2.Center);
@@ -99,7 +189,7 @@ namespace Simulation.Traffic.Test
             Assert.AreEqual(pyArc2.R, arc2.R, delta);
             Assert.AreEqual(pyArc2.Theta, arc2.Theta, delta);
         }
-        private const float delta = 0.00001f;
+        private const float delta = 0.00005f;
         private void check(Vector3 center1, Vector3 center2)
         {
             Assert.AreEqual(center1.X, center2.X, delta);

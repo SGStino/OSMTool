@@ -80,7 +80,7 @@ namespace Simulation.Traffic.Utilities
             if (Intersect(plane, circlePlane, out var ray))
             {
 
-                var matrix = Matrix4x4.CreateLookAt(center, center + forward, normal);
+                var matrix = Matrix4x4.CreateWorld(center, forward, normal);
 
                 if (Matrix4x4.Invert(matrix, out matrix))
                 {

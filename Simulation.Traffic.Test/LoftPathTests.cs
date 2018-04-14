@@ -134,7 +134,7 @@ namespace Simulation.Traffic.Test
 
             var points = string.Join(" ", Enumerable.Range(0, 100).Select(i => i / 100.0f).Select(i => a.GetTransformedPoint(i * a.Length, Vector3.Zero))
                 .Select(t => "(" + t.X.ToString(CultureInfo.InvariantCulture) + "," + t.Z.ToString(CultureInfo.InvariantCulture) + ")"));
-            var s2 = MathF.Sqrt(2) ;
+            var s2 = MathF.Sqrt(2);
             Assert.AreEqual(new Vector3(s2, 0, s2).Round(precision), p1.Round(precision));
             Assert.AreEqual(new Vector3(2, 0, 0).Round(precision), p2.Round(precision));
             Assert.AreEqual(new Vector3(s2, 0, -s2).Round(precision), p3.Round(precision));
@@ -194,8 +194,13 @@ namespace Simulation.Traffic.Test
         public void TestSnapArcUndershoot()
         {
 
-            var arc = new ArcLoftPath(Directions3.Forward, MathF.PI / 2, Vector3.Zero, Directions3.Up);
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(Directions3.Forward, MathF.PI / 2, Vector3.Zero, Directions3.Up));
 
+
+            var start = arc.Definition.GetStartPosition();
+            Assert.AreEqual(Directions3.Forward, start.Round(0.0001f));
+            var end = arc.Definition.GetEndPosition();
+            Assert.AreEqual(Directions3.Left, end.Round(0.0001f));
 
             var point = new Vector3(-1, 0, 1);
 
@@ -216,7 +221,7 @@ namespace Simulation.Traffic.Test
         public void TestSnapArcOvershoot()
         {
 
-            var arc = new ArcLoftPath(Directions3.Forward, MathF.PI / 2, Vector3.Zero, Directions3.Up);
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(Directions3.Forward, MathF.PI / 2, Vector3.Zero, Directions3.Up));
 
 
             var point = new Vector3(1, 0, -1);
@@ -237,8 +242,9 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapArcQ0()
         {
+            var def = ArcDefinition.FromAxisAngle(Directions3.Forward, MathF.PI / 2, Vector3.Zero, Directions3.Up);
 
-            var arc = new ArcLoftPath(Directions3.Forward, MathF.PI / 2, Vector3.Zero, Directions3.Up);
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(Directions3.Forward, MathF.PI / 2, Vector3.Zero, Directions3.Up));
 
             var point = new Vector3(1, 0, 1);
 
@@ -262,7 +268,7 @@ namespace Simulation.Traffic.Test
         public void TestSnapArcQ1()
         {
 
-            var arc = new ArcLoftPath(Directions3.Left, MathF.PI / 2, Vector3.Zero, Directions3.Up);
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(Directions3.Left, MathF.PI / 2, Vector3.Zero, Directions3.Up));
 
             var point = new Vector3(-1, 0, 1);
 
@@ -284,7 +290,7 @@ namespace Simulation.Traffic.Test
         public void TestSnapArcQ3()
         {
 
-            var arc = new ArcLoftPath(Directions3.Backward, MathF.PI / 2, Vector3.Zero, Directions3.Up);
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(Directions3.Backward, MathF.PI / 2, Vector3.Zero, Directions3.Up));
 
             var point = new Vector3(-1, 0, -1);
 
@@ -306,7 +312,7 @@ namespace Simulation.Traffic.Test
         public void TestSnapArcQ4()
         {
 
-            var arc = new ArcLoftPath(Directions3.Right, MathF.PI / 2, Vector3.Zero, Directions3.Up);
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(Directions3.Right, MathF.PI / 2, Vector3.Zero, Directions3.Up));
 
             var point = new Vector3(1, 0, -1);
 
@@ -329,7 +335,7 @@ namespace Simulation.Traffic.Test
         public void TestSnapArc180Forward()
         {
 
-            var arc = new ArcLoftPath(Directions3.Right, MathF.PI, Vector3.Zero, Directions3.Up);
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(Directions3.Right, MathF.PI, Vector3.Zero, Directions3.Up));
 
             var point = new Vector3(0, 0, -2);
 
@@ -350,7 +356,7 @@ namespace Simulation.Traffic.Test
         public void TestSnapArc180Backward()
         {
 
-            var arc = new ArcLoftPath(Directions3.Right, -MathF.PI, Vector3.Zero, Directions3.Up);
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(Directions3.Right, -MathF.PI, Vector3.Zero, Directions3.Up));
 
             var point = new Vector3(0, 0, 2);
 
@@ -371,7 +377,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapSweepForward()
         {
-            var arc = new ArcLoftPath(Directions3.Right, MathF.PI, Vector3.Zero, Directions3.Up);
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(Directions3.Right, MathF.PI, Vector3.Zero, Directions3.Up));
 
             int count = 18;
             float increment = MathF.PI / count;
@@ -404,7 +410,7 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestSnapSweepBack()
         {
-            var arc = new ArcLoftPath(Directions3.Right, -MathF.PI, Vector3.Zero, Directions3.Up);
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(Directions3.Right, -MathF.PI, Vector3.Zero, Directions3.Up));
 
             int count = 18;
             float increment = MathF.PI / count;
@@ -441,7 +447,14 @@ namespace Simulation.Traffic.Test
         [TestMethod]
         public void TestPositiveArc()
         {
-            var arc = new ArcLoftPath(Directions3.Left, MathF.PI / 2, Vector3.Zero, Directions3.Up);
+            var start = new Vector3(-1, 0, 0);
+            var end = new Vector3(0, 0, -1);
+            var startDirection = new Vector3(0, 0, -1);
+            var endDirection = new Vector3(1, 0, 0);
+
+            var halfDirection = (startDirection + endDirection).Normalized();
+
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(start, MathF.PI / 2, Vector3.Zero, Directions3.Up));
 
             Assert.AreEqual(MathF.PI / 2, arc.Length);
             var startTransform = arc.GetTransform(0);
@@ -454,25 +467,29 @@ namespace Simulation.Traffic.Test
             var startPosition = startTransform.MultiplyPoint3x4(Vector3.Zero);
             var endPosition = endTransform.MultiplyPoint3x4(Vector3.Zero);
 
-            Assert.AreEqual(Directions3.Left, startPosition.Round(0.00001f));
-            Assert.AreEqual(Directions3.Forward, endPosition.Round(0.00001f));
+            Assert.AreEqual(start, startPosition.Round(0.00001f));
+            Assert.AreEqual(end, endPosition.Round(0.00001f));
 
-            Assert.AreEqual(Directions3.Forward, startForward.Round(0.00001f));
-            Assert.AreEqual(Directions3.Right, endForward.Round(0.00001f));
+            Assert.AreEqual(startDirection, startForward.Round(0.00001f));
+            Assert.AreEqual(endDirection, endForward.Round(0.00001f));
 
             var halfTransform = arc.GetTransform(arc.Length / 2);
 
 
-            var halfForward = new Vector3(1, 0, 1).Normalized();
 
-            Assert.AreEqual(halfForward.Round(0.00001f), halfTransform.MultiplyVector(Directions3.Forward).Round(0.00001f));
+            Assert.AreEqual(halfDirection.Round(0.00001f), halfTransform.MultiplyVector(Directions3.Forward).Round(0.00001f));
 
         }
 
         [TestMethod]
         public void TestNegativeArc()
         {
-            var arc = new ArcLoftPath(Directions3.Left, -MathF.PI / 2, Vector3.Zero, Directions3.Up);
+            var start = new Vector3(-1, 0, 0);
+            var startDirection = new Vector3(0, 0, 1);
+            var endDirection = new Vector3(1, 0, 0);
+            var halfDirection = (startDirection + endDirection).Normalized();
+
+            var arc = new ArcLoftPath(ArcDefinition.FromAxisAngle(start, -MathF.PI / 2, Vector3.Zero, Directions3.Up));
 
             Assert.AreEqual(MathF.PI / 2, arc.Length);
             var startTransform = arc.GetTransform(0);
@@ -485,18 +502,17 @@ namespace Simulation.Traffic.Test
             var startPosition = startTransform.MultiplyPoint3x4(Vector3.Zero);
             var endPosition = endTransform.MultiplyPoint3x4(Vector3.Zero);
 
-            Assert.AreEqual(Directions3.Left, startPosition.Round(0.00001f));
-            Assert.AreEqual(Directions3.Backward, endPosition.Round(0.00001f));
+            Assert.AreEqual(start, startPosition.Round(0.00001f));
+            Assert.AreEqual(startDirection, endPosition.Round(0.00001f));
 
-            Assert.AreEqual(Directions3.Backward, startForward.Round(0.00001f));
-            Assert.AreEqual(Directions3.Right, endForward.Round(0.00001f));
+            Assert.AreEqual(startDirection, startForward.Round(0.00001f));
+            Assert.AreEqual(endDirection, endForward.Round(0.00001f));
 
             var halfTransform = arc.GetTransform(arc.Length / 2);
 
 
-            var halfForward = new Vector3(1, 0, -1).Normalized();
 
-            Assert.AreEqual(halfForward.Round(0.00001f), halfTransform.MultiplyVector(Directions3.Forward).Round(0.00001f));
+            Assert.AreEqual(halfDirection.Round(0.00001f), halfTransform.MultiplyVector(Directions3.Forward).Round(0.00001f));
 
         }
 
@@ -538,15 +554,15 @@ namespace Simulation.Traffic.Test
 
             var forwardEnd = transformEnd.MultiplyVector(Directions3.Forward);
 
-            Assert.AreEqual(Directions3.Forward, forwardStart);
-            Assert.AreEqual(Directions3.Forward, forwardEnd);
+            Assert.AreEqual(new Vector3(0, 0, 1), forwardStart);
+            Assert.AreEqual(new Vector3(0, 0, 1), forwardEnd);
 
 
             var rightStart = transformStart.MultiplyVector(Directions3.Right);
 
             var rightEnd = transformEnd.MultiplyVector(Directions3.Right);
-            Assert.AreEqual(Directions3.Right, rightStart);
-            Assert.AreEqual(Directions3.Right, rightEnd);
+            Assert.AreEqual(new Vector3(-1, 0, 0), rightStart);
+            Assert.AreEqual(new Vector3(-1, 0, 0), rightEnd);
         }
     }
 }
