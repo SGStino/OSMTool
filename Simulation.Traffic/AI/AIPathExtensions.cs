@@ -3,6 +3,7 @@ using Simulation.Traffic.Lofts;
 using System;
 using System.Reactive.Linq;
 using System.Numerics;
+using Simulation.Traffic.Utilities;
 
 namespace Simulation.Traffic.AI
 {
@@ -46,6 +47,8 @@ namespace Simulation.Traffic.AI
             var m = Matrix4x4.CreateTranslation(new Vector3(lerp, 0, 0));
 
             var result = path.GetTransform(distance) * m;
+
+            VectorMath3D.NotNaN(result);
 
             if (reverse)
                 return result * rotate;

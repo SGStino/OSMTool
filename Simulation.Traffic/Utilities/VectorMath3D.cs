@@ -45,6 +45,60 @@ namespace Simulation.Traffic.Utilities
             distance = MathF.Clamp01(dot) * length;
             ///*return*/ distance * dir + start;
         }
+        internal static void NotZero(this Vector3 vector)
+        {
+            if (vector.LengthSquared() < 0.0001f)
+                throw new InvalidOperationException("Vector has Zero Length");
+
+        }
+        internal static void NotNaN(this Vector3 result)
+        {
+            if (float.IsNaN(result.X))
+                throw new InvalidOperationException("Vector X contains NaN");
+            if (float.IsNaN(result.Y))
+                throw new InvalidOperationException("Vector Y contains NaN");
+            if (float.IsNaN(result.Z))
+                throw new InvalidOperationException("Vector Z contains NaN");
+        }
+        internal static void NotNaN(this Matrix4x4 result)
+        {
+            if (float.IsNaN(result.M11))
+                throw new InvalidOperationException("Matrix M11 contains NaN");
+            if (float.IsNaN(result.M12))
+                throw new InvalidOperationException("Matrix M12 contains NaN");
+            if (float.IsNaN(result.M13))
+                throw new InvalidOperationException("Matrix M13 contains NaN");
+            if (float.IsNaN(result.M14))
+                throw new InvalidOperationException("Matrix M14 contains NaN");
+
+            if (float.IsNaN(result.M21))
+                throw new InvalidOperationException("Matrix M21 contains NaN");
+            if (float.IsNaN(result.M22))
+                throw new InvalidOperationException("Matrix M22 contains NaN");
+            if (float.IsNaN(result.M23))
+                throw new InvalidOperationException("Matrix M23 contains NaN");
+            if (float.IsNaN(result.M24))
+                throw new InvalidOperationException("Matrix M24 contains NaN");
+
+
+            if (float.IsNaN(result.M31))
+                throw new InvalidOperationException("Matrix M31 contains NaN");
+            if (float.IsNaN(result.M32))
+                throw new InvalidOperationException("Matrix M32 contains NaN");
+            if (float.IsNaN(result.M33))
+                throw new InvalidOperationException("Matrix M33 contains NaN");
+            if (float.IsNaN(result.M34))
+                throw new InvalidOperationException("Matrix M34 contains NaN");
+
+            if (float.IsNaN(result.M41))
+                throw new InvalidOperationException("Matrix M41 contains NaN");
+            if (float.IsNaN(result.M42))
+                throw new InvalidOperationException("Matrix M42 contains NaN");
+            if (float.IsNaN(result.M43))
+                throw new InvalidOperationException("Matrix M43 contains NaN");
+            if (float.IsNaN(result.M44))
+                throw new InvalidOperationException("Matrix M44 contains NaN");
+        }
 
         public static Vector3 GetPointOnCircle(Vector3 normal, float radius, Vector3 vector)
         {

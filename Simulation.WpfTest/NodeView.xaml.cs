@@ -32,7 +32,6 @@ namespace Simulation.WpfTest
         public NodeView()
          {
             InitializeComponent();
-            this.Background = Brushes.Red;
         }
 
         internal void Bind(Node node)
@@ -50,12 +49,22 @@ namespace Simulation.WpfTest
             {
                 var startHeres = s.Where(n => n.Segment.Start == n); 
                 grid.Children.Clear(); 
+
                 foreach (var n in startHeres.Select(n => n.Segment))
                 {
                     var line = new SegmentView();
                     line.Bind(n);
                     grid.Children.Add(line); 
                 }
+
+                foreach (var c in s)
+                {
+                    var connectorView = new ConnectorView();
+                    connectorView.Bind(c);
+                    grid.Children.Add(connectorView);
+                }
+
+
             });
         }
 

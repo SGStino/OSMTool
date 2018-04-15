@@ -8,7 +8,9 @@
         Title="MainWindow" Height="350" Width="525">
     <Grid>
         <Canvas x:Name="canvas" HorizontalAlignment="Center" VerticalAlignment="Center">
-            
+            <Canvas.LayoutTransform>
+                <ScaleTransform ScaleX="5" ScaleY="5"/>
+            </Canvas.LayoutTransform>
         </Canvas>
     </Grid>
 </Window>

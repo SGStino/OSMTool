@@ -41,6 +41,8 @@ namespace Simulation.WpfTest
             disposable.Add(n.Start.Node.Position.CombineLatest(n.LoftPath, (pos, path) => (pos: pos, path: path)).ObserveOn(Dispatcher).Subscribe(p => update(p.pos, p.path)));
 
             n.Start.Node.Position.CombineLatest(n.End.Node.Position, n.Start.Offset, n.End.Offset, (startPos, endPos, start, end) => (startPos: startPos, endPos: endPos, start: start, end: end)).ObserveOn(Dispatcher).Subscribe(p => update(p.startPos, p.endPos, p.start, p.end));
+
+
         }
 
         private void update(Vector3 startPos, Vector3 endPos, ConnectionOffset start, ConnectionOffset end)
@@ -70,11 +72,16 @@ namespace Simulation.WpfTest
         private void update(Vector3 pos, ILoftPath path)
         {
             curve.Points.Clear();
-            for (int i = 0; i < Math.Max(path.Length, 200); i += 5)
+
+            int points = MathF.RoundToInt(Math.Min(200, path.Length)) / 10;
+            var delta = path.Length / points;
+
+            for (float i = 0; i <= path.Length; i += delta)
             {
                 var t = path.GetTransformedPoint(i, Vector3.Zero) - pos;
                 curve.Points.Add(new Point(t.X, t.Z));
             }
+            this.ToolTip = $"{path.Length}: {(path as BiArcLoftPath).Arc1.Length} : {(path as BiArcLoftPath).Arc2.Length}";
         }
     }
 }

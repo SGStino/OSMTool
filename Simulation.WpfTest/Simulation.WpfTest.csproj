@@ -59,10 +59,17 @@
     <Compile Include="BiArcWindow.xaml.cs">
       <DependentUpon>BiArcWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ConnectorView.xaml.cs">
+      <DependentUpon>ConnectorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SegmentView.xaml.cs">
       <DependentUpon>SegmentView.xaml</DependentUpon>
     </Compile>
     <Page Include="BiArcWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ConnectorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

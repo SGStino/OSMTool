@@ -96,6 +96,27 @@ namespace Simulation.Traffic.Test
             (new Vector3(5,0,0), new Vector3(5,0,5), new Vector3(0,0,5),  MathF.PI / 2, new Vector3(0, 0, 1), new Vector3(0,-1,0), Vector3.Zero)
         };
 
+
+        (Vector3 p1, Vector3 t1, Vector3 p2, Vector3 t2)[] NaNCases = new[]
+        {
+            (new Vector3(14.9155979f,0,15.057394f), new Vector3(-0.8042251f, 0,-0.5943248f), new Vector3(0.344361931f,0,10.5334234f), new Vector3(-0.138771564f,0,0.9903244f)),
+            (new Vector3(15,0,2), new Vector3(-1,0,0), new Vector3(-3.49467587f, 0, 7.49273968f), new Vector3(0.74238497f, 0, 0.6699736f))
+        };
+
+
+        [DataRow(0)]
+        [DataRow(1)]
+        [DataTestMethod]
+        public void TestNaNCases(int index)
+        {
+            var (start, startForward, end, endForward) = NaNCases[index];
+            var arc = new BiArcLoftPath(start, startForward, end, endForward);
+
+            Assert.IsFalse(float.IsInfinity(arc.Length));
+            Assert.IsFalse(float.IsNaN(arc.Length));
+        }
+
+
         [DataRow(0)]
         [DataRow(1)]
         [DataTestMethod]

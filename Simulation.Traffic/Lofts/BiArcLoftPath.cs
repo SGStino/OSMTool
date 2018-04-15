@@ -21,17 +21,38 @@ namespace Simulation.Traffic.Lofts
         {
             var (p0, p1, p2, p3, p4) = BiArcGenerator.Form1(new BiArcParameters(start, forwardStart, end, forwardEnd), 1f);
 
+            start.NotNaN();
+            end.NotNaN();
+            forwardStart.NotNaN();
+            forwardEnd.NotNaN();
+            forwardStart.NotZero();
+            forwardEnd.NotZero();
+
             if (BiArcGenerator.AreColinear(p0, p1, p2))
                 arc1 = new LinearPath(p0, p2);
             else
-                arc1 = new ArcLoftPath(BiArcGenerator.ThreePointToCircularArc(p0, p1, p2));
+            {
+                var arc = new ArcLoftPath(BiArcGenerator.ThreePointToCircularArc(p0, p1, p2));
+                if (float.IsInfinity(arc.Definition.R))
+                    arc1 = new LinearPath(p0, p2);
+                else
+                    arc1 = arc;
+            }
             if (BiArcGenerator.AreColinear(p2, p3, p4))
                 arc2 = new LinearPath(p2, p4);
             else
-                arc2 = new ArcLoftPath(BiArcGenerator.ThreePointToCircularArc(p2, p3, p4));
+            {
+                var arc = new ArcLoftPath(BiArcGenerator.ThreePointToCircularArc(p2, p3, p4));
+                if (float.IsInfinity(arc.Definition.R))
+                    arc2 = new LinearPath(p2, p4);
+                else
+                    arc2 = arc;
+            }
+
+
         }
-          
-        
+
+
 
         public float Length { get { return arc1.Length + arc2.Length; } }
 

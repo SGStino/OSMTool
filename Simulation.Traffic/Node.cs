@@ -40,7 +40,7 @@ namespace Simulation.Traffic
         private readonly IObservableValue<Rectangle> _bounds;
         private CompositeDisposable disposable = new CompositeDisposable();
         private BehaviorSubjectValue<Vector3> _position;
-        private float radius = 6;
+        private float radius = 15;
 
         public NodeDescription Description { get; }
         public IObservableValue<IReadOnlyList<ISegmentNodeConnection>> Connections => connections;

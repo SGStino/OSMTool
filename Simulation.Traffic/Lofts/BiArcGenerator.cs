@@ -8,6 +8,7 @@ using MathNet.Numerics.RootFinding;
 using MathNet.Numerics;
 using System.Linq;
 using Simulation.Data.Primitives;
+using Simulation.Traffic.Utilities;
 
 namespace Simulation.Traffic.Lofts
 {
@@ -89,8 +90,11 @@ namespace Simulation.Traffic.Lofts
         public static Vector3 GetRight(this ArcDefinition def, float angle)
         {
             var s = -Sign(angle - def.Theta * 2);
+            if (s == 0) s = 1;
             var quat = Quaternion.CreateFromAxisAngle(def.Axis, angle - def.Theta * 2);
-            return Transform(def.EndDir, quat) * s;
+            var result = Transform(def.EndDir, quat) * s;
+            result.NotZero();
+            return result;
         }
     }
 
@@ -151,6 +155,8 @@ namespace Simulation.Traffic.Lofts
             a2 = rho * a1;
 
             var check = (delta + a1 * t1 + a2 * t2).Length() - a1 - a2;
+            if (MathF.Abs(check) > 0.0001f)
+                throw new InvalidOperationException("Biarc couldn't be computed for given tangents");
 
             B1 = p1 + a1 * t1;
             B2 = p2 - a2 * t2;
@@ -171,7 +177,7 @@ namespace Simulation.Traffic.Lofts
             {
                 var segment = points[i] - points[i - 1];
                 var cross = Cross(segment, previousSegment);
-                if (cross.LengthSquared() > 0.00001) return false;
+                if (cross.LengthSquared() > 0.001) return false;
                 previousSegment = segment;
             }
             return true;

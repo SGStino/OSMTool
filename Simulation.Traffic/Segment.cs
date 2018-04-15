@@ -157,9 +157,9 @@ namespace Simulation.Traffic
             if (sampler != null)
                 shapeChange = shapeChange.Sample(sampler); // only once per frame
 
-             
 
-            _loftPath = new BehaviorSubjectValue<ILoftPath>(shapeChange.Select(v => new BiArcLoftPath(v.start.offset.GetPosition(v.start.position), v.start.offset.Tangent, v.end.offset.GetPosition(v.end.position), v.end.offset.Tangent)));
+
+            _loftPath = new BehaviorSubjectValue<ILoftPath>(shapeChange.Select(v => new BiArcLoftPath(v.start.offset.GetPosition(v.start.position), v.start.offset.Tangent, v.end.offset.GetPosition(v.end.position), -v.end.offset.Tangent)));
             dispose.Add(_loftPath);
 
 
@@ -195,7 +195,7 @@ namespace Simulation.Traffic
             end.SetSegment(segment);
             startNode.Connect(start);
             endNode.Connect(end);
-             
+
             return segment;
         }
     }

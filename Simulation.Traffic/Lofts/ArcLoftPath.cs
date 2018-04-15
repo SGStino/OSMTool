@@ -31,14 +31,17 @@ namespace Simulation.Traffic.Lofts
             Quaternion.CreateFromAxisAngle(Definition.Axis, angle);
 
             var position = Definition.GetPosition(angle);
+            position.NotNaN();
 
             var side = Definition.GetRight(angle); //(position - Definition.Center) * MathF.Sign(angle);
+            side.NotNaN();
+            side.NotZero();
 
 
-
-        
 
             var forward = Vector3.Cross(normal, side);
+            forward.NotNaN();
+            forward.NotZero();
 
 
 
@@ -46,15 +49,17 @@ namespace Simulation.Traffic.Lofts
 
             var up = Vector3.Cross(forward, side);
 
+            up.NotNaN();
 
-            return Matrix4x4.CreateWorld(position, forward, up);
+            var matrix = Matrix4x4.CreateWorld(position, forward, up);
 
+            matrix.NotNaN();
             //Matrix4x4 matrix = Matrix4x4.Identity;
             //matrix.SetColumn(0, side);
             //matrix.SetColumn(1, up);
             //matrix.SetColumn(2, forward);
             //matrix.SetColumn(3, new Vector4(position.X, position.Y, position.Z, 1));
-            //return matrix;
+            return matrix;
         }
 
         static Vector3 GetPosition(float angle, Vector3 normal, Vector3 startPosition)

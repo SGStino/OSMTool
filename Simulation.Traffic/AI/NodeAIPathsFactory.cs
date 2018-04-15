@@ -95,10 +95,10 @@ namespace Simulation.Traffic.AI
                 {
                     var iPath = inPaths[i];
                     var oPath = outPaths[i];
-                     
+
 
                     var loftPath = createLineLoft(iPath, from, oPath, to).ToObservableValue();
-                    yield return new NodeAIPath(iPath, oPath, loftPath); 
+                    yield return new NodeAIPath(iPath, oPath, loftPath);
                 }
             }
             else
@@ -188,7 +188,14 @@ namespace Simulation.Traffic.AI
 
                 var f1 = t1.MultiplyVector(Directions3.Forward).Normalized();
                 var f2 = t2.MultiplyVector(Directions3.Forward).Normalized();
-                return new BiArcLoftPath(point1, -f1, point2, -f2);
+                try
+                {
+                    return new BiArcLoftPath(point1, -f1, point2, -f2);
+                }
+                catch (Exception e)
+                {
+                    return new LinearPath(point1, point2);
+                }
             });
 
             return loft;
