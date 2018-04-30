@@ -42,7 +42,7 @@ namespace Simulation.WpfTest
 
             n.Start.Node.Position.CombineLatest(n.End.Node.Position, n.Start.Offset, n.End.Offset, (startPos, endPos, start, end) => (startPos: startPos, endPos: endPos, start: start, end: end)).ObserveOn(Dispatcher).Subscribe(p => update(p.startPos, p.endPos, p.start, p.end));
 
-
+            App.Frame.Where(_ => changes > 0).Subscribe(_ => { System.Diagnostics.Debug.WriteLine("changes:" + changes); changes = 0; });
         }
 
         private void update(Vector3 startPos, Vector3 endPos, ConnectionOffset start, ConnectionOffset end)
@@ -69,8 +69,12 @@ namespace Simulation.WpfTest
             this.directLine.Y2 = p3.Z;
         }
 
+        int changes = 0;
+        private Random rnd = new Random();
         private void update(Vector3 pos, ILoftPath path)
         {
+            changes++;
+            curve.Stroke = new SolidColorBrush(Color.FromRgb((byte)rnd.Next(0, 255), (byte)rnd.Next(0, 255), (byte)rnd.Next(0, 255)));
             curve.Points.Clear();
 
             int points = MathF.RoundToInt(Math.Min(200, path.Length)) / 10;
@@ -82,6 +86,8 @@ namespace Simulation.WpfTest
                 curve.Points.Add(new Point(t.X, t.Z));
             }
             this.ToolTip = $"{path.Length}: {(path as BiArcLoftPath).Arc1.Length} : {(path as BiArcLoftPath).Arc2.Length}";
+
+
         }
     }
 }

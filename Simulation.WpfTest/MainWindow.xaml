@@ -7,9 +7,9 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
-        <Canvas x:Name="canvas" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Canvas x:Name="canvas" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="100">
             <Canvas.LayoutTransform>
-                <ScaleTransform ScaleX="5" ScaleY="5"/>
+                <ScaleTransform ScaleX="3" ScaleY="3"/>
             </Canvas.LayoutTransform>
         </Canvas>
     </Grid>

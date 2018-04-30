@@ -4,6 +4,7 @@ using System;
 using System.Reactive.Linq;
 using System.Numerics;
 using Simulation.Traffic.Utilities;
+using Simulation.Data.Primitives;
 
 namespace Simulation.Traffic.AI
 {
@@ -31,11 +32,12 @@ namespace Simulation.Traffic.AI
             var length = GetLength(path, offsets);
 
             float progress = distance;
-            if (absolute) 
+            if (absolute)
                 progress = distance / length;
 
             if (reverse)
                 progress = 1 - progress;
+
 
             distance = offsets.PathOffsetStart + progress * length;
 
@@ -46,12 +48,12 @@ namespace Simulation.Traffic.AI
 
             var m = Matrix4x4.CreateTranslation(new Vector3(lerp, 0, 0));
 
-            var result = path.GetTransform(distance) * m;
+            var result = m * path.GetTransform(distance) ;
 
             VectorMath3D.NotNaN(result);
 
             if (reverse)
-                return result * rotate;
+                return rotate * result;
             return result;
         }
 
@@ -115,29 +117,7 @@ namespace Simulation.Traffic.AI
             return t * path.GetLength();
         }
 
-        public static Matrix4x4 GetTransform(this IAIPath path, float distance)
-        {
-            var length = GetLength(path);
-            var progress = distance / length;
-
-            if (path.Reverse)
-                progress = 1 - progress;
-
-            distance = path.Offsets.Value.PathOffsetStart + progress * length;
-
-            var maxDistance = path.LoftPath.Value?.Length ?? 1;
-
-            var t = progress;
-            var lerp = MathF.Lerp(path.Offsets.Value.SideOffsetStart, path.Offsets.Value.SideOffsetEnd, t * t * t * (t * (6f * t - 15f) + 10f));
-
-            var m = Matrix4x4.CreateTranslation(new Vector3(lerp, 0, 0));
-
-            var result = path.LoftPath.Value.GetTransform(distance) * m;
-
-            if (path.Reverse)
-                return result * rotate;
-            return result;
-        }
+        public static Matrix4x4 GetTransform(this IAIPath path, float distance) => GetTransform(distance, path.Reverse, path.LoftPath.Value, path.Offsets.Value, true);
 
 
 

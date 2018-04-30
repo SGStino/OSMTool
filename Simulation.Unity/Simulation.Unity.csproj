@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Simulation.Buildings\Simulation.Buildings.csproj" />
+    <ProjectReference Include="..\Simulation.Data\Simulation.Data.csproj" />
+    <ProjectReference Include="..\Simulation.Geometry\Simulation.Geometry.csproj" />
+    <ProjectReference Include="..\Simulation.Leisure\Simulation.Leisure.csproj" />
+    <ProjectReference Include="..\Simulation.Occupation\Simulation.Occupation.csproj" />
+    <ProjectReference Include="..\Simulation.People\Simulation.People.csproj" />
+    <ProjectReference Include="..\Simulation.Rendering\Simulation.Rendering.csproj" />
+    <ProjectReference Include="..\Simulation.Traffic\Simulation.Traffic.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /e /v /y &quot;$(TargetDir).&quot; &quot;C:\Users\stijn\Simulation2\Assets\References&quot;" />
+  </Target>
+
+</Project>

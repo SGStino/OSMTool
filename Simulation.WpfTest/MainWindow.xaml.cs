@@ -56,7 +56,7 @@ namespace Simulation.WpfTest
             var nodes = new Node[10, 10];
             var segments = new List<Segment>();
 
-            int n = 2;
+            int n = 4;
             float s = 100;
             for (int x = 0; x < n; x++)
             {
