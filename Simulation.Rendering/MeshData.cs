@@ -29,8 +29,8 @@ namespace Simulation.Rendering
             Texcoords = texcoords.ToArray();
             Indices = indices.ToArray();
         }
+   
 
- 
 
 
         public static MeshData Merge(params MeshData[] data) => Merge((IReadOnlyList<MeshData>)data);
