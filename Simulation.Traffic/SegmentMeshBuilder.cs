@@ -36,8 +36,16 @@ namespace Simulation.Traffic
                 normals.Add(new Vector2(0, 1));
                 normals.Add(new Vector2(0, 1));
                 var vScale = 1 / segment.Width;
-                texcoords.Add(new Vector2(0, vScale));
-                texcoords.Add(new Vector2(0, vScale));
+                if (!segment.Reverse)
+                {
+                    texcoords.Add(new Vector2(0, vScale));
+                    texcoords.Add(new Vector2(1, vScale));
+                }
+                else
+                {
+                    texcoords.Add(new Vector2(1, -vScale));
+                    texcoords.Add(new Vector2(0, -vScale));
+                }
                 indices.Add(i++);
                 indices.Add(i++);
             }
@@ -58,7 +66,7 @@ namespace Simulation.Traffic
         public static MeshData BuildMesh(ILoftPath p, SegmentShape description)
         {
             // TODO: move code to loftbuilder
-            var count = MathF.CeilToInt(p.Length);
+            var count = MathF.CeilToInt(p.Length) / 10; // every 10 meter
 
             var vertexStride = description.Vertices.Length;
             var indexStride = description.Indices.Length * 3;
@@ -98,11 +106,11 @@ namespace Simulation.Traffic
                         var iIn1 = description.Indices[iO + 1];
 
                         m.Indices[iT/**/] = iIn0 + v;
-                        m.Indices[iT + 1] = iIn1 + v;
-                        m.Indices[iT + 2] = iIn0 + v - vertexStride; // previous layer
-                        m.Indices[iT + 3] = iIn0 + v;
-                        m.Indices[iT + 4] = iIn1 + v - vertexStride; // previous layer
-                        m.Indices[iT + 5] = iIn0 + v - vertexStride; // previous layer
+                        m.Indices[iT + 1] = iIn0 + v - vertexStride; // previous layer
+                        m.Indices[iT + 2] = iIn1 + v;
+                        m.Indices[iT + 3] = iIn1 + v;
+                        m.Indices[iT + 4] = iIn0 + v - vertexStride; // previous layer
+                        m.Indices[iT + 5] = iIn1 + v - vertexStride; // previous layer
                     }
             }
             return m;

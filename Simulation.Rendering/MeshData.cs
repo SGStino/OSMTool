@@ -6,6 +6,7 @@ namespace Simulation.Rendering
 {
     public struct MeshData
     {
+        public readonly bool HasData;
         public readonly Vector3[] Positions;
         public readonly Vector3[] Normals;
         public readonly Vector4[] Tangents;
@@ -19,6 +20,7 @@ namespace Simulation.Rendering
             Tangents = new Vector4[vertexCount];
             Texcoords = new Vector2[vertexCount];
             Indices = new int[indexCount];
+            HasData = true;
         }
 
         public MeshData(List<Vector3> positions, List<Vector3> normals, List<Vector4> tangents, List<Vector2> texcoords, List<int> indices)
@@ -28,8 +30,9 @@ namespace Simulation.Rendering
             Tangents = tangents.ToArray();
             Texcoords = texcoords.ToArray();
             Indices = indices.ToArray();
+            HasData = true;
         }
-   
+
 
 
 
@@ -43,10 +46,13 @@ namespace Simulation.Rendering
 
             for (int i = 0; i < data.Count; i++)
             {
-                indexOffsets[i] = indexCount;
-                vertexOffsets[i] = vertexCount;
-                vertexCount += data[i].Positions.Length;
-                indexCount += data[i].Indices.Length;
+                if (data[i].HasData)
+                {
+                    indexOffsets[i] = indexCount;
+                    vertexOffsets[i] = vertexCount;
+                    vertexCount += data[i].Positions.Length;
+                    indexCount += data[i].Indices.Length;
+                }
             }
 
 
@@ -58,12 +64,15 @@ namespace Simulation.Rendering
 
         private static void copyTo(MeshData data, MeshData newMesh, int vOffset, int iOffset)
         {
-            copyTo(data.Positions, newMesh.Positions, vOffset);
-            copyTo(data.Normals, newMesh.Normals, vOffset);
-            copyTo(data.Tangents, newMesh.Tangents, vOffset);
-            copyTo(data.Texcoords, newMesh.Texcoords, vOffset);
+            if (data.HasData && newMesh.HasData)
+            {
+                copyTo(data.Positions, newMesh.Positions, vOffset);
+                copyTo(data.Normals, newMesh.Normals, vOffset);
+                copyTo(data.Tangents, newMesh.Tangents, vOffset);
+                copyTo(data.Texcoords, newMesh.Texcoords, vOffset);
 
-            copyTo(data.Indices, newMesh.Indices, iOffset, vOffset);
+                copyTo(data.Indices, newMesh.Indices, iOffset, vOffset);
+            }
         }
 
         private static void copyTo(Array source, Array target, int offset)
