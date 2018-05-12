@@ -176,7 +176,7 @@ namespace Simulation.Traffic.Test
 
             check(Directions3.Right, arc.GetStartPosition());
             check(Directions3.Backward, arc.GetEndPosition());
-
+             
 
             var forward = arc.GetPosition(0.001f) - arc.GetPosition(-0.001f);
             forward = Vector3.Normalize(forward);

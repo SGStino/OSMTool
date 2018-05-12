@@ -89,7 +89,7 @@ namespace Simulation.Traffic.Lofts
         }
         public static Vector3 GetRight(this ArcDefinition def, float angle)
         {
-            var s = -Sign(angle - def.Theta * 2);
+            var s = -Sign(- def.Theta * 2);
             if (s == 0) s = 1;
             var quat = Quaternion.CreateFromAxisAngle(def.Axis, angle - def.Theta * 2);
             var result = Transform(def.EndDir, quat) * s;

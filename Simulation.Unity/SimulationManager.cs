@@ -45,7 +45,7 @@ namespace Simulation.Unity
             };
 
 
-            var offset = roadDescription.Lanes.Sum(l => l.Width) / 2 + 1;
+            var offset = roadDescription.Lanes.Sum(l => l.Width) / 2 + 2;
             int n = 4;
             var nodes = new Node[n, n];
             var segments = new List<Segment>();
@@ -66,7 +66,7 @@ namespace Simulation.Unity
                     tangents[θ] = new Vector3(dX, 0, dY);
 
                     var node = nodes[θ, r] = Node.CreateAt(x, y);
-                    if (θ > 0)
+                    if (θ > 0 && θ == 2 && r == 3)
                     {
                         var t1 = tangents[θ - 1];
                         var t2 = tangents[θ];
@@ -75,13 +75,13 @@ namespace Simulation.Unity
                         (seg.End as SegmentNodeConnection).Move(new Vector3(0, 0, offset), -t2);
                         segments.Add(seg);
                     }
-                    if (r > 0)
-                    {
-                        var seg = Segment.Create(nodes[θ, r - 1], nodes[θ, r], roadDescription);
-                        (seg.Start as SegmentNodeConnection).MoveOffset(new Vector3(0, 0, offset));
-                        (seg.End as SegmentNodeConnection).MoveOffset(new Vector3(0, 0, offset));
-                        segments.Add(seg);
-                    }
+                    //if (r > 0)
+                    //{
+                    //    var seg = Segment.Create(nodes[θ, r - 1], nodes[θ, r], roadDescription);
+                    //    (seg.Start as SegmentNodeConnection).MoveOffset(new Vector3(0, 0, offset));
+                    //    (seg.End as SegmentNodeConnection).MoveOffset(new Vector3(0, 0, offset));
+                    //    segments.Add(seg);
+                    //}
                 }
             }
             return (nodes.OfType<Node>(), segments);

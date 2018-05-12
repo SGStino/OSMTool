@@ -81,7 +81,7 @@ namespace Simulation.Traffic
                 int v = l * vertexStride;
                 int i = (l - 1) * indexStride;
 
-                var distance = l * delta;
+                var distance = MathF.Clamp(0, p.Length, l * delta);
                 var transform = p.GetTransform(distance);
 
                 for (int vO = 0; vO < vertexStride; vO++)
