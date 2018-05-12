@@ -1,4 +1,5 @@
 ﻿using Simulation.Traffic;
+using Simulation.Traffic.Lofts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,44 @@ namespace Simulation.Unity
 
         public (IEnumerable<Node> nodes, IEnumerable<Segment> segments) GenerateTestScene()
         {
+            var shape0 = ArrayLoftShape.CreateFlat(
+                U1: 112 / 2048f,
+                U2: 176 / 2048f,
+                V: 1 / 8f,
+                Width: 2,
+                center: -9);
+            var shape3 = ArrayLoftShape.CreateFlat(
+                U1: 112 / 2048f,
+                U2: 176 / 2048f,
+                V: -1 / 8f,
+                Width: 2,
+                center: 9);
+
+            var shape1 = ArrayLoftShape.CreateFlat(
+                U1: 176 / 2048f,
+                U2: 368 / 2048f,
+                V: 1 / 8f,
+                Width: 8,
+                center: -4);
+            var  shape2 = ArrayLoftShape.CreateFlat(
+                U1: 176 / 2048f,
+                U2: 368 / 2048f,
+                V: -1 / 8f,
+                Width: 8,
+                center: 4);
+
+            //var highwayTextureA = new LoftTextureInfo
+            //{
+            //    U1 = 176 / 2048f,
+            //    U2 = 272 / 2048f,
+            //    V = 96 / 256f
+            //};
+            //var highwayTextureB = new LoftTextureInfo
+            //{
+            //    U1 = 272 / 2048f,
+            //    U2 = 368 / 2048f,
+            //    V = 96 / 256f
+            //};
             var highway = new LaneDescription
             {
                 LaneType = LaneType.Highway,
@@ -22,7 +61,7 @@ namespace Simulation.Unity
                 Reverse = false,
                 Turn = Turn.None,
                 VehicleTypes = VehicleTypes.Vehicle,
-                Width = 4
+                Width = 4,
             };
             var highwayReverse = new LaneDescription
             {
@@ -31,7 +70,7 @@ namespace Simulation.Unity
                 Reverse = true,
                 Turn = Turn.None,
                 VehicleTypes = VehicleTypes.Vehicle,
-                Width = 4
+                Width = 4,
             };
             var roadDescription = new SegmentDescription
             {
@@ -41,7 +80,14 @@ namespace Simulation.Unity
                      highway,
                      highwayReverse,
                      highwayReverse
-                 }
+                 },
+                MeshParts = new LaneMeshInfo[]
+                {
+                    new LaneMeshInfo(){ Shape = shape0 },
+                    new LaneMeshInfo(){ Shape = shape1 },
+                    new LaneMeshInfo(){ Shape = shape2 },
+                    new LaneMeshInfo(){ Shape = shape3 }
+                }
             };
 
 
@@ -66,7 +112,7 @@ namespace Simulation.Unity
                     tangents[θ] = new Vector3(dX, 0, dY);
 
                     var node = nodes[θ, r] = Node.CreateAt(x, y);
-                    if (θ > 0 && θ == 2 && r == 3)
+                    if (θ > 0)
                     {
                         var t1 = tangents[θ - 1];
                         var t2 = tangents[θ];
@@ -75,13 +121,13 @@ namespace Simulation.Unity
                         (seg.End as SegmentNodeConnection).Move(new Vector3(0, 0, offset), -t2);
                         segments.Add(seg);
                     }
-                    //if (r > 0)
-                    //{
-                    //    var seg = Segment.Create(nodes[θ, r - 1], nodes[θ, r], roadDescription);
-                    //    (seg.Start as SegmentNodeConnection).MoveOffset(new Vector3(0, 0, offset));
-                    //    (seg.End as SegmentNodeConnection).MoveOffset(new Vector3(0, 0, offset));
-                    //    segments.Add(seg);
-                    //}
+                    if (r > 0)
+                    {
+                        var seg = Segment.Create(nodes[θ, r - 1], nodes[θ, r], roadDescription);
+                        (seg.Start as SegmentNodeConnection).MoveOffset(new Vector3(0, 0, offset));
+                        (seg.End as SegmentNodeConnection).MoveOffset(new Vector3(0, 0, offset));
+                        segments.Add(seg);
+                    }
                 }
             }
             return (nodes.OfType<Node>(), segments);

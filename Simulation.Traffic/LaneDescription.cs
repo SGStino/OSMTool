@@ -1,4 +1,6 @@
-﻿namespace Simulation.Traffic
+﻿using Simulation.Traffic.Lofts;
+
+namespace Simulation.Traffic
 {
     public class LaneDescription
     {
@@ -7,12 +9,15 @@
         /// </summary>
         public float MaxSpeed { get; set; }
 
-        public bool Reverse { get; set; } 
+        public bool Reverse { get; set; }
 
         public Turn Turn { get; set; }
         public float Width { get; set; }
-
         public VehicleTypes VehicleTypes { get; set; } = VehicleTypes.Vehicle;
         public LaneType LaneType { get; set; }
+    }
+    public class LaneMeshInfo
+    {
+        public ILoftShape Shape { get; set; }
     }
 }

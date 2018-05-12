@@ -23,31 +23,17 @@ namespace Simulation.Traffic
             var normals = new List<Vector2>(vertCount);
             var indices = new List<int>(vertCount);
 
-            var width = description.Lanes.Sum(n => n.Width);
-            var offset = -width / 2;
-            int i = 0;
-            foreach (var segment in description.Lanes)
+            foreach (var lane in description.MeshParts)
             {
-                var v1 = new Vector2(offset, 0);
-                offset += segment.Width;
-                var v2 = new Vector2(offset, 0);
-                vertices.Add(v1);
-                vertices.Add(v2);
-                normals.Add(new Vector2(0, 1));
-                normals.Add(new Vector2(0, 1));
-                var vScale = 1 / segment.Width;
-                if (!segment.Reverse)
+                var offset = vertices.Count;
+                foreach (var v in lane.Shape.Vertices)
                 {
-                    texcoords.Add(new Vector2(0, vScale));
-                    texcoords.Add(new Vector2(1, vScale));
+                    vertices.Add(v.Position);
+                    normals.Add(v.Normal);
+                    texcoords.Add(new Vector2(v.U, lane.Shape.VScale));
                 }
-                else
-                {
-                    texcoords.Add(new Vector2(1, -vScale));
-                    texcoords.Add(new Vector2(0, -vScale));
-                }
-                indices.Add(i++);
-                indices.Add(i++);
+                foreach (var i in lane.Shape.Indices)
+                    indices.Add(i + offset);
             }
             return new SegmentShape()
             {

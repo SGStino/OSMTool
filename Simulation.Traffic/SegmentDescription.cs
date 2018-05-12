@@ -6,5 +6,6 @@ namespace Simulation.Traffic
     {
         public LaneDescription[] Lanes { get; set; }
         public ISegmentAIPathsFactory SegmentFactory { get; set; } = SegmentAIPathsFactory.Default;
+        public LaneMeshInfo[] MeshParts { get; set; }
     }
 }
