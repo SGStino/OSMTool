@@ -76,7 +76,7 @@ namespace Simulation.Geometry
             return a_squared * det_bc + b_squared * det_ca + c_squared * det_ab;
         }
 
-        public static IList<Triangle> Triangulate(IList<Vector2> points)
+        public static IList<Triangle> Triangulate(IReadOnlyList<Vector2> points)
         {
             var triangulationPoints = new List<Vector2>(points);
 
