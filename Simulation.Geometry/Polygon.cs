@@ -38,28 +38,76 @@ namespace Simulation.Geometry
             });
             return output;
         }
-        public static Vector2[] ExpandEdge(this IReadOnlyList<Vector2> input, float delta)
+        //public static Vector2[] ExpandEdge(this IReadOnlyList<Vector2> input, float delta)
+        //{
+        //    var bounds = GetBounds(input);
+
+        //    var intPoints = new Point64[input.Count];
+
+        //    var center = bounds.Center;
+        //    GetScalingFactor(bounds, delta, out var size, out var max);
+        //    Parallel.For(0, input.Count, i => intPoints[i] = ScaleToInt(input[i], center, size, max));
+
+
+        //    ClipperOffset co = new ClipperOffset();
+        //    co.AddPath(new List<Point64>(intPoints), JoinType.jtMiter, EndType.etClosedPolygon);
+        //    List<List<Point64>> resized = new List<List<Point64>>();
+        //    co.Execute(ref resized, delta / size * max);
+        //    //throw new InvalidCastException(bounds.Max + " " + bounds.Min + " " + size + " resized:" + resized.Count + " " + string.Join(" ", intPoints.Select(n => n.X + ", " + n.Y)));
+        //    var result = new Vector2[resized[0].Count];
+        //    Parallel.For(0, result.Length, i => result[i] = ScaleFromInt(resized[0][i], center, size, max));
+        //    return result;
+        //}
+
+
+        public static List<List<Point64>> ToClipper(this IReadOnlyList<Vector2> input, Rectangle bounds)
         {
-            var bounds = GetBounds(input);
-
-            var intPoints = new IntPoint[input.Count];
-
-            var center = bounds.Center;
-            GetScalingFactor(bounds, delta, out var size, out var max);
-            Parallel.For(0, input.Count, i => intPoints[i] = ScaleToInt(input[i], center, size, max));
-
-
-
-            ClipperOffset co = new ClipperOffset();
-            co.AddPath(new List<IntPoint>(intPoints), JoinType.jtMiter, EndType.etClosedPolygon);
-            List<List<IntPoint>> resized = new List<List<IntPoint>>();
-            co.Execute(ref resized, delta / size * max);
-            //throw new InvalidCastException(bounds.Max + " " + bounds.Min + " " + size + " resized:" + resized.Count + " " + string.Join(" ", intPoints.Select(n => n.X + ", " + n.Y)));
-            var result = new Vector2[resized[0].Count];
-            Parallel.For(0, result.Length, i => result[i] = ScaleFromInt(resized[0][i], center, size, max));
-            return result;
+            GetScalingFactor(bounds, 0, out var size, out var max);
+            var center = bounds.Center; 
+            var points = ToClipper(input, center, size, max);
+            return new List<List<Point64>>() { points };
         }
 
+        public static List<List<Point64>> ToClipper(this IReadOnlyList<IReadOnlyList<Vector2>> inputs, float size, long max)
+            => ToClipper(inputs, Vector2.Zero, size, max);
+        public static List<List<Point64>> ToClipper(this IReadOnlyList<IReadOnlyList<Vector2>> inputs, Vector2 center, float size, long max)
+        {
+            var results = new List<List<Point64>>(inputs.Count);
+            foreach (var input in inputs)
+                results.Add(ToClipper(input, center, size, max));
+            return results;
+        }
+        public static List<Point64> ToClipper(this IReadOnlyList<Vector2> inputs, float size, long max)
+            => ToClipper(inputs, Vector2.Zero, size, max);
+        public static List<Point64> ToClipper(this IReadOnlyList<Vector2> input, Vector2 center, float size, long max)
+        {
+            var intPoints = new Point64[input.Count];
+
+            Parallel.For(0, input.Count, i => intPoints[i] = ScaleToInt(input[i], center, size, max));
+            return new List<Point64>(intPoints);
+        }
+
+        public static Vector2[][] FromClipper(this List<List<Point64>> polygons, Rectangle originalBounds)
+        {
+            GetScalingFactor(originalBounds, 0, out var size, out var max);
+            var center = originalBounds.Center;
+            return FromClipper(polygons, center, size, max);
+        }
+        public static Vector2[][] FromClipper(List<List<Point64>> polygons, float size, long max) => FromClipper(polygons, Vector2.Zero, size, max);
+        public static Vector2[][] FromClipper(List<List<Point64>> polygons, Vector2 center, float size, long max)
+        {
+            var result = new Vector2[polygons.Count][];
+
+            for (int j = 0; j < polygons.Count; j++)
+            {
+
+                var s = polygons[j];
+                var t = result[j] = new Vector2[s.Count];
+
+                Parallel.For(0, t.Length, i => t[i] = ScaleFromInt(s[i], center, size, max));
+            }
+            return result;
+        }
 
         public static Vector2[] Intersect(this IReadOnlyList<Vector2> input, IReadOnlyList<Vector2> clip)
         {
@@ -72,38 +120,40 @@ namespace Simulation.Geometry
             var b = clip.Select(i => ScaleToInt(i, bounds.Center, size, max)).ToList();
 
             Clipper c = new Clipper();
-            c.AddPath(a, PolyType.ptSubject, true);
-            c.AddPath(b, PolyType.ptClip, true);
-            var r = new List<List<IntPoint>>() { new List<IntPoint>() };
-            c.Execute(ClipType.ctXor, r, PolyFillType.pftNonZero);
+            c.AddPath(a, PathType.Subject, true);
+            c.AddPath(b, PathType.Clip, true);
+            var r = new List<List<Point64>>() { new List<Point64>() };
+            c.Execute(ClipType.Xor, r, FillRule.NonZero);
 
             var result = new Vector2[r[0].Count];
             Parallel.For(0, result.Length, i => result[i] = ScaleFromInt(r[0][i], bounds.Center, size, max));
             return result;
         }
 
-        private static Vector2 ScaleFromInt(IntPoint intVector, Vector2 center, float sizeUniform, long max)
+        private static Vector2 ScaleFromInt(Point64 intVector, Vector2 center, float sizeUniform, long max)
         {
             var x = intVector.X * sizeUniform / max + center.X;
             var y = intVector.Y * sizeUniform / max + center.Y;
             return new Vector2(x, y);
         }
 
-        private static IntPoint ScaleToInt(Vector2 vector2, Vector2 center, float sizeUniform, long max)
+        private static Point64 ScaleToInt(Vector2 vector2, Vector2 center, float sizeUniform, long max)
         {
             var x = (long)((vector2.X - center.X) / sizeUniform * max);
             var y = (long)((vector2.Y - center.Y) / sizeUniform * max);
-            return new IntPoint(x, y);
+            return new Point64(x, y);
         }
+        public static void GetScalingFactor(Rectangle bounds, out float sizeUniform, out long max)
+            => GetScalingFactor(bounds, 0, out sizeUniform, out max);
 
-        private static void GetScalingFactor(Rectangle bounds, float delta, out float sizeUniform, out long max)
+        public static void GetScalingFactor(Rectangle bounds, float delta, out float sizeUniform, out long max)
         {
             var size = bounds.Size;
             sizeUniform = Math.Max(size.X, size.Y) + Math.Max(0, delta);
-            max = Int32.MaxValue;// MathF.RoundToInt(sizeUniform) * 1000;
+            max = MathF.RoundToInt(sizeUniform) * 1000;
         }
 
-        private static Rectangle GetBounds(IReadOnlyList<Vector2> input)
+        public static Rectangle GetBounds(IReadOnlyList<Vector2> input)
         {
             Vector2 min = input[0], max = input[0];
             for (int i = 1; i < input.Count; i++)
@@ -113,6 +163,15 @@ namespace Simulation.Geometry
             }
             return Rectangle.MinMaxRectangle(min, max);
         }
+        public static Vector2 FromClipper(this Point64 point, float size, long range)
+            => FromClipper(point, Vector2.Zero, size, range);
+
+        public static Vector2 FromClipper(this Point64 point, Vector2 center, float size, long range)
+         => ScaleFromInt(point, center, size, range);
+        public static Point64 ToClipper(this Vector2 point, float size, long range)
+            => ToClipper(point, Vector2.Zero, size, range);
+        public static Point64 ToClipper(this Vector2 point, Vector2 center, float size, long range)
+         => ScaleToInt(point, center, size, range);
 
         public static bool Contains(this IReadOnlyList<Vector2> polygon, Vector2 point)
         {

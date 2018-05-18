@@ -13,10 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ParagonClipper" Version="6.4.2" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\ClipperLib\ClipperLib.csproj" />
     <ProjectReference Include="..\Simulation.Data\Simulation.Data.csproj" />
   </ItemGroup>
 

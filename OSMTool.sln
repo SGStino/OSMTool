@@ -39,7 +39,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Data.Test", "Sim
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.WpfTest", "Simulation.WpfTest\Simulation.WpfTest.csproj", "{47786E63-DD28-415B-806A-D7C1A88ACA08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulation.Unity", "Simulation.Unity\Simulation.Unity.csproj", "{DF646B22-3B9A-4DBD-B29E-08C9C24E07FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation.Unity", "Simulation.Unity\Simulation.Unity.csproj", "{DF646B22-3B9A-4DBD-B29E-08C9C24E07FF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClipperLib", "ClipperLib\ClipperLib.csproj", "{1686CFF6-3D15-4381-8F89-EAF464282F22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -123,6 +125,10 @@ Global
 		{DF646B22-3B9A-4DBD-B29E-08C9C24E07FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF646B22-3B9A-4DBD-B29E-08C9C24E07FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF646B22-3B9A-4DBD-B29E-08C9C24E07FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1686CFF6-3D15-4381-8F89-EAF464282F22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1686CFF6-3D15-4381-8F89-EAF464282F22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1686CFF6-3D15-4381-8F89-EAF464282F22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1686CFF6-3D15-4381-8F89-EAF464282F22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

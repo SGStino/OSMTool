@@ -1,0 +1,692 @@
+﻿using Assets.Scripts;
+using Assets.Utilities;
+using ClipperLib;
+
+using Simulation.Geometry;
+using Simulation.Rendering;
+using Simulation.Traffic.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UnityEngine;
+
+public class LotScript : MonoBehaviour
+{
+    public float LotDepth = 10;
+    public float LotWidth = 10;
+    private Mesh mesh;
+
+    void Start()
+    {
+        var filter = this.gameObject.GetComponent<MeshFilter>();
+        this.mesh = filter.sharedMesh ?? (filter.sharedMesh = new Mesh());
+    }
+
+    void Update()
+    {
+        var children = Enumerable.Range(0, this.transform.childCount).Select(i => this.transform.GetChild(i));
+        if (children?.Any() ?? false)
+        {
+            var points = children.Select(t => t.localPosition).Select(n => new System.Numerics.Vector2(n.x, n.z)).ToArray();
+
+
+            var bounds = Polygon.GetBounds(points);
+            float sizeUniform;
+            long max;
+            Polygon.GetScalingFactor(bounds, out sizeUniform, out max);
+            var clipperPoints = Polygon.ToClipper(points, bounds);
+
+            var clipperOffset = new ClipperOffset();
+
+            EndType type = EndType.OpenButt;
+            if ((points.Last() - points.First()).Length() < LotDepth)
+                type = EndType.OpenJoined;
+
+            clipperOffset.AddPath(clipperPoints[0], JoinType.Miter, type);
+
+            var output = new List<List<Point64>>();
+
+            clipperOffset.Execute(ref output, LotDepth / sizeUniform * max );
+
+            var clipper = new Clipper();
+            clipper.AddPaths(output, PathType.Clip);
+            clipper.AddPath(clipperPoints[0], PathType.Subject);
+
+
+            clipper.Execute(ClipType.Intersection, output, FillRule.EvenOdd);
+
+            while (output.Count >= 2)
+            {
+                var p0 = output[0];
+                var p1 = output[1];
+
+                long sd = long.MaxValue;
+                int i0 = 0, j0 = 0;
+                for (int i = 0; i < p0.Count; i++)
+                {
+                    for (int j = 0; j < p1.Count; j++)
+                    {
+                        var d = distance(p0[i], p1[j]);
+                        if (d < sd)
+                        {
+                            sd = d;
+                            i0 = i;
+                            j0 = j;
+                        }
+                    }
+                }
+                var result = new List<Point64>();
+                result.AddRange(p0.Take(i0 + 1));
+                result.AddRange(p1.Skip(j0));
+                result.AddRange(p1.Take(j0 + 1));
+                result.AddRange(p0.Skip(i0));
+                output.RemoveRange(0, 2); // remove first 2
+                output.Insert(0, result);
+            }
+
+
+
+            var cutPoints = new List<System.Numerics.Vector2>();
+            var cutNormals = new List<System.Numerics.Vector2>();
+            var random = new System.Random(0);
+
+            float overshoot = 0;
+            var polygon = Polygon.FromClipper(output, bounds);
+            for (int i = 0; i < points.Length-1; i++)
+            {
+                var n0 = i;
+                var n1 = (n0 + 1);
+
+
+                var p0 = points[n0];
+                var p1 = points[n1];
+
+
+                var c = (p0 + p1) / 2;
+
+   
+                var n = p1 - p0;
+                var len = n.Length();
+                n /= len;
+
+                var t = new System.Numerics.Vector2(n.Y, -n.X);
+
+
+                if (len > LotDepth * 1.5f)
+                {
+                    var dist = len + overshoot;
+
+                    int count = Mathf.CeilToInt(dist / LotWidth);
+
+
+                    for (int j = 0; j < count; j++)
+                    {
+                        var d = (j) * LotWidth - overshoot;
+                        var p = p0 + d * n;
+
+                        var dx = (j - 1) * LotWidth - overshoot;
+
+                        var px = p0 + dx * n;
+                        debugLine(p, px, j / 10.0f, Color.green);
+                        px = p - t * LotDepth;
+                        debugLine(p, px, -cutPoints.Count, Color.red);
+                        cutPoints.Add(p);
+                        cutNormals.Add(t);
+                    }
+                    overshoot = dist - LotWidth * count;
+                }
+
+            }
+
+            var data = Polygon.FromClipper(output, bounds);
+
+            debugPolygons(data, -1, Color.blue);
+
+            var leftOver = output;
+            var plots = createPlots(bounds, sizeUniform, max, cutPoints, cutNormals, leftOver);
+            data = Polygon.FromClipper(plots, bounds);
+
+            debugPolygons(data, 0, Color.cyan);
+
+
+
+            var newPlots = new List<List<Point64>>();
+
+            foreach (var plot in plots)
+            {
+                var currentOutput = new List<List<Point64>>();
+                var clipperOffset2 = new ClipperOffset();
+                clipperOffset2.AddPath(plot, JoinType.Miter, EndType.Polygon);
+                clipperOffset2.Execute(ref currentOutput, -max / sizeUniform);
+                newPlots.AddRange(currentOutput);
+            }
+
+            var plots2D = Polygon.FromClipper(newPlots, bounds);
+            debugPolygons(plots2D, 10, Color.black);
+            var meshes = new List<MeshData>();
+            var rnd = new System.Random(0);
+            foreach (var plot in plots2D)
+            {
+
+
+
+
+
+                var building = new BuildingBuilder(plot);
+
+                building.SetHeight(rnd.Next(4, 8) * 3);
+                building.AddLayer();
+                meshes.Add(building.CreateMesh());
+            }
+            var merged = MeshData.Merge(meshes);
+            MeshManagerScript.UpdateMesh(merged, mesh);
+
+            return;
+
+            float distanceLeft = 0;
+            //var cutPoints = new List<System.Numerics.Vector2>();
+            //var cutNormals = new List<System.Numerics.Vector2>();
+            for (int i = 1; i < points.Length; i++)
+            {
+                var lastPoint = points[i - 1];
+                var point = points[i];
+                var len = (point - lastPoint).Length();
+
+                var d = (point - lastPoint) / len;
+
+                var currentSegment = len + distanceLeft;
+
+                int count = MathF.CeilToInt(currentSegment / LotWidth);
+
+
+
+
+                for (int j = 0; j < count; j++)
+                {
+                    var p0 = lastPoint + d * (-distanceLeft + j * LotWidth);
+                    cutPoints.Add(p0);
+                    var n = new System.Numerics.Vector2(d.Y, -d.X);
+                    cutNormals.Add(n);
+
+                    var p1 = p0 + n * LotDepth * 2;
+                    p0 -= n * LotDepth * 2;
+                    Debug.DrawLine(new Vector3(p0.X, -1, p0.Y), new Vector3(p1.X, -1, p1.Y), Color.blue);
+                }
+
+
+                distanceLeft = currentSegment - count * LotWidth;
+            }
+
+            //var leftOver = output;
+
+
+            //List<List<Point64>> plots = new List<List<Point64>>();
+
+            for (int i = 1; i < cutPoints.Count; i++)
+            {
+                var point = cutPoints[i];
+                var normal = (cutNormals[i] * LotDepth) * 0.51f;
+
+                var center = point.ToClipper(bounds.Center, sizeUniform, max);
+
+
+                var p0 = (point + normal).ToClipper(bounds.Center, sizeUniform, max);
+                var p1 = (point - normal).ToClipper(bounds.Center, sizeUniform, max);
+
+
+                var clipper2 = new Clipper();
+
+                clipper2.AddPaths(leftOver, PathType.Subject);
+                clipper2.AddPath(new List<Point64>() { p0, p1 }, PathType.Clip);
+
+
+                debugLine(point + normal, point - normal, i + 0.1f, Color.magenta);
+                var newSet = new List<List<Point64>>();
+
+                clipper2.Execute(ClipType.Difference, newSet);
+                if (newSet.Count > 1)
+                {
+                    newSet.Sort(new Point64DistanceComparer(center));
+
+                    leftOver = newSet;
+                    var desired = leftOver.Last();
+
+
+                    plots.Add(desired);
+                    var debug = Polygon.FromClipper(new List<List<Point64>> { desired }, bounds);
+                    debugPolygons(debug, i, Color.red);
+                    leftOver.RemoveAt(leftOver.Count - 1);
+
+                    if (leftOver.Any())
+                    {
+                        debug = Polygon.FromClipper(leftOver, bounds);
+                        debugPolygons(debug, i + 0.2f, Color.green);
+                    }
+                }
+            }
+
+            //var plots2D = Polygon.FromClipper(plots, bounds);
+            //var meshes = new List<MeshData>();
+            //var rnd = new System.Random(0);
+            //foreach (var plot in plots2D)
+            //{
+
+            //    var building = new BuildingBuilder(plot);
+
+            //    building.SetHeight(rnd.Next(4, 8) * 3);
+            //    building.AddLayer();
+            //    meshes.Add(building.CreateMesh());
+            //}
+            //var merged = MeshData.Merge(meshes);
+            //MeshManagerScript.UpdateMesh(merged, mesh);
+
+            ////var lotPoly = createPolygon(points, false);
+
+
+            //var rnd = new System.Random((int)Time.frameCount);
+
+
+            //var building = new BuildingBuilder(points);
+
+            //float size;
+            //long range;
+            //Polygon.GetScalingFactor(building.Bounds, out size, out range);
+
+
+            //var offset = new ClipperOffset(3, 10);
+
+            //offset.AddPaths(building.Ground, JoinType.Square, EndType.Polygon);
+
+
+            //var result = new List<List<Point64>>();
+
+
+            //building.AddShape(building.Ground);
+            //building.SetHeight(3);
+
+            //building.AddLayer();
+
+
+            //offset.Execute(ref result,  -0.5 / size * range);
+
+            //building.AddShape(result);
+
+            //offset.Execute(ref result, -3.9 / size * range);
+            //building.CutShape(result);
+
+            //{
+            //    int polygon, edge;
+            //    GetLongestEdge(building.Ground, out polygon, out edge);
+
+            //    var poly = building.Ground[polygon];
+            //    var p1 = poly[edge].FromClipper(size, range);
+            //    var p2 = poly[(edge + 1) % poly.Count].FromClipper(size, range);
+
+            //    var center = (p1 + p2) / 2;
+
+            //    var d = System.Numerics.Vector2.Normalize(p2 - p1) * 3;
+            //    var n = new System.Numerics.Vector2(d.Y, -d.X) * 2;
+
+
+            //    var cutout = new[]{
+            //        center + (-d + n) * 1,
+            //        center + (-d - n) * 1,
+            //        center + (d - n) * 1,
+            //        center + (d + n) * 1
+            //    };
+
+            //    Array.Reverse(cutout);
+
+            //    var clipCutout = cutout.ToClipper(size, range);
+
+            //    building.CutShape(clipCutout);
+            //}
+            //building.SetHeight(6);
+
+            ////building.DebugLayer();
+
+            //building.AddLayer();
+
+            //var merged = building.CreateMesh();
+            //MeshManagerScript.UpdateMesh(merged, mesh);
+
+
+            //int stories = rnd.Next(0, 25);
+
+            //var height = stories * 0.5f;
+
+
+            //var clipper = 
+
+
+            //var roof = Polygon.ExpandEdge(to2d(points), -5f * (float)rnd.NextDouble());
+
+            //var wallsPoly = createSkirt(roof, 0, height);
+
+            //var roofPoly = createPolygon(to3d(roof, height), false); 
+
+
+            //var merged = MeshData.Merge(lotPoly, roofPoly, wallsPoly);
+
+
+
+            //MeshManagerScript.UpdateMesh(merged, mesh);
+
+
+            //for (int i = 0; i < mesh.vertices.Length; i++)
+            //{
+            //    var v = mesh.vertices[i];
+            //    var n = mesh.normals[i];
+            //    Debug.DrawRay(v, n, Color.green);
+            //}
+
+
+            //var points2d = points.Select(t => new System.Numerics.Vector2(t.x, t.z)).ToArray();
+
+            //var inset = TestPolygon.ExpandNormal(points2d, 0.1f);
+
+            //var allPoints = points2d.Concat(inset).ToArray();
+            //var allPoints3d = allPoints.Select((n, i) => new Vector3(n.X, points[i % points.Length].y, n.Y)).ToArray();
+
+            //var triangles = Simulation.Geometry.Delaunay.Triangulate(allPoints);
+
+            //debug(points2d, Color.blue);
+            //debug(inset, Color.red);
+
+            //mesh.Clear();
+            //mesh.vertices = allPoints3d;
+            //mesh.normals = allPoints3d.Select(t => Vector3.up).ToArray();
+            //mesh.SetIndices(triangles.Where(t =>
+            //{
+            //    var center = (allPoints[t.p1] + allPoints[t.p2] + allPoints[t.p3]) / 3;
+            //    var center3d = (allPoints3d[t.p1] + allPoints3d[t.p2] + allPoints3d[t.p3]) / 3;
+            //    Debug.DrawLine(center3d, allPoints3d[t.p1], Color.green);
+            //    Debug.DrawLine(center3d, allPoints3d[t.p2], Color.green);
+            //    Debug.DrawLine(center3d, allPoints3d[t.p3], Color.green);
+            //    return Polygon.Contains(points2d, center);
+            //}).SelectMany(t => new[] { t.p3, t.p2, t.p1 }).ToArray(), MeshTopology.Triangles, 0);
+        }
+
+    }
+
+    private List<List<Point64>> createPlots(Simulation.Data.Primitives.Rectangle bounds, float sizeUniform, long max, List<System.Numerics.Vector2> cutPoints, List<System.Numerics.Vector2> cutNormals, List<List<Point64>> polygon)
+    {
+        const int spacing = 2;
+        System.Numerics.Vector2[][] debug;
+
+        var plots = new List<List<Point64>>();
+
+        for (int i = 1; i < cutPoints.Count-1; i++)
+        {
+            var point = cutPoints[i];
+            var normal = (cutNormals[i] * LotDepth);
+
+            //debugLine(point, point + normal, i * spacing + 1, Color.white);
+            var center = point.ToClipper(bounds.Center, sizeUniform, max);
+
+
+            var p0 = (point + normal * 1.01f).ToClipper(bounds.Center, sizeUniform, max);
+            var p1 = (point - normal * 1.01f).ToClipper(bounds.Center, sizeUniform, max);
+
+
+            var clipper2 = new Clipper();
+
+            clipper2.AddPaths(polygon, PathType.Subject);
+            clipper2.AddPath(new List<Point64>() { p1, p0 }, PathType.Clip);
+
+
+            var newSet = new List<List<Point64>>();
+
+            clipper2.Execute(ClipType.Difference, newSet);
+
+            newSet.Sort(new Point64DistanceComparer(center));
+
+            debug = Polygon.FromClipper(newSet, bounds);
+
+
+            if (newSet.Count > 1)
+            {
+                plots.Add(newSet[0]);
+                newSet.RemoveAt(0);
+                polygon = newSet;
+
+
+
+                //debugPolygons(debug.Skip(1), i * spacing, Color.red);
+                //debugPolygons(debug.Take(1), i * spacing, Color.green);
+            }
+
+        }
+
+        if (polygon.Any())
+        {
+            debug = Polygon.FromClipper(polygon, bounds);
+            //debugPolygons(debug, cutPoints.Count * spacing - spacing, Color.magenta);
+            plots.AddRange(polygon);
+        }
+        return plots;
+    }
+
+    private bool isStreetSide(System.Numerics.Vector2 p0, int i0, System.Numerics.Vector2[] points, System.Numerics.Vector2[] original)
+    {
+        var i1 = (i0 + 1) % points.Length;
+
+        var p1 = points[i1];
+        return contains(p0, original) && contains(p1, original);
+    }
+
+    private static bool contains(System.Numerics.Vector2 p0, System.Numerics.Vector2[] original)
+    {
+        var ok = false;
+        foreach (var p in original)
+        {
+            var d = (p - p0).LengthSquared();
+
+            if (d < 0.001) { ok = true; }
+        }
+
+        return ok;
+    }
+
+    private long distance(Point64 a, Point64 b)
+    {
+        var x = a.X - b.X;
+        var y = a.Y - b.Y;
+        return x * x + y * y;
+    }
+
+    private void debugLine(System.Numerics.Vector2 v0, System.Numerics.Vector2 v1, float y, Color color)
+    {
+        Debug.DrawLine(new Vector3(v0.X, y, v0.Y), new Vector3(v1.X, y, v1.Y), color);
+    }
+
+    private void debugPolygons(IEnumerable<System.Numerics.Vector2[]> data, float y, Color color)
+    {
+        foreach (var polygon in data)
+        {
+            for (int i = 0; i < polygon.Length; i++)
+            {
+                var i0 = i;
+                var i1 = (i + 1) % polygon.Length;
+
+                var v0 = polygon[i0];
+                var v1 = polygon[i1];
+                debugLine(v0, v1, y, color);
+            }
+        }
+    }
+
+    private void GetLongestEdge(List<List<Point64>> ground, out int polygon, out int edge)
+    {
+        polygon = -1;
+        edge = -1;
+        long longestDistance = 0;
+
+        for (int i = 0; i < ground.Count; i++)
+        {
+            var poly = ground[i];
+            for (int j = 0; j < poly.Count; j++)
+            {
+                var j0 = j;
+                var j1 = (j + 1) % poly.Count;
+
+                var d0 = poly[j0];
+                var d1 = poly[j1];
+                var x = (d0.X - d1.X);
+                var y = (d0.Y - d1.Y);
+                var d = x * x + y * y;
+                if (d > longestDistance)
+                {
+                    longestDistance = d;
+                    edge = j;
+                    polygon = i;
+                }
+            }
+
+        }
+    }
+
+    //private MeshData createSkirt(System.Numerics.Vector2[] roof, int low, float high)
+    //{
+    //    var lowVerts = to3d(roof, low);
+    //    var highVerts = to3d(roof, high);
+
+    //    var meshData = new MeshData(roof.Length * 4, roof.Length * 6);
+
+
+    //    for (int v = 0; v < roof.Length; v++)
+    //    {
+    //        var v0 = v;
+    //        var v1 = (v + 1) % roof.Length;
+
+    //        var p0 = v * 4;
+    //        var p1 = p0 + 1;
+    //        var p2 = p1 + 1;
+    //        var p3 = p2 + 1;
+
+    //        meshData.Positions[p0] = lowVerts[v0];
+    //        meshData.Positions[p1] = highVerts[v0];
+    //        meshData.Positions[p2] = lowVerts[v1];
+    //        meshData.Positions[p3] = highVerts[v1];
+
+
+    //        var n1 = lowVerts[v0] - lowVerts[v1];
+    //        var n2 = highVerts[v0] - lowVerts[v0];
+
+    //        var n = System.Numerics.Vector3.Cross(n1, n2);
+
+    //        meshData.Normals[p0] = meshData.Normals[p1] = meshData.Normals[p2] = meshData.Normals[p3] = System.Numerics.Vector3.Normalize(n);
+    //        meshData.Tangents[p0] = meshData.Tangents[p1] = meshData.Tangents[p2] = meshData.Tangents[p3] = new System.Numerics.Vector4(Directions3.Up, 1);
+
+    //        var i = v * 6;
+
+    //        meshData.Indices[i++] = p0;
+    //        meshData.Indices[i++] = p1;
+    //        meshData.Indices[i++] = p2;
+
+    //        meshData.Indices[i++] = p3;
+    //        meshData.Indices[i++] = p2;
+    //        meshData.Indices[i++] = p1;
+    //    }
+
+    //    return meshData;
+    //}
+
+    //private MeshData createPolygon(IReadOnlyList<System.Numerics.Vector3> polygon, bool convex)
+    //{
+    //    var vertices2d = to2d(polygon);
+    //    var triangles = Delaunay.Triangulate(vertices2d).Where(t =>
+    //    {
+    //        var center = (vertices2d[t.p1] + vertices2d[t.p2] + vertices2d[t.p3]) / 3;
+    //        var center3d = (polygon[t.p1] + polygon[t.p2] + polygon[t.p3]) / 3;
+    //        var r = convex ? true : Polygon.Contains(vertices2d, center);
+    //        var c = r ? Color.green : Color.red;
+    //        Debug.DrawLine(center3d.ToUnity(), polygon[t.p1].ToUnity(), c);
+    //        Debug.DrawLine(center3d.ToUnity(), polygon[t.p2].ToUnity(), c);
+    //        Debug.DrawLine(center3d.ToUnity(), polygon[t.p3].ToUnity(), c);
+    //        return r;
+    //    }).ToList();
+
+
+    //    var result = new MeshData(polygon.Count, triangles.Count * 3);
+
+    //    for (int i = 0; i < triangles.Count; i++)
+    //    {
+    //        var t = triangles[i];
+    //        var i0 = i * 3;
+    //        var i1 = i0 + 1;
+    //        var i2 = i0 + 2;
+
+    //        result.Indices[i2] = t.p1;
+    //        result.Indices[i1] = t.p2;
+    //        result.Indices[i0] = t.p3;
+
+    //        var v1 = polygon[t.p1];
+    //        var v2 = polygon[t.p2];
+    //        var v3 = polygon[t.p3];
+
+    //        var n1 = v1 - v2;
+    //        var n2 = v2 - v3;
+    //        var n = -System.Numerics.Vector3.Cross(n1, n2);
+
+    //        n = n / n.Length();
+
+    //        result.Normals[t.p1] += n;
+    //        result.Normals[t.p2] += n;
+    //        result.Normals[t.p3] += n;
+    //    }
+
+    //    Parallel.For(0, polygon.Count, i =>
+    //    {
+    //        result.Positions[i] = polygon[i];
+    //        result.Normals[i] = System.Numerics.Vector3.Normalize(result.Normals[i]);
+    //        var t = System.Numerics.Vector3.Cross(result.Normals[i], Directions3.Forward);
+    //        result.Tangents[i] = new System.Numerics.Vector4(t, 1);
+    //        // TODO: tangents
+    //        // TODO: texcoords
+
+    //    });
+
+    //    return result;
+
+    //}
+
+
+    //private void debug(System.Numerics.Vector2[] inset, Color c)
+    //{
+    //    for (int i = 0; i < inset.Length; i++)
+    //    {
+    //        var p1 = inset[i];
+    //        var p2 = inset[(i + 1) % inset.Length];
+    //        Debug.DrawLine(new UnityEngine.Vector3(p1.X, 0, p1.Y), new UnityEngine.Vector3(p2.X, 0, p2.Y), c);
+    //    }
+    //}
+}
+
+internal class Point64DistanceComparer : IComparer<List<Point64>>
+{
+    private Point64 center;
+    private Comparer<long> comparer;
+
+    public Point64DistanceComparer(Point64 center)
+    {
+        this.center = center;
+        this.comparer = Comparer<long>.Default;
+    }
+
+    public int Compare(List<Point64> x, List<Point64> y)
+    {
+        var xD = x.Max(p => distance(p));
+        var yD = y.Max(p => distance(p));
+
+        return comparer.Compare(xD, yD);
+    }
+
+    private long distance(Point64 arg)
+    {
+        var x = arg.X - center.X;
+        var y = arg.Y - center.Y;
+        return x * x + y * y;
+    }
+}
