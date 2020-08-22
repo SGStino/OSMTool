@@ -12,7 +12,7 @@ namespace System
         public const float Rad2Deg = 180 / PI;
         public const float Deg2Rad = PI / 180;
         public static float Lerp(float a, float b, float t)
-            => (a - b) * t + a;
+            => (b - a) * t + a;
         public static float Clamp(float min, float max, float value)
             => Max(Min(max, value), min);
 

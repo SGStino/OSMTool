@@ -110,6 +110,8 @@ namespace Simulation.Traffic.Utilities
             return dir * radius;
         }
 
+
+ 
         public static bool Intersect(Plane plane1, Plane plane2, out Ray intersection)
         {
             var dir = Vector3.Cross(plane1.Normal, plane2.Normal);

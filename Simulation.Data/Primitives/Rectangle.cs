@@ -25,6 +25,7 @@ namespace Simulation.Data.Primitives
 
         public static Rectangle CenterSize(Vector2 center, Vector2 size)
         {
+            size /= 2;
             var min = center - size;
             var max = center + size;
 

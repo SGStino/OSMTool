@@ -67,6 +67,11 @@ namespace Simulation.Geometry
             var points = ToClipper(input, center, size, max);
             return new List<List<Point64>>() { points };
         }
+        public static List<List<Point64>> ToClipper(this IReadOnlyList<IReadOnlyList<Vector2>> inputs, Rectangle bounds)
+        {
+            GetScalingFactor(bounds, 0, out var size, out var max);
+            return ToClipper(inputs, bounds.Center, size, max);
+        }
 
         public static List<List<Point64>> ToClipper(this IReadOnlyList<IReadOnlyList<Vector2>> inputs, float size, long max)
             => ToClipper(inputs, Vector2.Zero, size, max);
